@@ -22,13 +22,11 @@
 
 // Funzione per creare l'URL dell'API
 function createApiUrl(formData, orderTurno) {
-	console.log("formData: ", formData)
-
-	const className = formData.get("className");
-	const underTestClassName = formData.get("underTestClassName");
+	const underTestClassName = localStorage.getItem("underTestClassName");
 	const playerId = formData.get("playerId");
 	// Costruisce il percorso per la classe
-	const classePath = `VolumeT0/FolderTree/ClassUT/unmodified_src/${className}/${underTestClassName}`;
+	formData.append("className", underTestClassName);
+	const classePath = `VolumeT0/FolderTree/ClassUT/unmodified_src/${underTestClassName}/${underTestClassName}.java`;
 	// Ottiene il percorso del test generato
 	const testPath = generaPercorsoTest(orderTurno, formData);
 	// Costruisce l'URL dell'API
@@ -234,7 +232,7 @@ function getConsoleTextError(){
 async function startGame(data) {
 	try {
 		// Utilizziamo la funzione ajaxRequest per la chiamata POST
-		const response = await ajaxRequest(
+		const response = await ajaxRequest_ForStartGame(
 			"/StartGame",
 			"POST",
 			data,
@@ -324,8 +322,6 @@ function highlightCodeCoverage(reportContent, robotContent, editor) {
 	var uncoveredLinesRobot = [];
 	var partiallyCoveredLinesRobot = [];
 
-	console.log("coverage content robot ", reportContent);
-
 	reportContent.querySelectorAll("line").forEach(function (line) {
 		if (line.getAttribute("mi") == 0)
 			coveredLines.push(line.getAttribute("nr"));
@@ -377,6 +373,9 @@ function highlightCodeCoverage(reportContent, robotContent, editor) {
 		editor.removeLineClass(lineNumber - 2, "background", "bg-coverage-success");
 		editor.addLineClass	(lineNumber - 2, "background", "bg-coverage-warning");
 	});
+
+	// Forzo il refresh dell'editor, altrimenti il background viene caricato solo dopo aver scollato
+	editor.refresh();
 }
 
 // Funzione per ottenere i dati del form da inviare
@@ -402,8 +401,8 @@ async function ajaxRequest(
 			dataType: dataType,
 			processData: isJson, // Set to true to encode data properly
 			contentType: isJson
-				? "application/x-www-form-urlencoded; charset=UTF-8"
-				: false,
+				? false
+				: "application/x-www-form-urlencoded; charset=UTF-8",
 			data: isJson && data ? $.param(data) : data, // Convert data to URL-encoded string
 		};
 
@@ -414,6 +413,84 @@ async function ajaxRequest(
 		throw error;
 	}
 }
+
+async function ajaxRequest_ForT8(
+	url,
+	method = "POST",
+	data = null,
+	isJson = true,
+	dataType = "json"
+) {
+	try {
+		const options = {
+			url: url,
+			type: method,
+			dataType: "text",
+			processData: false, // Set to true to encode data properly
+			contentType: "text/plain; charset=UTF-8",
+			data: data, // Convert data to URL-encoded string
+		};
+
+		const response = await $.ajax(options);
+		return response;
+	} catch (error) {
+		console.error("Si è verificato un errore:", error);
+		throw error;
+	}
+}
+
+async function ajaxRequest_ForStartGame(
+	url,
+	method = "POST",
+	data = null,
+	isJson = true,
+	dataType = "json"
+) {
+	try {
+		const options = {
+			url: url,
+			type: method,
+			dataType: dataType,
+			processData: !isJson, // Se è JSON, disabilita processData
+			contentType: isJson ? "application/json" : "application/x-www-form-urlencoded; charset=UTF-8",
+			data: isJson && data ? JSON.stringify(data) : data, // Serializza JSON
+		};
+
+		const response = await $.ajax(options);
+		return response;
+	} catch (error) {
+		console.error("Si è verificato un errore:", error);
+		throw error;
+	}
+}
+
+async function ajaxRequest_ForRun(
+	url,
+	method = "POST",
+	data = null,
+	isFormData = false,
+	dataType = "json"
+) {
+	try {
+		const options = {
+			url: url,
+			type: method,
+			processData: false, // Se è FormData, non elaborarlo
+			contentType: false,
+			data: data, // Passa i dati direttamente senza modificarli
+		};
+
+		const response = await $.ajax(options);
+		return response;
+	} catch (error) {
+		console.error("Si è verificato un errore:", error);
+		throw error;
+	}
+}
+
+
+
+
 
 function controlloScalata(
 	iswin,

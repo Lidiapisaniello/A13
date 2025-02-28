@@ -105,9 +105,11 @@ public class CompilationService {
 
             copyPomFileForEvoSuiteTest();
             logger.info("[CompilationService] Avvio Maven");
-            if (compileExecuteCoverageWithMaven("clean", "test", "jacoco:restore-instrumented-classes", "jacoco:report")) {
+            if (compileExecuteCoverageWithMaven(true, "clean", "test", "jacoco:restore-instrumented-classes", "jacoco:report")) {
                 this.Coverage = readFileToString(config.getCoverageFolderPath());
                 this.Errors = false;
+                logger.info("Coverage: ");
+                logger.info(this.Coverage);
                 logger.info("[Compilation Service] Compilazione Terminata senza errori.");
             } else {
                 this.Coverage = null;
@@ -116,7 +118,7 @@ public class CompilationService {
                 logger.info("[Compilation Service] Errori: {}", outputMaven);
             }
 
-            FileUtil.deleteDirectoryRecursively(Paths.get(config.getPathCompiler()));
+            //FileUtil.deleteDirectoryRecursively(Paths.get(config.getPathCompiler()));
         } catch (FileConcurrencyException e) {
             logger.error("[Compilation Service] [LOCK ERROR] ", e);
         } catch (IOException e) {
@@ -137,7 +139,7 @@ public class CompilationService {
             saveCodeToFile(this.testingClassName, this.testingClassCode, config.getTestingClassPath());
             saveCodeToFile(this.underTestClassName, this.underTestClassCode, config.getUnderTestClassPath());
             logger.info("[CompilationService] Avvio Maven");
-            if (compileExecuteCoverageWithMaven("clean", "compile", "test")) {
+            if (compileExecuteCoverageWithMaven(false, "clean", "compile", "test")) {
                 this.Coverage = readFileToString(config.getCoverageFolderPath());
                 this.Errors = false;
                 logger.info("[Compilation Service] Compilazione Terminata senza errori.");
@@ -305,7 +307,7 @@ public class CompilationService {
         }
     }
 
-    private boolean compileExecuteCoverageWithMaven(String ...arguments) throws RuntimeException{
+    private boolean compileExecuteCoverageWithMaven(boolean compileForEvoSuite, String ...arguments) throws RuntimeException{
         logger.error(mvn_path);
 
         String[] command = new String[arguments.length + 1];
@@ -313,12 +315,14 @@ public class CompilationService {
         System.arraycopy(arguments, 0, command, 1, arguments.length);
 
         // Configurazione del processo
-
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(new File(config.getPathCompiler()));
         StringBuilder output = new StringBuilder();
         StringBuilder errorOutput = new StringBuilder();
         Process process = null;
+
+        if (compileForEvoSuite)
+            processBuilder.environment().put("JAVA_HOME", "/usr/lib/jvm/java-8-openjdk-amd64");
         try {
             // Avvia il processo
             process = processBuilder.start();

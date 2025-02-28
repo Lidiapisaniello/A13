@@ -14,6 +14,7 @@ services:
       - ./FilesUpload:/Files-Upload
       - VolumeT9:/VolumeT9
       - VolumeT8:/VolumeT8
+      - VolumeT0:/VolumeT0
     networks:
       - global-network      
 
@@ -35,4 +36,6 @@ volumes:
   VolumeT9:
     external: true
   VolumeT8:
+    external: true
+  VolumeT0:
     external: true

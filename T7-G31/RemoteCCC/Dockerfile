@@ -3,6 +3,11 @@ FROM maven:3.9.4-eclipse-temurin-17
 ARG JAR_FILE=target/RemoteCCC-0.0.1.jar
 COPY ${JAR_FILE} app.jar
 COPY ClientProject ClientProject 
+COPY EvoSuite EvoSuite
+
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk
+
 ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 # Esegui mvn clean install -U per forzare l'aggiornamento delle dipendenze e installare il progetto

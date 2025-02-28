@@ -2,10 +2,10 @@
 FROM openjdk:17-jdk
 
 # Copia il tuo JAR nel container
-COPY ./target/t5-0.0.1-SNAPSHOT.jar /app/
+COPY ./target/t5-0.1.0-SNAPSHOT.jar /app/
 
 # Imposta la directory di lavoro all'interno del container
 WORKDIR /app
 
 # Comando di avvio dell'applicazione
-CMD ["java", "-jar", "t5-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "t5-0.1.0-SNAPSHOT.jar"]

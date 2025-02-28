@@ -1,10 +1,10 @@
 package com.groom.manvsclass.model;
 
 public enum ServiceURL {
-    T2("http://t23-g1-app-1", 8080),
-    T4("http://t4-g18-app-1", 3000),
-    T7("http://remoteccc-app-1", 1234),
-    T8("http://prototipo20-t8_generazione-1", 3080);
+    T2("t23-g1-app-1", 8080),
+    T4("t4-g18-app-1", 3000),
+    T7("remoteccc-app-1", 1234),
+    T8("prototipo20-t8_generazione-1", 3080);
 
     private final String host;
     private final int port;

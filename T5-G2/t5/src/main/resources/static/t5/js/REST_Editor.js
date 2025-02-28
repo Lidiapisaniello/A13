@@ -27,7 +27,7 @@ function getGameData() {
         if(ClassUT === underTestClassName){
             return {
                 playerId: 			String(parseJwt(getCookie("jwt")).userId),
-                type_robot: 		localStorage.getItem("robot"),
+                typeRobot: 		localStorage.getItem("robot"),
                 difficulty: 		localStorage.getItem("difficulty"),
                 mode: 				localStorage.getItem("modalita"),
                 underTestClassName: localStorage.getItem("underTestClassName"),
@@ -46,7 +46,7 @@ function getGameData() {
 async function runGameAction(url, formData, isGameEnd) {
     try {
         formData.append("isGameEnd", isGameEnd);
-        const response = await ajaxRequest(url, "POST", formData, false, "json");
+        const response = await ajaxRequest_ForRun(url, "POST", formData, false, "json");
         return response;
     } catch (error) {
         console.error("Errore nella richiesta AJAX:", error);
@@ -60,7 +60,6 @@ $(document).ready(function () {
     startGame(data);
     if (data.mode === "Allenamento") {
         document.getElementById("runButton").disabled = true;
-        console.log("Sei in allenamento");
     }
     const savedContent = localStorage.getItem('codeMirrorContent');
 	if (!savedContent) {
@@ -116,28 +115,28 @@ function handleResponse(response, formData, isGameEnd, loadingKey, buttonKey) {
             userJacocoCoverage, robotJacocoCoverage,
             isWinner} = response;
 
-    outCompile = coverageDetails.outCompile;
-    coverage = coverageDetails.coverage;
+    const userOutputCompile = userJacocoCoverage.compileOutput;
+    const userCoverage = userJacocoCoverage.xml_coverage;
+    const robotCoverage = robotJacocoCoverage.xml_coverage;
 
     // Aggiorna i dati del modulo con gameId e roundId
     formData.append("gameId", gameId);
     formData.append("roundId", roundId);
-    console_utente.setValue(outCompile); // Mostra l'output della compilazione nella console utente
-    parseMavenOutput(outCompile); // Analizza l'output di Maven
-    if (!coverage) { // Se non c'è copertura, gestisce l'errore di compilazione
+    console_utente.setValue(userOutputCompile); // Mostra l'output della compilazione nella console utente
+    parseMavenOutput(userOutputCompile); // Analizza l'output di Maven
+    if (!userCoverage) { // Se non c'è copertura, gestisce l'errore di compilazione
         setStatus("error");
         handleCompileError(loadingKey, buttonKey); // Gestisce l'errore
         return;
     }
 
-        // Se la copertura è disponibile, la processa
-        const robotCoverage = robotJacocoCoverage.coverage;
-        processCoverage(coverage, formData, robotScore, userScore, isGameEnd, loadingKey, buttonKey, userJacocoCoverage, robotJacocoCoverage, robotCoverage, isWinner);
-    }
+    // Se la copertura è disponibile, la processa
+    processCoverage(userCoverage, formData, robotScore, userScore, isGameEnd, loadingKey, buttonKey, userJacocoCoverage, robotJacocoCoverage, robotCoverage, isWinner);
+}
 
 // Processa la copertura del codice e aggiorna i dati di gioco
 async function processCoverage(coverage, formData, robotScore, userScore, isGameEnd, loadingKey, buttonKey, userJacocoCoverage, robotJacocoCoverage, robotCoverage, isWinner) {
-    highlightCodeCoverage($.parseXML(coverage), editor_robot, robotCoverage); // Evidenzia la copertura del codice nell'editor
+    highlightCodeCoverage($.parseXML(coverage), $.parseXML(robotCoverage), editor_robot); // Evidenzia la copertura del codice nell'editor
     orderTurno++; // Incrementa l'ordine del turno
 
     const userEvoSuiteCoverageCsv = await fetchCoverageReport(formData); // Recupera il report di coverage
@@ -176,22 +175,18 @@ function handleCompileError(loadingKey, buttonKey) {
 // Recupera il report di coverage da T8
 async function fetchCoverageReport(formData) {
     const url = createApiUrl(formData, orderTurno); // Crea l'URL dell'API
-    console.log("url T8 fetch: ", url);
-    return await ajaxRequest(url, "POST", formData.get("testingClassCode"), false, "text"); // Esegue la richiesta AJAX
+    return await ajaxRequest_ForT8(url, "POST", formData.get("testingClassCode"), false, "text"); // Esegue la richiesta AJAX
 }
 
 // Recupera il report di coverage per il robot da T8
 async function fetchRobotEvoSuiteCoverageReport(formData) {
-    const url = `/api/robots/evosuitecoverage` //coverage/robot/${formData.get("className")}/${formData.get("difficulty")}`
+    const url = `/robots/evosuitecoverage` //coverage/robot/${formData.get("className")}/${formData.get("difficulty")}`
 
-
-    console.log("formData: ", formData)
     const data = {
-        testClassId: formData.get("className"),
-        robotType: formData.get("type"),
-        difficulty: formData.get("difficulty")
+        testClassId: localStorage.getItem("underTestClassName"),
+        robotType: localStorage.getItem("robot"),
+        difficulty: localStorage.getItem("difficulty")
     }
-    console.log("url T8 fetch: ", url);
     return await ajaxRequest(url, "GET", data, true, "text"); // Esegue la richiesta AJAX
 }
 
