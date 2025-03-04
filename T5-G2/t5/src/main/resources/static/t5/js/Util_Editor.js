@@ -1,13 +1,13 @@
 /*
  *   Copyright (c) 2024 Stefano Marano https://github.com/StefanoMarano80017
  *   All rights reserved.
-
+ *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
-
- *   http://www.apache.org/licenses/LICENSE-2.0
-
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
  *   Unless required by applicable law or agreed to in writing, software
  *   distributed under the License is distributed on an "AS IS" BASIS,
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,12 +15,11 @@
  *   limitations under the License.
  */
 
-
-/*
-*		QUI CI SONO TUTTE LE FUNZIONI UTILI PER L'EDITOR 
+/* UTIL_Editor.js
+   Funzioni di utilità per l'editor.
 */
 
-// Funzione per creare l'URL dell'API
+// === FUNZIONI PER COSTRUIRE L'URL E IL REPORT ===
 function createApiUrl(formData, orderTurno) {
 	const underTestClassName = localStorage.getItem("underTestClassName");
 	const playerId = formData.get("playerId");
@@ -77,7 +76,8 @@ function extractThirdColumn(csvContent) {
 	return thirdColumnValues;
 }
 
-you_win = `
+// === FUNZIONI PER GENERARE IL TESTO DI OUTPUT ===
+const you_win = `
 __     ______  _    _  __          _______ _   _ 
 \\ \\   / / __ \\| |  | | \\ \\        / /_   _| \\ | |
  \\ \\_/ / |  | | |  | |  \\ \\  /\\  / /  | | |  \\| |
@@ -86,7 +86,7 @@ __     ______  _    _  __          _______ _   _
    |_|  \\____/ \\____/      \\/  \\/   |_____|_| \\_|
 `;
 
-var you_lose = `
+const you_lose = `
 __     ______  _    _   _      ____   _____ ______ 
 \\ \\   / / __ \\| |  | | | |    / __ \\ / ____|  ____|
  \\ \\_/ / |  | | |  | | | |   | |  | | (___ | |__   
@@ -95,7 +95,7 @@ __     ______  _    _   _      ____   _____ ______
    |_|  \\____/ \\____/  |______\\____/|_____/|______|
 `;
 
-var error = `
+const error = `
 ______ _____  _____   ____   _____  
 |  ____|  __ \|  __ \ / __ \ / ____| 
 | |__  | |__) | |__) | |  | | (___   
@@ -228,27 +228,103 @@ function getConsoleTextError(){
 			Ci sono stati errori di compilazione, controlla la console !`;
 }
 
-// Funzione per avviare il gioco utilizzando ajaxRequest
-async function startGame(data) {
-	try {
-		// Utilizziamo la funzione ajaxRequest per la chiamata POST
-		const response = await ajaxRequest_ForStartGame(
-			"/StartGame",
-			"POST",
-			data,
-			true,
-			"text"
-		);
-		console.log("Partita iniziata con successo:", response);
-	} catch (error) {
-		// Assicurati che error sia una stringa prima di usare includes
-		errorMessage = JSON.stringify(error);
-		if (errorMessage.includes("errore esiste già la partita")) {
-			console.log("Il messaggio d'errore indica che esiste già la partita.");
-			openModalWithText(status_inizia_partita, match_in_corso);
-		} 
-		console.log("[start Game]", errorMessage);
-	}
+// === FUNZIONI PER LA SESSIONE ===
+async function fetchPreviousGameData() {
+    const playerId = String(parseJwt(getCookie("jwt")).userId);
+    const current_mode = GetMode();
+    try {
+        const response = await fetch(`/session/${playerId}`);
+        const data = await response.json();
+        if (
+            data && 
+            data.modalita &&
+            data.modalita[current_mode] && 
+            data.modalita[current_mode].gameobject) 
+        {
+            console.log("[fetchPreviousGameData] Trovato gameobject per la modalità " + current_mode + ":", data.modalita[current_mode].gameobject);
+            return data.modalita[current_mode].gameobject;
+        }
+        return null;
+    } catch (error) {
+        console.error("Errore durante il recupero della sessione:", error);
+        return null;
+    }
+}
+
+async function getFormData() {
+	const formData = new FormData();
+    const gameObject = await fetchPreviousGameData();
+    if (gameObject) {
+        console.log("[getFormData] Recuperato game object dalla sessione:", gameObject);
+        formData.append("playerId", gameObject.player_id);
+        formData.append("mode", gameObject.mode.toLowerCase());
+        formData.append("underTestClassName", gameObject.class_ut);
+        if (gameObject.game_id) formData.append("gameId", gameObject.game_id);
+        if (gameObject.round_id) formData.append("roundId", gameObject.round_id);
+        formData.append("testingClassCode", editor_utente.getValue());
+    } else {
+        console.warn("[getFormData] Nessun game object trovato in sessione;");
+    }
+
+	return formData;
+}
+
+// Funzione per analizzare l'output di Maven
+function parseMavenOutput(output) {
+    const lines = output.split('\n');
+    let results = {
+        errors: 0,
+        warnings: 0
+    };
+
+    lines.forEach(line => {
+        // Regex per contare avvisi
+        const warningMatch = line.match(/^\[INFO\] (\d+) warning/);
+        if (warningMatch) {
+            results.warnings = parseInt(warningMatch[1], 10);
+        }
+
+        // Regex per contare errori
+        const errorMatch = line.match(/^\[INFO\] (\d+) error/);
+        if (errorMatch) {
+            results.errors = parseInt(errorMatch[1], 10);
+        }
+    });
+
+	document.getElementById("error_compiler").textContent = results.errors;
+	document.getElementById("warning_compiler").textContent =  results.warnings;
+    return results;
+}
+
+async function ajaxRequest(url, method = "POST", data = null, isJson = true, dataType = "json") {
+    try {
+        let processedData, contentType, processData;
+        if (data instanceof FormData) {
+            processedData = data;
+            contentType = false;
+            processData = false;
+        } else {
+            processedData = isJson && data ? JSON.stringify(data) : data;
+            contentType = isJson ? "application/json; charset=UTF-8" : false;
+            processData = true;
+        }
+        const options = {
+            url: url,
+            type: method,
+            dataType: dataType,
+            data: processedData,
+            contentType: contentType,
+            processData: processData,
+            xhrFields: { withCredentials: true }
+        };
+        console.log("[ajaxRequest] Options:", options);
+        const response = await $.ajax(options);
+        console.log("[ajaxRequest] Risposta:", response);
+        return response;
+    } catch (error) {
+        console.error("Si è verificato un errore in ajaxRequest:", error);
+        throw error;
+    }
 }
 
 function toggleLoading(showSpinner, divId, buttonId) {
@@ -376,15 +452,6 @@ function highlightCodeCoverage(reportContent, robotContent, editor) {
 
 	// Forzo il refresh dell'editor, altrimenti il background viene caricato solo dopo aver scollato
 	editor.refresh();
-}
-
-// Funzione per ottenere i dati del form da inviare
-function getFormData() {
-	const formData = new FormData();
-	formData.append("testingClassCode", editor_utente.getValue());
-	formData.append("playerId", String(parseJwt(getCookie("jwt")).userId));
-	formData.append("mode", "sfida"); //Gestire modalità di gioco 
-	return formData;
 }
 
 async function ajaxRequest(
@@ -620,66 +687,40 @@ function controlloScalata(
 			});
 	}
 }
-
-// Funzione per analizzare l'output di Maven
-function parseMavenOutput(output) {
-    const lines = output.split('\n');
-    let results = {
-        errors: 0,
-        warnings: 0
-    };
-
-    lines.forEach(line => {
-        // Regex per contare avvisi
-        const warningMatch = line.match(/^\[INFO\] (\d+) warning/);
-        if (warningMatch) {
-            results.warnings = parseInt(warningMatch[1], 10);
-        }
-
-        // Regex per contare errori
-        const errorMatch = line.match(/^\[INFO\] (\d+) error/);
-        if (errorMatch) {
-            results.errors = parseInt(errorMatch[1], 10);
-        }
-    });
-
-	document.getElementById("error_compiler").textContent = results.errors;
-	document.getElementById("warning_compiler").textContent =  results.warnings;
-    return results;
-}
-
-function pulisciLocalStorage(chiave) {
-    // Controlla se la chiave esiste nel localStorage
-    if (localStorage.getItem(chiave)) {
-        // Rimuovi la chiave dal localStorage
-        localStorage.removeItem(chiave);
-        console.log(`Dati associati a "${chiave}" rimossi dal localStorage.`);
-    } else {
-        console.log(`Nessun dato trovato per la chiave "${chiave}".`);
-    }
-}
+// === FUNZIONI DI UTILITÀ PER L'EDITOR E LA SESSIONE ===
 
 //Funzione per fare il replace del testo dell'editor 
 function replaceText(text, replacements) {
     return text.replace(/\b(TestClasse|username|userID|date)\b/g, match => replacements[match] || match);
 }
 
-//Funzione carica
-function SetInitialEditor(replacements){
-	let text = editor_utente.getValue();
-	let newContent = replaceText(text, replacements) ;
-	editor_utente.setValue(newContent);
+function SetInitialEditor(replacements) {
+    const text = editor_utente.getValue();
+    console.log("[SetInitialEditor] Testo originale:", text);
+    const newContent = replaceText(text, replacements);
+    console.log("[SetInitialEditor] Testo aggiornato:", newContent);
+    editor_utente.setValue(newContent);
 }
 
 //Ottieni parametro dal URL
 function getParameterByName(name) {
-	const url = window.location.href;
-	name = name.replace(/[\[\]]/g, "\\$&");
-	const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
-	const results = regex.exec(url);
-	if (!results) return null;
-	if (!results[2]) return "";
-	return decodeURIComponent(results[2].replace(/\+/g, " "));
+    const url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+    const results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+//DA CONTROLLARE
+function GetMode() {
+    const mode = getParameterByName("mode");
+    if (mode) {
+        const trimmed = mode.replace(/[^a-zA-Z0-9\s]/g, " ").trim();
+        return (trimmed.toLowerCase() === "sfida") ? "Sfida" : trimmed;
+    }
+    return "Sfida";
 }
 
 // modal info

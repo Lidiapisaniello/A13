@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,34 +63,47 @@ public class GameController {
         this.gameServiceManager = gameServiceManager;
     }
 
-    /*    LATO CLIENT
-     *    On load document - check game -> da usare in fetchPrevisusGame
-     *    
-     *     check game (nuovo /CheckGame)-> [sfida, allenamento]
-     * 
-     *     continua -> /editor
-     *     nuova    -> eliminare il vecchio game (nuovo /RemoveGame) 
-     *                 e poi chiamare /StartGame con nuovi parametri 
-     */
     /*
      *  Chiamata che controllo se la partita quindi esisteva già o meno
      *  se non esiste instanzia un nuovo gioco 
      */
     @PostMapping("/StartGame")
-    public ResponseEntity<StartGameResponseDTO> startGame(@Valid @RequestBody StartGameRequestDTO request) {
+    public ResponseEntity<StartGameResponseDTO> startGame(
+            @RequestBody(required = false) StartGameRequestDTO request,
+            @CookieValue(name = "jwt", required = false) String jwt) {
+
+        logger.info("[START_GAME] Richiesta ricevuta per avviare il gioco");
+
+        if (jwt == null || jwt.isEmpty()) {
+            logger.error("[START_GAME] Nessun JWT trovato nella richiesta.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new StartGameResponseDTO(-1, "JWT missing"));
+        }
+
+        if (request == null) {
+            logger.error("[START_GAME] Il body della richiesta è NULL!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StartGameResponseDTO(-1, "Request body is missing"));
+        }
+
+        String userId = request.getPlayerId();
+        logger.info("[START_GAME] UserID estratto dal JWT: {}", userId);
+
+        // Log dei parametri inviati
+        logger.info("[START_GAME] Dati ricevuti: playerId={}, typeRobot={}, difficulty={}, mode={}, underTestClassName={}",
+                request.getPlayerId(), request.getTypeRobot(), request.getDifficulty(),
+                request.getMode(), request.getUnderTestClassName());
+
         try {
-            logger.info("[StartGame] Richiesta ricevuta: " + request);
-            // Mappare il DTO nel modello di dominio
             GameLogic game = gameServiceManager.CreateGameLogic(
-                                request.getPlayerId(),
-                                request.getMode(),
-                                request.getUnderTestClassName(),
-                                request.getTypeRobot(),
-                                request.getDifficulty()
-                            );
-            // Mappatura del modello di dominio nel DTO di risposta
-            StartGameResponseDTO response = new StartGameResponseDTO(game.getGameID(), "created");
-            return ResponseEntity.ok(response);
+                    request.getPlayerId(),
+                    request.getMode(),
+                    request.getUnderTestClassName(),
+                    request.getTypeRobot(),
+                    request.getDifficulty());
+            logger.info("[START_GAME] Partita creata con successo. GameID={}", game.getGameID());
+            return ResponseEntity.ok(
+                    new StartGameResponseDTO(game.getGameID(),
+                            "created")
+            );
         } catch (GameAlreadyExistsException e) {
             logger.error("[GAMECONTROLLER][StartGame] " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CoverageService {
+
     // Logger per la classe
     private static final Logger logger = LoggerFactory.getLogger(CoverageService.class);
 

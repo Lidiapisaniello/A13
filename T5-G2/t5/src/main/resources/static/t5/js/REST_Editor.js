@@ -1,13 +1,13 @@
 /*
  *   Copyright (c) 2024 Stefano Marano https://github.com/StefanoMarano80017
  *   All rights reserved.
-
+ *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
-
- *   http://www.apache.org/licenses/LICENSE-2.0
-
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
  *   Unless required by applicable law or agreed to in writing, software
  *   distributed under the License is distributed on an "AS IS" BASIS,
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,34 +15,12 @@
  *   limitations under the License.
  */
 
-/*
-* 		Qui ci sono le chiamate REST dell'editor 
+/* REST_Editor.js
+   Gestione delle chiamate REST per l’editor.
+   (Dipende da Util_Editor.js, che deve essere caricato prima.)
 */
-// Funzione per ottenere i dati dal localStorage
-function getGameData() {
-    let underTestClassName = localStorage.getItem("underTestClassName");
-    if (underTestClassName) {
-        // La stringa non è né nulla né vuota
-        let ClassUT = getParameterByName("ClassUT");
-        if(ClassUT === underTestClassName){
-            return {
-                playerId: 			String(parseJwt(getCookie("jwt")).userId),
-                typeRobot: 		localStorage.getItem("robot"),
-                difficulty: 		localStorage.getItem("difficulty"),
-                mode: 				localStorage.getItem("modalita"),
-                underTestClassName: localStorage.getItem("underTestClassName"),
-            };
-        }
-    }   
-    //modal che ti blocca
-    openModalError(
-        "Accesso Illegale all'editor ",
-        `Non sei passato da Gamemode per settare la tua partita o hai inserito un URL sbagliato.`,
-        [{ text: 'Vai alla Home', href: '/main', class: 'btn btn-primary' }]
-    );
-}
 
-// Funzione per eseguire la richiesta AJAX
+// === FUNZIONE PER LA RICHIESTA AJAX DEL GIOCO ===
 async function runGameAction(url, formData, isGameEnd) {
     try {
         formData.append("isGameEnd", isGameEnd);
@@ -54,36 +32,26 @@ async function runGameAction(url, formData, isGameEnd) {
     }
 }
 
-// Documento pronto
 $(document).ready(function () {
-    const data = getGameData();
-    startGame(data);
-    if (data.mode === "Allenamento") {
-        document.getElementById("runButton").disabled = true;
-    }
     const savedContent = localStorage.getItem('codeMirrorContent');
-	if (!savedContent) {
-        //non ho salvato il contenuto dell'editor, quindi lo scarico e imposto il template con i dati dell'utente
-        let formattedDate = `${String(currentDate.getDate()).padStart(2, "0")}/${String(currentDate.getMonth() + 1).padStart(2, "0")}/${currentDate.getFullYear()}`;
-        let replacements  = {
+    if (!savedContent) {
+        const currentDate = new Date();
+        const formattedDate = `${String(currentDate.getDate()).padStart(2, "0")}/${String(currentDate.getMonth() + 1).padStart(2, "0")}/${currentDate.getFullYear()}`;
+        const replacements = {
             TestClasse: `Test${localStorage.getItem("underTestClassName")}`,
             username: jwtData.sub,
             userID: jwtData.userId,
             date: formattedDate,
         };
         SetInitialEditor(replacements);
-	}else{
-        //Se ho del contenuto salvato 
+    } else {
         editor_utente.setValue(savedContent);
-        //document.getElementById('Editor_utente').value = savedContent;
-        editor_utente.refresh(); // Ricarica l'editor per applicare le modifiche
+        editor_utente.refresh();
     }
-    const savedStorico = localStorage.getItem('storico');
-    if(savedStorico){
+    if (localStorage.getItem('storico')) {
         viewStorico();
     }
 });
-
 
 let isActionInProgress = false; // Flag per indicare se un'azione è attualmente in corso
 
@@ -97,19 +65,25 @@ async function handleGameAction(isGameEnd) {
     const loadingKey = isGameEnd ? "loading_run" : "loading_cov";
     const buttonKey = isGameEnd ? "runButton" : "coverageButton";
 
-    toggleLoading(true, loadingKey, buttonKey); // Mostra l'indicatore di caricamento
-    setStatus("sending"); // Aggiorna lo stato a "sending"
+    // Mostra l'indicatore di caricamento
+    toggleLoading(true, loadingKey, buttonKey);
+    // Aggiorna lo stato a "sending"
+    setStatus("sending"); 
 
-    const formData = getFormData(); // Recupera i dati del modulo
-    const response = await runGameAction("/run", formData, isGameEnd); // Esegue l'azione del gioco
-    setStatus("compiling"); // Aggiorna lo stato a "compiling"
-
-    handleResponse(response, formData, isGameEnd, loadingKey, buttonKey); // Gestisce la risposta ricevuta
-
-    isActionInProgress = false; // Reimposta il flag al termine dell'azione
+    // Otteniamo il FormData (con debug sul codice dell'editor)
+    const formData = await getFormData();
+    console.log("[handleGameAction] Dati inviati:", Object.fromEntries(formData.entries()));
+    try {
+        //Esegue l'azione di gioco 
+        const response = await runGameAction("/run", formData, isGameEnd);
+        setStatus("compiling");
+        handleResponse(response, formData, isGameEnd, loadingKey, buttonKey);
+    } catch (error) {
+        console.error("[handleGameAction] Errore durante l'esecuzione:", error);
+    }
+    isActionInProgress = false;
 }
 
-// Gestisce la risposta dal server
 function handleResponse(response, formData, isGameEnd, loadingKey, buttonKey) {
     const { robotScore, userScore, gameId, roundId,
             userJacocoCoverage, robotJacocoCoverage,
@@ -126,7 +100,8 @@ function handleResponse(response, formData, isGameEnd, loadingKey, buttonKey) {
     parseMavenOutput(userOutputCompile); // Analizza l'output di Maven
     if (!userCoverage) { // Se non c'è copertura, gestisce l'errore di compilazione
         setStatus("error");
-        handleCompileError(loadingKey, buttonKey); // Gestisce l'errore
+        //Gestione degli errori 
+        handleCompileError(loadingKey, buttonKey);
         return;
     }
 
@@ -153,7 +128,7 @@ async function processCoverage(coverage, formData, robotScore, userScore, isGame
     if (isGameEnd) { // Se il gioco è finito
         handleEndGame(userScore); // Gestisce la fine del gioco
     } else {
-        resetButtons(); // Reimposta i pulsanti
+        resetButtons();
     }
 }
 
@@ -172,6 +147,7 @@ function handleCompileError(loadingKey, buttonKey) {
     resetButtons(); // Reimposta i pulsanti
 }
 
+
 // Recupera il report di coverage da T8
 async function fetchCoverageReport(formData) {
     const url = createApiUrl(formData, orderTurno); // Crea l'URL dell'API
@@ -181,7 +157,6 @@ async function fetchCoverageReport(formData) {
 // Recupera il report di coverage per il robot da T8
 async function fetchRobotEvoSuiteCoverageReport(formData) {
     const url = `/robots/evosuitecoverage` //coverage/robot/${formData.get("className")}/${formData.get("difficulty")}`
-
     const data = {
         testClassId: localStorage.getItem("underTestClassName"),
         robotType: localStorage.getItem("robot"),
@@ -197,7 +172,6 @@ function handleEndGame(userScore) {
         `${score_partita_text} ${userScore} pt.`, // Mostra il punteggio dell'utente
         [{ text: vai_home, href: '/main', class: 'btn btn-primary' }] // Pulsante per tornare alla home
     );
-    flush_localStorage(); // Pulisce i dati salvati nel localStorage
 }
 
 // Reimposta i pulsanti per consentire nuove azioni

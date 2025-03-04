@@ -1,13 +1,13 @@
 /*
  *   Copyright (c) 2024 Stefano Marano https://github.com/StefanoMarano80017
  *   All rights reserved.
-
+ *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
-
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
-
+ *
  *   Unless required by applicable law or agreed to in writing, software
  *   distributed under the License is distributed on an "AS IS" BASIS,
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,17 +15,11 @@
  *   limitations under the License.
  */
 package com.g2.Controllers;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.g2.Model.*;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -37,16 +31,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.LocaleResolver;
 
-import com.g2.Components.GenericObjectComponent;
 import com.g2.Components.PageBuilder;
 import com.g2.Components.ServiceObjectComponent;
 import com.g2.Components.VariableValidationLogicComponent;
 import com.g2.Interfaces.ServiceManager;
-import com.g2.Service.AchievementService;
-import com.g2.t5.GameDataWriter;
 import com.g2.Model.ClassUT;
-import com.g2.Model.ScalataGiocata;
-import com.g2.t5.ScalataDataWriter;
+import com.g2.Session.SessionService;
+import com.g2.Session.Sessione;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,13 +49,16 @@ public class GuiController {
 
     private final ServiceManager serviceManager;
     private final LocaleResolver localeResolver;
+    private final SessionService sessionService;
 
-    public GuiController(ServiceManager serviceManager, LocaleResolver localeResolver) {
+    @Autowired
+    public GuiController(ServiceManager serviceManager, LocaleResolver localeResolver, SessionService sessionService) {
         this.serviceManager = serviceManager;
         this.localeResolver = localeResolver;
+        this.sessionService = sessionService;
     }
 
-    //Gestione lingua
+    // Gestione della lingua
     @PostMapping("/changeLanguage")
     public ResponseEntity<Void> changeLanguage(@RequestParam("lang") String lang,
             HttpServletRequest request,
@@ -82,22 +76,25 @@ public class GuiController {
     @GetMapping("/main")
     public String GUIController(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
         PageBuilder main = new PageBuilder(serviceManager, "main", model, jwt);
-        main.SetAuth(); //con questo metodo abilito l'autenticazione dell'utente
+        main.SetAuth();
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(main.getUserId());
+        if (sessionKey == null) {
+            sessionService.createSession(main.getUserId(), SessionService.DEFAULT_SESSION_TTL);
+        }
         return main.handlePageRequest();
     }
 
     @GetMapping("/gamemode")
     public String gamemodePage(Model model,
             @CookieValue(name = "jwt", required = false) String jwt,
-            @RequestParam(value = "mode", required = false) String mode){
+            @RequestParam(value = "mode", required = false) String mode) {
 
         if ("Sfida".equals(mode) || "Allenamento".equals(mode)) {
             PageBuilder gamemode = new PageBuilder(serviceManager, "gamemode", model);
-            //controllo che sia stata fornita una modalità valida dall'utente
-            VariableValidationLogicComponent Valida_classeUT = new VariableValidationLogicComponent(mode);
-            Valida_classeUT.setCheckNull();
+            VariableValidationLogicComponent valida = new VariableValidationLogicComponent(mode);
+            valida.setCheckNull();
             List<String> list_mode = Arrays.asList("Sfida", "Allenamento");
-            Valida_classeUT.setCheckAllowedValues(list_mode); //Se il request param non è in questa lista è un problema
+            valida.setCheckAllowedValues(list_mode);
             ServiceObjectComponent lista_classi = new ServiceObjectComponent(serviceManager, "lista_classi", "T1", "getClasses");
             //gamemode.setObjectComponents(lista_classi);
 
@@ -106,7 +103,6 @@ public class GuiController {
 
             /*
             List<String> list_robot = new ArrayList<>();
-            // Aggiungere elementi alla lista
             list_robot.add("Randoop");
             list_robot.add("EvoSuite");
             GenericObjectComponent lista_robot = new GenericObjectComponent("lista_robot", list_robot);
@@ -124,30 +120,44 @@ public class GuiController {
         return "main";
     }
 
+    // Mapping per l'editor: l'accesso è consentito solo se nella sessione esiste almeno una modalità;
+    // altrimenti, l'utente viene reindirizzato a /main.
     @GetMapping("/editor")
     public String editorPage(Model model,
-                            @CookieValue(name = "jwt", required = false) String jwt,
-                            @RequestParam(value = "ClassUT", required = false) String ClassUT) {
+            @CookieValue(name = "jwt", required = false) String jwt,
+            @RequestParam(value = "ClassUT", required = false) String ClassUT) {
 
-        //Check Session
-        PageBuilder editor = new PageBuilder(serviceManager, "editor", model);
-        VariableValidationLogicComponent Valida_classeUT = new VariableValidationLogicComponent(ClassUT);
-        Valida_classeUT.setCheckNull();
-        @SuppressWarnings("unchecked")
-        List<ClassUT> Lista_classi_UT = (List<com.g2.Model.ClassUT>) serviceManager.handleRequest("T1", "getClasses");
-        List<String> Lista_classi_UT_nomi = new ArrayList<>();
-        for (ClassUT element : Lista_classi_UT) {
-            Lista_classi_UT_nomi.add(element.getName());
+        PageBuilder editor = new PageBuilder(serviceManager, "editor", model, jwt);
+        editor.SetAuth();
+        /*
+        *   Se la sessione contiene almeno una modalità, 
+        *    prosegui normalmente con la costruzione 
+        *    della pagina editor.
+        */ 
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(editor.getUserId());
+        Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null
+            || //Se non esiste la sessione 
+            sessione.getModalita() == null
+            || //se esiste, ma l'utente non ha impostato un gioco 
+            sessione.getModalita().isEmpty()) {
+            return "redirect:/main";
         }
 
-        System.out.println(Lista_classi_UT_nomi);
-
-        Valida_classeUT.setCheckAllowedValues(Lista_classi_UT_nomi); //Se il request param non è in questa lista è un problema
-        ServiceObjectComponent ClasseUT = new ServiceObjectComponent(serviceManager, "classeUT", "T1", "getClassUnderTest", ClassUT);
-        editor.setObjectComponents(ClasseUT);
+        VariableValidationLogicComponent valida = new VariableValidationLogicComponent(ClassUT);
+        valida.setCheckNull();
+        @SuppressWarnings("unchecked")
+        List<ClassUT> listaClassiUT = (List<ClassUT>) serviceManager.handleRequest("T1", "getClasses");
+        List<String> nomiClassiUT = new ArrayList<>();
+        for (ClassUT element : listaClassiUT) {
+            nomiClassiUT.add(element.getName());
+        }
+        System.out.println(nomiClassiUT);
+        valida.setCheckAllowedValues(nomiClassiUT);
+        ServiceObjectComponent classeUT = new ServiceObjectComponent(serviceManager, "classeUT", "T1", "getClassUnderTest", ClassUT);
+        editor.setObjectComponents(classeUT);
         editor.SetAuth(jwt);
-        editor.setLogicComponents(Valida_classeUT);
-        //Se l'utente ha inserito un campo nullo o un valore non consentito vuol dire che non è passato da gamemode
+        editor.setLogicComponents(valida);
         editor.setErrorPage("NULL_VARIABLE", "redirect:/main");
         editor.setErrorPage("VALUE_NOT_ALLOWED", "redirect:/main");
         return editor.handlePageRequest();
@@ -156,69 +166,41 @@ public class GuiController {
     @GetMapping("/leaderboard")
     public String leaderboard(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
         PageBuilder leaderboard = new PageBuilder(serviceManager, "leaderboard", model);
-        ServiceObjectComponent lista_utenti = new ServiceObjectComponent(serviceManager, "listaPlayers",
-                "T23", "GetUsers");
-        leaderboard.setObjectComponents(lista_utenti);
+        ServiceObjectComponent listaUtenti = new ServiceObjectComponent(serviceManager, "listaPlayers", "T23", "GetUsers");
+        leaderboard.setObjectComponents(listaUtenti);
         leaderboard.SetAuth(jwt);
         return leaderboard.handlePageRequest();
     }
-
-    // TODO: Salvataggio della ScalataGiocata
+    /* 
     @PostMapping("/save-scalata")
     public ResponseEntity<String> saveScalata(@RequestParam("playerID") int playerID,
             @RequestParam("scalataName") String scalataName,
             HttpServletRequest request) {
-        /*
-         * Nella schermata /gamemode_scalata, il player non dovrà far altro che che selezionare una delle
-         * "Scalate" presenti nella lista e dunque, le informazioni da elaborare saranno esclusivamente:
-         * playerID
-         * scalataName, dal quale è possibile risalire a tutte le informazioni relative quella specifica "Scalata"
-         */
-
- /*
-        * Verifica dell'autenticità del player controllando che l'header identificato dal: "X-UserID" sia lo stesso
-        * associato all'utente identificato da "playerID"
-         */
         if (!request.getHeader("X-UserID").equals(String.valueOf(playerID))) {
-
             System.out.println("(/save-scalata)[T5] Player non autorizzato.");
             return ResponseEntity.badRequest().body("Unauthorized");
         } else {
-
-            // Player autorizzato.
             System.out.println("(/save-scalata)[T5] Player autorizzato.");
-
-            // Recupero della data e dell'ora di inizio associata alla ScalataGiocata
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             LocalTime currentHour = LocalTime.now();
             LocalDate currentDate = LocalDate.now();
-            String fomattedHour = currentHour.format(formatter);
+            String formattedHour = currentHour.format(formatter);
             System.out.println("(/save-scalata)[T5] Data ed ora di inizio recuperate con successo.");
-
-            // Creazione di un oggetto scalataDataWriter
             ScalataDataWriter scalataDataWriter = new ScalataDataWriter();
-
-            // Creazione di un oggetto ScalataGiocata
             ScalataGiocata scalataGiocata = new ScalataGiocata();
-
-            // Inizializzazione dell'oggetto ScalataGiocata
             scalataGiocata.setPlayerID(playerID);
             scalataGiocata.setScalataName(scalataName);
             scalataGiocata.setCreationDate(currentDate);
-            scalataGiocata.setCreationTime(fomattedHour);
-
+            scalataGiocata.setCreationTime(formattedHour);
             JSONObject ids = scalataDataWriter.saveScalata(scalataGiocata);
             System.out.println("(/save-scalata)[T5] Creazione dell'oggetto scalataDataWriter avvenuta con successo.");
-
             if (ids == null) {
                 return ResponseEntity.badRequest().body("Bad Request");
             }
-
             return ResponseEntity.ok(ids.toString());
         }
     }
-
-    /* 
+   
     @PostMapping("/save-data")
     public ResponseEntity<String> saveGame(@RequestParam("playerId") int playerId,
             @RequestParam("robot") String robot,
@@ -228,55 +210,36 @@ public class GuiController {
             @RequestParam("username") String username,
             @RequestParam("selectedScalata") Optional<Integer> selectedScalata,
             HttpServletRequest request) {
-
         if (!request.getHeader("X-UserID").equals(String.valueOf(playerId))) {
             return ResponseEntity.badRequest().body("Unauthorized");
         }
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         LocalTime oraCorrente = LocalTime.now();
         String oraFormattata = oraCorrente.format(formatter);
-
         GameDataWriter gameDataWriter = new GameDataWriter();
-        // g.setGameId(gameDataWriter.getGameId());
         Game g = new Game(playerId, gamemode, "nome", difficulty, username);
-        // g.setPlayerId(pl);
-        // g.setPlayerClass(classe);
-        // g.setRobot(robot);
         g.setData_creazione(LocalDate.now());
         g.setOra_creazione(oraFormattata);
         g.setClasse(classe);
         g.setUsername(username);
-        // System.out.println(g.getUsername() + " " + g.getGameId());
-
-        System.out.println("ECCO LO USERNAME : " + username);       //in realtà stampa l'indirizzo e-mail del player...
-
-        // globalID = g.getGameId();
+        System.out.println("ECCO LO USERNAME : " + username);
         JSONObject ids = gameDataWriter.saveGame(g, username, selectedScalata);
         if (ids == null) {
             return ResponseEntity.badRequest().body("Bad Request");
         }
-
         System.out.println("Checking achievements...");
-
-        //Voglio notificare l'utente dei nuovi achievement
-        // Mi prendo prima tutti gli utenti
         @SuppressWarnings("unchecked")
-        List<User> users = (List<com.g2.Model.User>) serviceManager.handleRequest("T23", "GetUsers");
-
-        // Mi prendo l'utente che mi interessa con l'id
+        List<User> users = (List<User>) serviceManager.handleRequest("T23", "GetUsers");
         User user = users.stream().filter(u -> u.getId() == playerId).findFirst().orElse(null);
         String email = user.getEmail();
         List<AchievementProgress> newAchievements = achievementService.updateProgressByPlayer(playerId);
         achievementService.updateNotificationsForAchievements(email, newAchievements);
-
         return ResponseEntity.ok(ids.toString());
     }
-    */
 
     @GetMapping("/leaderboardScalata")
     public String getLeaderboardScalata(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
-        boolean Auth = (boolean) serviceManager.handleRequest("T23", "GetAuthenticated", jwt);
+        Boolean Auth = (Boolean) serviceManager.handleRequest("T23", "GetAuthenticated", jwt);
         if (Auth) {
             return "leaderboardScalata";
         }
@@ -286,7 +249,8 @@ public class GuiController {
     @GetMapping("/editor_old")
     public String getEditorOld(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
         PageBuilder main = new PageBuilder(serviceManager, "editor_old", model);
-        main.SetAuth(jwt); //con questo metodo abilito l'autenticazione dell'utente
+        main.SetAuth(jwt);
         return main.handlePageRequest();
     }
+    */
 }

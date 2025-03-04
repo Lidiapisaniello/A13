@@ -25,8 +25,12 @@ public class SessionController {
         this.mapper = mapper;
     }
 
+    // ==========================
+    // Endpoint per ottenere TUTTE le sessioni
+    // ==========================
     /**
-     * Endpoint per visualizzare tutte le sessioni attive.
+     * GET /session
+     * Ottiene tutte le sessioni presenti.
      */
     @GetMapping("/all")
     public ResponseEntity<List<Sessione>> getAllSessions() {
@@ -34,89 +38,202 @@ public class SessionController {
         return ResponseEntity.ok(sessions);
     }
 
+    // ==========================
+    // Endpoints per la SESSIONE (basati su playerId)
+    // ==========================
     /**
-     * Endpoint per ottenere la sessione relativa a un determinato player.
-     * Il parametro "playerId" viene passato come query parameter.
+     * GET /session/{playerId}
+     * Ottiene la sessione associata al playerId.
      */
-    @GetMapping("/get") // cambiare in player
-    public ResponseEntity<Sessione> getSession(@RequestParam String playerId) {
+    @GetMapping("/{playerId}")
+    public ResponseEntity<Sessione> getSession(@PathVariable String playerId) {
         String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
         if (sessionKey == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         return ResponseEntity.ok(sessione);
     }
 
     /**
-     * Endpoint per aggiornare (o creare) la modalità per un game.
-     * Il client invia nel body un JSON con la nuova mappa delle modalità da aggiornare;
-     * l'ID della sessione non viene inviato, ma il backend lo recupera tramite l'ID utente.
-     *
-     * Esempio di JSON inviato:
-     * {
-     *   "Sfida": {
-     *     "@class": "com.g2.Session.Sessione$ModalitaWrapper",
-     *     "gameobject": { ... },  // qui va l'oggetto GameLogic (o i dati utili per inizializzarlo)
-     *     "timestamp": "2025-02-26T11:50:06Z"
-     *   }
-     * }
-     *
-     * Il parametro query "playerId" serve a individuare la sessione.
+     * POST /session/{playerId}
+     * Crea una nuova sessione per il player specificato.
+     * Il corpo della richiesta contiene un JSON che rappresenta la sessione.
      */
-    @PutMapping("/updateModalita")
-    public ResponseEntity<String> updateModalita(@RequestBody Map<String, Object> modalitaUpdate,
-                                                 @RequestParam String playerId) {
+    @PostMapping("/{playerId}")
+    public ResponseEntity<Sessione> createSession(@PathVariable String playerId, @RequestBody Sessione sessione) {
+        if (sessione == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        // Imposta l'id della sessione e il timestamp corrente
+        sessione.setIdSessione(playerId);
+        sessione.setTimestamp(Instant.now());
+        // Se esiste già una sessione per il player, restituisce un conflitto
+        String existingSessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
+        if (existingSessionKey != null) {
+            Sessione existing = sessionService.getSession(existingSessionKey);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(existing);
+        }
+        // Crea la nuova sessione usando il playerId come chiave
+        boolean created = sessionService.updateSession(playerId, sessione, SessionService.DEFAULT_SESSION_TTL);
+        if (!created) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(sessione);
+    }
+
+    /**
+     * PUT /session/{playerId}
+     * Aggiorna la sessione esistente per il player specificato.
+     */
+    @PutMapping("/{playerId}")
+    public ResponseEntity<Sessione> updateSession(@PathVariable String playerId, @RequestBody Sessione updatedSession) {
         String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
         if (sessionKey == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata per il player");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        Sessione sessione = sessionService.getSession(sessionKey);
-        // Convertiamo il payload in Map<String, Sessione.ModalitaWrapper>
-        Map<String, Sessione.ModalitaWrapper> modalita = mapper.convertValue(
-                modalitaUpdate,
-                new TypeReference<Map<String, Sessione.ModalitaWrapper>>() {}
-        );
-        sessione.setModalita(modalita);
-        boolean updated = sessionService.updateSession(sessionKey, sessione, SessionService.DEFAULT_SESSION_TTL);
+        updatedSession.setIdSessione(playerId);
+        boolean updated = sessionService.updateSession(sessionKey, updatedSession, SessionService.DEFAULT_SESSION_TTL);
         if (updated) {
-            return ResponseEntity.ok("Modalita aggiornata con successo");
+            return ResponseEntity.ok(updatedSession);
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Errore nell'aggiornamento della modalita");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Endpoint per eliminare una modalità specifica dalla sessione.
-     * Invece di cancellare l'intera sessione, viene rimosso soltanto il gameobject relativo alla modalità indicata.
+     * DELETE /session/{playerId}
+     * Elimina la sessione associata al player specificato.
      */
-    @DeleteMapping("/deleteModalita")
-    public ResponseEntity<String> deleteModalita(@RequestParam String playerId, @RequestParam String mode) {
+    @DeleteMapping("/{playerId}")
+    public ResponseEntity<String> deleteSession(@PathVariable String playerId) {
         String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
         if (sessionKey == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata per il player");
-        }
-        boolean removed = sessionService.removeGameMode(sessionKey, mode);
-        if (removed) {
-            return ResponseEntity.ok("Modalita '" + mode + "' eliminata con successo");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Errore nell'eliminazione della modalita '" + mode + "'");
-        }
-    }
-
-    /**
-     * (Eventuale) Endpoint per eliminare l'intera sessione.
-     * Normalmente non si elimina la sessione, ma questo endpoint è a disposizione se necessario.
-     */
-    @PostMapping("/delete")
-    public ResponseEntity<String> deleteSessionPost(@RequestParam String playerId) {
-        String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
-        if (sessionKey == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata per il player");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
         }
         sessionService.deleteSession(sessionKey);
         return ResponseEntity.ok("Sessione eliminata con successo");
+    }
+
+    // ============================
+    // Endpoints per la GAMEMODE (basati su playerId)
+    // ============================
+    /**
+     * GET /session/gamemode/{playerId}?mode={mode}
+     * Ottiene la modalità (gamemode) associata alla sessione del player.
+     */
+    @GetMapping("/gamemode/{playerId}")
+    public ResponseEntity<Sessione.ModalitaWrapper> getGameMode(@PathVariable String playerId, @RequestParam String mode) {
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
+        if (sessionKey == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Sessione.ModalitaWrapper modalita = sessione.getModalita().get(mode);
+        if (modalita == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(modalita);
+    }
+
+    /**
+     * POST /session/gamemode/{playerId}?mode={mode}
+     * Crea una nuova entry per la modalità nella sessione del player.
+     * Il corpo della richiesta contiene il gameObject (in formato JSON) da associare.
+     */
+    @PostMapping("/gamemode/{playerId}")
+    public ResponseEntity<String> createGameMode(@PathVariable String playerId,
+                                                 @RequestParam String mode,
+                                                 @RequestBody Object gameObject) {
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
+        if (sessionKey == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        String timestamp = Instant.now().toString();
+        try {
+            GameLogic gameLogic = mapper.convertValue(gameObject, GameLogic.class);
+            Sessione.ModalitaWrapper wrapper = new Sessione.ModalitaWrapper(gameLogic, timestamp);
+            sessione.getModalita().put(mode, wrapper);
+            boolean updated = sessionService.updateSession(sessionKey, sessione, SessionService.DEFAULT_SESSION_TTL);
+            if (updated) {
+                return ResponseEntity.status(HttpStatus.CREATED).body("Gamemode creata con successo");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore nella creazione della gamemode");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Errore nella conversione del gameObject: " + e.getMessage());
+        }
+    }
+
+    /**
+     * PUT /session/gamemode/{playerId}?mode={mode}
+     * Aggiorna la modalità esistente nella sessione del player.
+     */
+    @PutMapping("/gamemode/{playerId}")
+    public ResponseEntity<String> updateGameMode(@PathVariable String playerId,
+                                                 @RequestParam String mode,
+                                                 @RequestBody Object gameObject) {
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
+        if (sessionKey == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        if (!sessione.getModalita().containsKey(mode)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gamemode non trovata per il mode: " + mode);
+        }
+        try {
+            GameLogic gameLogic = mapper.convertValue(gameObject, GameLogic.class);
+            Sessione.ModalitaWrapper wrapper = new Sessione.ModalitaWrapper(gameLogic, Instant.now().toString());
+            sessione.getModalita().put(mode, wrapper);
+            boolean updated = sessionService.updateSession(sessionKey, sessione, SessionService.DEFAULT_SESSION_TTL);
+            if (updated) {
+                return ResponseEntity.ok("Gamemode aggiornata con successo");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore nell'aggiornamento della gamemode");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Errore nella conversione del gameObject: " + e.getMessage());
+        }
+    }
+
+    /**
+     * DELETE /session/gamemode/{playerId}?mode={mode}
+     * Elimina la modalità specificata dalla sessione del player.
+     */
+    @DeleteMapping("/gamemode/{playerId}")
+    public ResponseEntity<String> deleteGameMode(@PathVariable String playerId, @RequestParam String mode) {
+        String sessionKey = sessionService.getExistingSessionKeyForPlayer(playerId);
+        if (sessionKey == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        Sessione sessione = sessionService.getSession(sessionKey);
+        if (sessione == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sessione non trovata");
+        }
+        if (!sessione.getModalita().containsKey(mode)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gamemode non trovata per il mode: " + mode);
+        }
+        sessione.getModalita().remove(mode);
+        boolean updated = sessionService.updateSession(sessionKey, sessione, SessionService.DEFAULT_SESSION_TTL);
+        if (updated) {
+            return ResponseEntity.ok("Gamemode eliminata con successo");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore nell'eliminazione della gamemode");
+        }
     }
 }

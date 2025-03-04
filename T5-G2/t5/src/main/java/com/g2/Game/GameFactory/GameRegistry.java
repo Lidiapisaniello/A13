@@ -11,6 +11,8 @@ import com.g2.Interfaces.ServiceManager;
  *  Quando chiamiamo createGame("Sfida", ...), Spring trova automaticamente la factory corretta. grazie ai Bean
  *  Espandibilità → Per aggiungere un nuovo gioco, basta creare una nuova factory con @Component.
  */
+
+
 @Component
 public class GameRegistry {
     private final Map<String, GameFactoryFunction> gameRegistry;

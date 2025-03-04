@@ -17,3 +17,4 @@ public class AllenamentoFactory implements GameFactoryFunction {
         return new Allenamento(null, playerId, underTestClassName, type_robot, difficulty, "Allenamento");
     }
 }
+

@@ -1,5 +1,6 @@
 package com.g2.Game.GameDTO;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
@@ -13,22 +14,25 @@ public class StartGameRequestDTO {
 
     @JsonProperty("typeRobot")
     @NotBlank(message = "typeRobot is required")
+    @JsonAlias({"type_robot", "typeRobot"})
     private String typeRobot;
+
 
     @JsonProperty("difficulty")
     @NotBlank(message = "difficulty is required")
     private String difficulty;
 
+
     @JsonProperty("mode")
     @NotBlank(message = "mode is required")
     private String mode;
+
 
     @JsonProperty("underTestClassName")
     @NotBlank(message = "underTestClassName is required")
     private String underTestClassName;
 
     // Getters e Setters
-
     public String getPlayerId() {
         return playerId;
     }

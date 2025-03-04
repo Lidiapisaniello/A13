@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.g2.Interfaces.ServiceManager;
 
 public class CompileResult {
+
     /*
      * Istanza di default 
      */

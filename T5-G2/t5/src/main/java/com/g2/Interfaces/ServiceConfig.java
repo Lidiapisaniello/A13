@@ -1,17 +1,19 @@
 package com.g2.Interfaces;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Configuration
 @ConfigurationProperties(prefix = "services")
+@Component
 public class ServiceConfig {
     private String enabled;
     private Map<String, String> mapping;
 
     public String getEnabled() {
-        return enabled;
+        return enabled != null ? enabled : "";
     }
 
     public void setEnabled(String enabled) {
@@ -26,3 +28,4 @@ public class ServiceConfig {
         this.mapping = mapping;
     }
 }
+

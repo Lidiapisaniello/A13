@@ -1,13 +1,13 @@
 /*
  *   Copyright (c) 2024 Stefano Marano https://github.com/StefanoMarano80017
  *   All rights reserved.
-
+ *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
-
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
-
+ *
  *   Unless required by applicable law or agreed to in writing, software
  *   distributed under the License is distributed on an "AS IS" BASIS,
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,202 +15,220 @@
  *   limitations under the License.
  */
 
-resetGame = false;
-// Funzione per ottenere i parametri dall'URL
+// ------------------------------
+// FUNZIONI DI UTILITÀ
+// ------------------------------
 function getParameterByName(name) {
-	const url = window.location.href;
-	name = name.replace(/[\[\]]/g, "\\$&");
-	const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
-	const results = regex.exec(url);
-	if (!results) return null;
-	if (!results[2]) return "";
-	return decodeURIComponent(results[2].replace(/\+/g, " "));
+    const url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+    const results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
-// Funzione per aggiornare la modalità selezionata
-function SetMode(setM) {
-	if(!setM){
-		sanitizedMode = GetMode();
-		const elements = document.querySelectorAll(".selectedMode");
-		elements.forEach((element) => {
-			element.textContent += " " + get_mode_text(sanitizedMode);
-		});
-	}else{
-		localStorage.setItem("modalita", sanitizedMode);
-	}
 
-	// Rende invisibile il select del robot e difficoltà se la modalità è allenamento
-	const selectRobotElement = document.getElementById("robot_selector");
-	const selectdifficultyElemenet = document.getElementById("difficulty_selector");
-	if (sanitizedMode === "Allenamento") {
-		selectRobotElement.classList.add("d-none");
-		selectdifficultyElemenet.classList.add("d-none");
-	} else {
-		selectRobotElement.classList.remove("d-none");
-		selectdifficultyElemenet.classList.remove("d-none");
-	}
-}
 function GetMode() {
-	const mode = getParameterByName("mode");
-	if (mode) {
-		const sanitizedMode = mode.replace(/[^a-zA-Z0-9\s]/g, " ");
-		return sanitizedMode;
-	}
-	return null;
-}
-// Funzione per salvare i valori nel localStorage
-function saveToLocalStorage() {
-	const selectClassValue = document.getElementById("select_class").value;
-	const selectRobotValue = document.getElementById("select_robot").value;
-	const selectDifficultyValue = document.getElementById("select_diff").value;
-	// Salva i valori nel localStorage
-	localStorage.setItem("underTestClassName", selectClassValue);
-	localStorage.setItem("robot", selectRobotValue);
-	localStorage.setItem("difficulty", selectDifficultyValue);
-	localStorage.setItem("modalita", GetMode());
+    const mode = getParameterByName("mode");
+    if (mode) {
+        const trimmed = mode.replace(/[^a-zA-Z0-9\s]/g, " ").trim();
+        if (trimmed.toLowerCase() === "sfida") {
+            return "Sfida";
+        }
+        return trimmed;
+    }
+    return "Sfida"; // Default in forma capitalizzata
 }
 
-
-// Funzione per ottenere i dati della partita precedente solo se l'ID utente coincide
-async function fetchPreviousGameData() {
-	try {
-		const response = await fetch("/StartGame", { method: "GET" });
-		const data = await response.json();
-
-		// Verifica se i dati per l'utente corrente sono presenti
-		if (data[userId]) {
-			return data[userId]; // Ritorna i dati solo se l'ID coincide
-		} else {
-			return null; // Se l'ID non corrisponde, ritorna null
-		}
-	} catch (error) {
-		console.error(
-			"Errore durante il recupero dei dati della partita precedente:",
-			error
-		);
-		return null;
-	}
-}
-function redirectToMain() {
-	window.location.href = "/main";
-}
-function toggleVisibility(elementId) {
-	var element = document.getElementById(elementId);
-	if (element) {
-		element.classList.toggle("d-none");
-	} else {
-		console.error("Elemento non trovato con ID:", elementId);
-	}
-}
-function pulisciLocalStorage(chiave) {
-	// Controlla se la chiave esiste nel localStorage
-	if (localStorage.getItem(chiave)) {
-		// Rimuovi la chiave dal localStorage
-		localStorage.removeItem(chiave);
-		console.log(`Dati associati a "${chiave}" rimossi dal localStorage.`);
-	} else {
-		console.log(`Nessun dato trovato per la chiave "${chiave}".`);
-	}
-}
-//pulizia local storage
-function flush_localStorage() {
-	//Pulisco i dati locali
-	pulisciLocalStorage("difficulty");
-	pulisciLocalStorage("modalita");
-	pulisciLocalStorage("robot");
-	pulisciLocalStorage("roundId");
-	pulisciLocalStorage("turnId");
-	pulisciLocalStorage("gameId");
-	pulisciLocalStorage("underTestClassName");
-	pulisciLocalStorage("username");
-	pulisciLocalStorage("storico");
-	pulisciLocalStorage("codeMirrorContent");
-}
-
-// Funzione per eseguire la richiesta AJAX
-async function runGameActionElimina(url, formData, isGameEnd) {
-    try {
-        formData.append("isGameEnd", isGameEnd);
-        const response = await ajaxRequest(url, "POST", formData, false, "json");
-        return response;
-    } catch (error) {
-        console.error("Errore nella richiesta AJAX:", error);
-        throw error;
+function SetMode(setM) {
+    const currentMode = GetMode();
+    if (!setM) {
+        const elements = document.querySelectorAll(".selectedMode");
+        elements.forEach((element) => {
+            element.textContent += " " + currentMode;
+        });
+    }
+    const selectRobotElement = document.getElementById("robot_selector");
+    const selectDifficultyElement = document.getElementById("difficulty_selector");
+    if (currentMode === "Allenamento") {
+        selectRobotElement.classList.add("d-none");
+        selectDifficultyElement.classList.add("d-none");
+    } else {
+        selectRobotElement.classList.remove("d-none");
+        selectDifficultyElement.classList.remove("d-none");
     }
 }
-// Codice da eseguire alla creazione della pagina
-document.addEventListener("DOMContentLoaded", async function () {
-	const previousGameData = await fetchPreviousGameData();
-	SetMode(false);
-	if (previousGameData !== null) {
-		//esiste già una partita su questo player id
-		console.log("modalità continua");
-		toggleVisibility("scheda_nuovo");
-		toggleVisibility("scheda_continua");
-		document.getElementById("gamemode_classeUT").textContent =
-			previousGameData.classeUT;
-		document.getElementById("gamemode_robot").textContent =
-			previousGameData.type_robot;
-		document.getElementById("gamemode_difficulty").textContent =
-			previousGameData.difficulty;
-		document.getElementById("gamemode_modalita").textContent =
-			previousGameData.mode;
 
-		// Setto tasto continua
-		const link = document.getElementById("Continua");
-		link.setAttribute("href", "/editor?ClassUT=" + previousGameData.classeUT);
-	}else{
-		flush_localStorage();
-		SetMode(true);
-	}
+// ------------------------------
+// FUNZIONI PER GESTIRE LA SESSIONE CON REDIS
+// ------------------------------
+// --- Funzione per ottenere il game object dalla sessione (Redis) ---
+async function fetchPreviousGameData() {
+    const playerId = String(parseJwt(getCookie("jwt")).userId);
+    try {
+        // Ora il path è /session/{playerId}
+        const response = await fetch(`/session/${playerId}`);
+        const data = await response.json();
+        // Assumiamo che il formato sia: { modalita: { Sfida: { gameobject: { … } } } }
+        if (data && data.modalita && data.modalita[GetMode()] && data.modalita[GetMode()].gameobject) {
+            console.log("[fetchPreviousGameData] Trovato gameobject per la modalità " + GetMode() + ":", data.modalita[GetMode()].gameobject);
+            return data.modalita[GetMode()].gameobject;
+        }
+        return null;
+    } catch (error) {
+        console.error("Errore durante il recupero della sessione:", error);
+        return null;
+    }
+}
+
+async function saveModalitaToSession() {
+    const playerId = String(parseJwt(getCookie("jwt")).userId);
+    const currentMode = GetMode();
+    // Recupera la sessione tramite GET /session/{playerId}
+    let sessionResponse = await fetch(`/session/${playerId}`);
+    let sessionData = await sessionResponse.json();
+
+    let gameObject = sessionData && sessionData.modalita && sessionData.modalita[currentMode]
+                      ? sessionData.modalita[currentMode].gameobject
+                      : null;
+    
+    if (!gameObject) {
+        console.warn(`Nessun gameobject trovato nella modalità '${currentMode}'. Probabilmente il gioco non è ancora stato creato correttamente.`);
+        return;
+    }
+
+    // Per aggiornare la gamemode usiamo il path PUT /session/gamemode/{playerId}?mode={currentMode}
+    try {
+        const response = await fetch(`/session/gamemode/${playerId}?mode=${currentMode}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            // Invia direttamente il gameobject (la logica nel controller aggiorna il timestamp)
+            body: JSON.stringify(gameObject)
+        });
+        const result = await response.text();
+        console.log("Modalità aggiornata con successo:", result);
+    } catch (error) {
+        console.error("Errore durante l'aggiornamento della modalità:", error);
+    }
+}
+
+async function deleteModalita(mode) {
+    const playerId = String(parseJwt(getCookie("jwt")).userId);
+    try {
+        // Ora il path è DELETE /session/gamemode/{playerId}?mode={mode}
+        const response = await fetch(`/session/gamemode/${playerId}?mode=${mode}`, {
+            method: "DELETE"
+        });
+        const result = await response.text();
+        console.log("Modalità eliminata:", result);
+    } catch (error) {
+        console.error("Errore durante l'eliminazione della modalità:", error);
+    }
+}
+
+// ------------------------------
+// FUNZIONI PER GESTIRE IL GIOCO
+// ------------------------------
+async function startGame() {
+    const playerId = String(parseJwt(getCookie("jwt")).userId);
+    const mode = GetMode();
+    const underTestClassName = document.getElementById("select_class").value;
+    let typeRobot = "";
+    let difficulty = "";
+    
+    if (mode === "Sfida") {
+        typeRobot = document.getElementById("select_robot").value;
+        difficulty = document.getElementById("select_diff").value;
+        if (!underTestClassName || !typeRobot || !difficulty) {
+            console.error("Parametri mancanti per la modalità Sfida.");
+            return;
+        }
+    } else if (mode === "Allenamento") {
+        typeRobot = "NONE";
+        difficulty = "EASY";
+        if (!underTestClassName) {
+            console.error("Parametri mancanti per la modalità Allenamento.");
+            return;
+        }
+    }
+    
+    try {
+        const response = await fetch("/StartGame", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playerId, mode, underTestClassName, typeRobot, difficulty })
+        });
+        const result = await response.json();
+        if (result && result.gameId) {
+            console.log("Partita avviata con successo, Game ID:", result.gameId);
+            window.location.href = `/editor?ClassUT=${underTestClassName}`;
+        } else {
+            console.error("Errore nell'avvio della partita:", result);
+        }
+    } catch (error) {
+        console.error("Errore durante l'avvio della partita:", error);
+    }
+}
+
+// Aggiungere un flush del localStorage se necessario
+
+// ------------------------------
+// EVENTI DELL'INTERFACCIA
+// ------------------------------
+document.addEventListener("DOMContentLoaded", async function () {
+    SetMode(false);
+    const previousGameObject = await fetchPreviousGameData();
+    if (previousGameObject) {
+        console.log("Partita già in corso, riprendo la sessione.");
+        document.getElementById("scheda_nuovo").classList.add("d-none");
+        document.getElementById("scheda_continua").classList.remove("d-none");
+        document.getElementById("gamemode_classeUT").innerText = previousGameObject.class_ut || "";
+        document.getElementById("gamemode_robot").innerText = previousGameObject.type_robot || "";
+        document.getElementById("gamemode_difficulty").innerText = previousGameObject.difficulty || "";
+        document.getElementById("gamemode_modalita").innerText = previousGameObject.mode || "";
+        const link = document.getElementById("Continua");
+        link.href = `/editor?ClassUT=${previousGameObject.class_ut || ""}`;
+    } else {
+        console.log("Nessuna partita in corso, pronta per avviare una nuova partita.");
+        document.getElementById("scheda_nuovo").classList.remove("d-none");
+        document.getElementById("scheda_continua").classList.add("d-none");
+    }
 });
 
-document.getElementById("new_game").addEventListener("click", function () {
-	toggleVisibility("scheda_nuovo");
-	toggleVisibility("scheda_continua");
-	toggleVisibility("alert_nuova");
-	resetGame = true;
+document.getElementById("new_game").addEventListener("click", async function () {
+    toggleVisibility("scheda_nuovo");
+    toggleVisibility("scheda_continua");
+    toggleVisibility("alert_nuova");
+    await deleteModalita(GetMode());
 });
 
 document.getElementById("link_editor").addEventListener("click", async function () {
-	const selectClassValue = document.getElementById("select_class").value;
-	if (resetGame) {
-		const formData = new FormData();
-		formData.append("playerId", String(parseJwt(getCookie("jwt")).userId));
-		formData.append("eliminaGame", true);
-		const response = runGameActionElimina("/run", formData, true);
-		flush_localStorage();
-	}
-	saveToLocalStorage();
-	// Aggiorna il link
-	const link = document.getElementById("link_editor");
-	link.setAttribute("href", "/editor?ClassUT=" + selectClassValue);
+    await startGame();
 });
 
-//Tasto submit disabilitato fin quando non ho selezionato dei parametri
-// Funzione generica per verificare le select e abilitare/disabilitare il pulsante
+// Aggiorna lo stato del pulsante in base ai selettori del form
 function updateButtonState() {
-	const submitButton = document.getElementById("link_editor");
-	const mode = GetMode();
-	const allSelected = document.getElementById("select_class").value 
-						&& document.getElementById("select_robot").value 
-						&& document.getElementById("select_diff").value;
-			
-	const classSelected = document.getElementById("select_class").value;
-	// Se mi trovo in allenamento mi interessa controllare solo la classe, altrimenti devo controllare tutto 
-	submitButton.classList.toggle("disabled", mode !== "Allenamento" ? !allSelected : !classSelected);
+    const submitButton = document.getElementById("link_editor");
+    const mode = GetMode();
+    const allSelected = document.getElementById("select_class").value &&
+                        document.getElementById("select_robot").value &&
+                        document.getElementById("select_diff").value;
+    const classSelected = document.getElementById("select_class").value;
+    submitButton.classList.toggle("disabled", mode !== "Allenamento" ? !allSelected : !classSelected);
 }
 
-// Aggiungi un evento change a ciascun select
-document
-	.getElementById("select_class")
-	.addEventListener("change", updateButtonState);
-document
-	.getElementById("select_robot")
-	.addEventListener("change", updateButtonState);
-document
-	.getElementById("select_diff")
-	.addEventListener("change", updateButtonState);
+document.getElementById("select_class").addEventListener("change", updateButtonState);
+document.getElementById("select_robot").addEventListener("change", updateButtonState);
+document.getElementById("select_diff").addEventListener("change", updateButtonState);
 
+function toggleVisibility(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.classList.toggle("d-none");
+    } else {
+        console.error("Elemento non trovato con ID:", elementId);
+    }
+}
 
 // Filtro i robot disponibili in base alla classeUT scelta
 document.addEventListener("DOMContentLoaded", function () {
