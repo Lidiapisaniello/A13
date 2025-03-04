@@ -38,11 +38,9 @@ import com.g2.Game.GameDTO.GameResponseDTO;
 import com.g2.Game.GameDTO.StartGameRequestDTO;
 import com.g2.Game.GameDTO.StartGameResponseDTO;
 import com.g2.Game.GameModes.GameLogic;
-import com.g2.Game.Service.Exceptions.GameAlreadyExistsException;
-import com.g2.Game.Service.Exceptions.GameDontExistsException;
 import com.g2.Game.Service.GameServiceManager;
-
-import jakarta.validation.Valid;
+import com.g2.Session.Exceptions.GameModeAlreadyExist;
+import com.g2.Session.Exceptions.GameModeDontExist;
 
 //Qui introduco tutte le chiamate REST per la logica di gioco/editor
 @CrossOrigin
@@ -104,7 +102,7 @@ public class GameController {
                     new StartGameResponseDTO(game.getGameID(),
                             "created")
             );
-        } catch (GameAlreadyExistsException e) {
+        } catch (GameModeAlreadyExist e) {
             logger.error("[GAMECONTROLLER][StartGame] " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new StartGameResponseDTO(-1, "GameAlreadyExistsException"));
@@ -144,7 +142,7 @@ public class GameController {
         try {
             GameResponseDTO response = gameServiceManager.PlayGame(playerId, mode, testingClassCode, isGameEnd);
             return ResponseEntity.ok().body(response);
-        } catch (GameDontExistsException e) {
+        } catch (GameModeDontExist e) {
             /*
              * Il player non ha impostato una partita prima di arrivare all'editor
              */

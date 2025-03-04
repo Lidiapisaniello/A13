@@ -1,4 +1,4 @@
-package com.g2.Game.GameFactory.ModesFactories;
+package com.g2.Game.GameFactory;
 import com.g2.Game.GameModes.GameLogic;
 import com.g2.Interfaces.ServiceManager;
 

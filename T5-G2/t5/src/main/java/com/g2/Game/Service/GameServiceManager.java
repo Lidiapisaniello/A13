@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import com.g2.Game.GameDTO.GameResponseDTO;
 import com.g2.Game.GameModes.Compile.CompileResult;
 import com.g2.Game.GameModes.GameLogic;
-import com.g2.Game.Service.Exceptions.GameAlreadyExistsException;
-import com.g2.Game.Service.Exceptions.GameDontExistsException;
 
 @Service
 public class GameServiceManager {
@@ -26,11 +24,11 @@ public class GameServiceManager {
             String mode,
             String underTestClassName,
             String type_robot,
-            String difficulty) throws GameAlreadyExistsException {
+            String difficulty) {
         return gameService.CreateGame(playerId, mode, underTestClassName, type_robot, difficulty);
     }
 
-    protected GameLogic GetGameLogic(String playerId, String mode) throws GameDontExistsException {
+    protected GameLogic GetGameLogic(String playerId, String mode){
         return gameService.GetGame(mode, playerId);
     }
 
@@ -38,7 +36,7 @@ public class GameServiceManager {
         return gameService.handleCompile(game.getClasseUT(), testingClassCode);
     }
 
-    public GameResponseDTO PlayGame(String playerId, String mode, String testingClassCode, Boolean isGameEnd) throws GameDontExistsException {
+    public GameResponseDTO PlayGame(String playerId, String mode, String testingClassCode, Boolean isGameEnd){
         logger.info("[PlayGame] Inizio esecuzione per playerId={} e mode={}", playerId, mode);
         /*
          * Recupero la sessioen di gioco 
@@ -52,7 +50,7 @@ public class GameServiceManager {
         if (Usercompile == null) {
             throw new RuntimeException("compile is null");
         }
-        logger.info("[PlayGame] Esito compilazione: success={}", compile.getSuccess());
+        logger.info("[PlayGame] Esito compilazione: success={}", Usercompile.getSuccess());
         /*
         *   getSuccess() mi dà l'esito della compilazione => se l'utente ha scritto un test senza errori 
          */

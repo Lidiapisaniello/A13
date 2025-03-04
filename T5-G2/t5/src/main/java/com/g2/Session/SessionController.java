@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.g2.Game.GameModes.GameLogic;
+import com.g2.Session.Exceptions.GameModeAlreadyExist;
 import com.g2.Session.Exceptions.GameModeDontExist;
 import com.g2.Session.Exceptions.SessionDontExist;
 
@@ -183,9 +184,9 @@ public class SessionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
-        } catch (GameModeDontExist e) {
+        } catch (GameModeAlreadyExist e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("error","Game Dont Exist")
+                Map.of("error","Game Alredy Exist")
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
