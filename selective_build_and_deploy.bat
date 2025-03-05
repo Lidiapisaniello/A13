@@ -5,6 +5,15 @@ echo Build and deploy process started
 
 set ROOT_DIR=%cd%
 
+rem Creazione dei volumi Docker se non esistono
+docker volume create VolumeT9 || echo VolumeT9 already exists
+docker volume create VolumeT8 || echo VolumeT8 already exists
+docker volume create VolumeT0 || echo VolumeT0 already exists
+docker volume create logs || echo logs already exists
+
+rem Creazione della rete Docker se non esiste
+docker network ls | findstr /C:"global-network" >nul || docker network create global-network
+
 :: Chiedi all'utente quali servizi costruire
 echo Enter the numbers of the services to build and deploy, separated by spaces (0-10) or type 'all' to build them all:
 echo 0 - commons
@@ -12,17 +21,16 @@ echo 1 - T1-G11
 echo 2 - T23-G1
 echo 3 - T4-G18
 echo 4 - T5-G2
-echo 5 - T6-G12
-echo 6 - T7-G31
-echo 7 - T8-G21
-echo 8 - T9-G19
-echo 9 - ui_gateway
-echo 10 - api_gateway
+echo 5 - T7-G31
+echo 6 - T8-G21
+echo 7 - T9-G19
+echo 8 - ui_gateway
+echo 9 - api_gateway
 set /p SELECTION=Scelte (es. 0 1 2 o 'all'):
 
 :: Se l'utente ha scelto "all", builda tutto
 if /i "%SELECTION%"=="all" (
-    set SELECTION=0 1 2 3 4 5 6 7 8 9 10
+    set SELECTION=0 1 2 3 4 5 6 7 8 9
 )
 
 :: Loop per ciascuna selezione
@@ -69,18 +77,6 @@ for %%i in (%SELECTION%) do (
         cd /d "%ROOT_DIR%\T5-G2\t5"
         call mvn clean package -DskipTests=true -Dspring.profiles.active=prod || (echo Error in T5-G2 build & exit /b 1)
         docker build -t mick0974/a13:t5-g2 .
-        docker compose up -d
-        if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
-            exit /b 1
-        )
-        cd /d "%ROOT_DIR%"
-    ) else if %%i==5 (
-        echo Building T6-G12
-        cd /d "%ROOT_DIR%\T6-G12\T6"
-        call mvn clean package -DskipTests=true || (echo Error in T6-G12 build & exit /b 1)
-        cd /d "%ROOT_DIR%"
-        docker build -t mick0974/a13:t6-g12 .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
             echo Error deploying T1-G11
@@ -136,6 +132,11 @@ for %%i in (%SELECTION%) do (
         cd /d "%ROOT_DIR%\api_gateway"
         call mvn clean package || (echo Error in api_gateway build & exit /b 1)
         docker build -t mick0974/a13:api-gateway .
+        call mvn clean package
+        if ERRORLEVEL 1 (
+            echo Error in T8-G21 build during call mvn clean package
+            exit /b 1
+        )
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
             echo Error deploying T1-G11
