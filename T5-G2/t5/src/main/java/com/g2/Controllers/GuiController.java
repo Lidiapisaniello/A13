@@ -15,6 +15,7 @@
  *   limitations under the License.
  */
 package com.g2.Controllers;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +40,8 @@ import com.g2.Interfaces.ServiceManager;
 import com.g2.Model.ClassUT;
 import com.g2.Session.SessionService;
 import com.g2.Session.Sessione;
+import com.g2.Session.Exceptions.SessionAlredyExist;
+import com.g2.Session.Exceptions.SessionDontExist;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -78,9 +81,10 @@ public class GuiController {
     public String GUIController(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
         PageBuilder main = new PageBuilder(serviceManager, "main", model, jwt);
         main.SetAuth();
-        String sessionKey = sessionService.getExistingSessionKeyForPlayer(main.getUserId());
-        if (sessionKey == null) {
-            sessionService.createSession(main.getUserId(), SessionService.DEFAULT_SESSION_TTL);
+        try{
+            sessionService.createSession(main.getUserId());
+        } catch(SessionAlredyExist e){
+            System.out.println("Esiste già una sessione per playerId" + main.getUserId());
         }
         return main.handlePageRequest();
     }
@@ -97,19 +101,8 @@ public class GuiController {
             List<String> list_mode = Arrays.asList("Sfida", "Allenamento");
             valida.setCheckAllowedValues(list_mode);
             ServiceObjectComponent lista_classi = new ServiceObjectComponent(serviceManager, "lista_classi", "T1", "getClasses");
-            //gamemode.setObjectComponents(lista_classi);
-
             ServiceObjectComponent availableRobots = new ServiceObjectComponent(serviceManager, "available_robots", "T4", "getAvailableRobots");
             gamemode.setObjectComponents(lista_classi, availableRobots);
-
-            /*
-            List<String> list_robot = new ArrayList<>();
-            list_robot.add("Randoop");
-            list_robot.add("EvoSuite");
-            GenericObjectComponent lista_robot = new GenericObjectComponent("lista_robot", list_robot);
-            gamemode.setObjectComponents(lista_robot);
-
-             */
             gamemode.SetAuth(jwt);
             return gamemode.handlePageRequest();
         }
@@ -134,14 +127,14 @@ public class GuiController {
         *   Se la sessione contiene almeno una modalità, 
         *    prosegui normalmente con la costruzione 
         *    della pagina editor.
-        */ 
-        String sessionKey = sessionService.getExistingSessionKeyForPlayer(editor.getUserId());
-        Sessione sessione = sessionService.getSession(sessionKey);
-        if (sessione == null
-            || //Se non esiste la sessione 
-            sessione.getModalita() == null
-            || //se esiste, ma l'utente non ha impostato un gioco 
-            sessione.getModalita().isEmpty()) {
+         */
+        try {
+            Sessione sessione = sessionService.getSession(editor.getUserId());
+            //se esiste, ma l'utente non ha impostato un gioco 
+            if (sessione.getModalita() == null || sessione.getModalita().isEmpty()) {
+                return "redirect:/main";
+            }
+        } catch (SessionDontExist e) {
             return "redirect:/main";
         }
 
@@ -253,5 +246,5 @@ public class GuiController {
         main.SetAuth(jwt);
         return main.handlePageRequest();
     }
-    */
+     */
 }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.g2.Game.GameModes.GameLogic;
 import com.g2.Session.Exceptions.GameModeAlreadyExist;
 import com.g2.Session.Exceptions.GameModeDontExist;
+import com.g2.Session.Exceptions.SessionAlredyExist;
 import com.g2.Session.Exceptions.SessionDontExist;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -44,7 +45,7 @@ public class SessionService {
 
     /**
      * Crea la chiave della sessione usando playerId e un timestamp. Il formato
-     * della chiave sarà: "prefix:playerId:timestamp".
+     * della chiave sarà: "prefix:playerId:".
      */
     private String buildCompositeKey(String userId) {
         return KEY_PREFIX + ":" + userId + ":";
@@ -76,12 +77,12 @@ public class SessionService {
         return false;
     }
 
-    public String createSession(String playerId) throws Exception {
-        return createSession(playerId, null);
+    public String createSession(String playerId) throws SessionAlredyExist {
+        return createSession(playerId, Optional.empty());
     }
 
-    public String createSession(String playerId, Optional<Long> ttlSeconds) throws Exception {
-        long ttl = ttlSeconds.filter(ttlSec -> ttlSec > 0).orElse(DEFAULT_SESSION_TTL);
+    public String createSession(String playerId, Optional<Long> ttlSeconds) throws SessionAlredyExist {
+        Long ttl = ttlSeconds.filter(ttlSec -> ttlSec > 0).orElse(DEFAULT_SESSION_TTL);
         logger.info("createSession - Creazione sessione per il giocatore {} con TTL: {}", playerId, ttl);
 
         String sessionKey = buildCompositeKey(playerId);
@@ -93,7 +94,7 @@ public class SessionService {
 
         if (!success) {
             logger.error("createSession - Creazione della sessione fallita per il giocatore {}", playerId);
-            throw new Exception("Errore nella creazione della sessione.");
+            throw new SessionAlredyExist("Errore nella creazione della sessione.");
         }
 
         logger.info("createSession - Sessione creata con successo per il giocatore {} con sessionKey: {}", playerId, sessionKey);
@@ -156,6 +157,10 @@ public class SessionService {
         });
     }
 
+    public boolean updateSession(String playerId, Sessione updatedSession) {
+        return updateSession(playerId, updatedSession, Optional.empty());
+    }
+
     public boolean updateSession(String playerId, Sessione updatedSession, Optional<Long> ttlSeconds) {
         boolean SessionExist = doesSessionExistForPlayer(playerId);
         if(!SessionExist){
@@ -191,6 +196,10 @@ public class SessionService {
         }
     }
 
+    public boolean SetGameMode(String playerId, GameLogic game) {
+        return SetGameMode(playerId, game, Optional.empty());
+    }
+
     public boolean SetGameMode(String playerId, GameLogic game, Optional<Long> ttlSeconds) {
         logger.info("GetGameMode - Aggiunta del game mode: {} per il player: {}", game.getMode(), playerId);
         Sessione session = getSession(playerId);
@@ -203,11 +212,19 @@ public class SessionService {
         }
     }
 
+    public boolean removeGameMode(String playerId, String mode){
+        return removeGameMode(playerId, mode, Optional.empty());
+    }
+
     public boolean removeGameMode(String playerId, String mode, Optional<Long> ttlSeconds) {
         logger.info("removeGameMode - Rimozione del game mode: {} per il player: {}", mode, playerId);
         Sessione session = getSession(playerId);
         session.removeModalita(mode);
         return updateSession(playerId, session, ttlSeconds);
+    }
+
+    public boolean updateGameMode(String playerId, GameLogic game) {
+        return updateGameMode(playerId, game, Optional.empty());
     }
 
     public boolean updateGameMode(String playerId, GameLogic game, Optional<Long> ttlSeconds) {

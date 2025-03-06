@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.g2.Game.GameModes.GameLogic;
 import com.g2.Session.Exceptions.GameModeAlreadyExist;
 import com.g2.Session.Exceptions.GameModeDontExist;
+import com.g2.Session.Exceptions.SessionAlredyExist;
 import com.g2.Session.Exceptions.SessionDontExist;
 
 @CrossOrigin
@@ -71,13 +72,6 @@ public class SessionController {
      */
     @PostMapping("/{playerId}")
     public ResponseEntity<?> createSession(@PathVariable String playerId, @RequestBody Sessione sessione) {
-        boolean checkSession = sessionService.doesSessionExistForPlayer(playerId);
-        if (checkSession) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                Map.of("error", "Session Alredy Exist")
-            );
-        }
-
         if (sessione == null) {
             return ResponseEntity.badRequest().body(
                 Map.of("error", "Request is null")
@@ -87,9 +81,9 @@ public class SessionController {
         try {
             String key = sessionService.createSession(playerId);
             return ResponseEntity.status(HttpStatus.CREATED).body(key);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("error", e.getMessage())
+        } catch (SessionAlredyExist e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                Map.of("error", "Session Alredy Exist")
             );
         }
     }
@@ -107,7 +101,7 @@ public class SessionController {
         }
 
         try {
-            sessionService.updateSession(playerId, updatedSession, null);
+            sessionService.updateSession(playerId, updatedSession);
             Sessione sessione = sessionService.getSession(playerId);
             return ResponseEntity.ok(sessione);
         } catch (SessionDontExist e) {
@@ -178,7 +172,7 @@ public class SessionController {
             @RequestParam String mode,
             @RequestBody GameLogic gameObject) {
         try {
-            sessionService.SetGameMode(playerId, gameObject, null);
+            sessionService.SetGameMode(playerId, gameObject);
             return ResponseEntity.ok("Modalità Creata");
         } catch (SessionDontExist e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -204,7 +198,7 @@ public class SessionController {
             @RequestParam String mode,
             @RequestBody GameLogic gameObject) {
         try {
-            sessionService.updateGameMode(playerId, gameObject, null);
+            sessionService.updateGameMode(playerId, gameObject);
             return ResponseEntity.ok("Modalità Creata");
         } catch (SessionDontExist e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -228,7 +222,7 @@ public class SessionController {
     @DeleteMapping("/gamemode/{playerId}")
     public ResponseEntity<?> deleteGameMode(@PathVariable String playerId, @RequestParam String mode) {
         try {
-            sessionService.removeGameMode(playerId, mode, null);
+            sessionService.removeGameMode(playerId, mode);
             return ResponseEntity.ok("Modalità Eliminata");
         } catch (SessionDontExist e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(

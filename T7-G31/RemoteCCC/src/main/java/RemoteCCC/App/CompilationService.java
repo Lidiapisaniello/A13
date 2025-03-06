@@ -106,7 +106,6 @@ public class CompilationService {
         }
     }
 
-
     public void compileAndTest() throws IOException, InterruptedException {
         try {
             createDirectoriesAndCopyPom();
@@ -226,11 +225,13 @@ public class CompilationService {
         /*
          *    Col filechannel rende l'operazione atomica
          */
-        FileChannel sourceChannel = FileChannel.open(pomFile.toPath(), StandardOpenOption.READ);
-        FileChannel destChannel   = FileChannel.open(destPomFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         readLock.lock();
-        try (FileChannel sourceChannel = FileChannel.open(pomFile.toPath(), StandardOpenOption.READ);
-             FileChannel destChannel = FileChannel.open(destPomFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+        try (
+             FileChannel sourceChannel = FileChannel.open(pomFile.toPath(), StandardOpenOption.READ);
+
+             FileChannel destChannel = FileChannel.open(destPomFile.toPath(), 
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
+             ) {
             long size = sourceChannel.size();
             long position = 0;
             while (position < size) {

@@ -11,7 +11,6 @@ import com.g2.Interfaces.ServiceManager;
  *  Espandibilità → Per aggiungere un nuovo gioco, basta creare una nuova factory con @Component.
  */
 
-
 @Component
 public class GameRegistry {
     private final Map<String, GameFactoryFunction> gameRegistry;
