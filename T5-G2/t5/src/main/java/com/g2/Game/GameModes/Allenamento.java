@@ -15,8 +15,8 @@ public class Allenamento extends GameLogic{
     }
 
     public Allenamento(ServiceManager serviceManager, String PlayerID, String ClasseUT,
-            String type_robot, String difficulty, String gamemode) {
-        super(serviceManager, PlayerID, ClasseUT, type_robot, difficulty, gamemode);
+            String type_robot, String difficulty, String gamemode, String testingClassCode) {
+        super(serviceManager, PlayerID, ClasseUT, type_robot, difficulty, gamemode, testingClassCode);
         currentTurn = 0;
     }
 

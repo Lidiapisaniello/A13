@@ -2,7 +2,6 @@ package robot
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 
 	"github.com/alarmfox/game-repository/api"
@@ -23,8 +22,6 @@ func NewRobotStorage(db *gorm.DB) *RobotStorage {
 
 func (rs *RobotStorage) CreateBulk(r *CreateRequest) (int, error) {
 	robots := make([]model.Robot, len(r.Robots))
-
-	log.Println(r)
 
 	for i, robot := range r.Robots {
 		robots[i] = model.Robot{

@@ -1,0 +1,6 @@
+name: t0
+
+services:
+  t0_generazione:
+    image: mick0974/a13:t0
+    container_name: t0-generator

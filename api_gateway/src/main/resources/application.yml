@@ -48,8 +48,8 @@ zuul:
       url: http://${T6_ENDPOINT:t6-controller}:${T6_PORT:8086}/run
     loadingresult-service:
       sensitiveHeaders:
-      path: /api/VolumeT0/FolderTree/**
-      url:  http://${T8_ENDPOINT:t8-controller}:${T8_PORT:8088}/api/VolumeT0/FolderTree
+      path: /api/VolumeT0/**
+      url:  http://${T8_ENDPOINT:t8-controller}:${T8_PORT:8088}/api/VolumeT0
     compile-and-codecoverage-service:
       sensitiveHeaders:
       path: /api/compile-and-codecoverage/**

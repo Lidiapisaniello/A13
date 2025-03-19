@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.g2.Model.AvailableRobot;
+import com.g2.Model.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
@@ -30,9 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import com.g2.Model.Game;
-import com.g2.Model.StatisticProgress;
 
 @Service
 public class T4Service extends BaseService {
@@ -47,6 +44,42 @@ public class T4Service extends BaseService {
         // Inizializzazione del servizio base con RestTemplate e URL specificato
         super(restTemplate, BASE_URL);
 
+        registerAction("getUserExperiencePoints", new ServiceActionDefinition(
+                params -> getUserExperiencePoints((int) params[0]),
+                        Integer.class
+        ));
+
+        registerAction("updateUserExperiencePoints", new ServiceActionDefinition(
+                params -> updateUserExperiencePoints((int) params[0], (int) params[1]),
+                Integer.class, Integer.class
+        ));
+
+        registerAction("checkIfAlreadyWon", new ServiceActionDefinition(
+                params -> checkIfAlreadyWon((int) params[0], (String) params[1], (String) params[2],
+                        (String) params[3], (String) params[4]), Integer.class, String.class, String.class, String.class, String.class
+        ));
+
+        registerAction("matchIsWon", new ServiceActionDefinition(
+                params -> matchIsWon((int) params[0], (String) params[1], (String) params[2],
+                        (String) params[3], (String) params[4]), Integer.class, String.class, String.class, String.class, String.class
+        ));
+
+        registerAction("newMatch", new ServiceActionDefinition(
+                params -> newMatch((int) params[0], (String) params[1], (String) params[2],
+                        (String) params[3], (String) params[4]), Integer.class, String.class, String.class, String.class, String.class
+        ));
+
+        registerAction("updateUserMatchAchievements", new ServiceActionDefinition(
+                params -> updateUserMatchAchievements((long) params[0], (String[]) params[1]), Long.class, String[].class
+        ));
+
+        registerAction("getUserMatchAchievements", new ServiceActionDefinition(
+                params -> getUserMatchAchievements((long) params[0]), Long.class
+        ));
+
+        registerAction("getUserAchievements", new ServiceActionDefinition(
+                params -> getUserAchievements((long) params[0]), Long.class
+        ));
 
         registerAction("getAvailableRobots", new ServiceActionDefinition(
                 params -> getAvailableRobots()
@@ -103,6 +136,80 @@ public class T4Service extends BaseService {
         registerAction("GetRisultati", new ServiceActionDefinition(
                 params -> GetRisultati((String) params[0], (String) params[1], (String) params[2]),
                 String.class, String.class, String.class));
+
+        registerAction("evosuiteRobotCoverage", new ServiceActionDefinition(
+                params -> evosuiteRobotCoverage((String) params[0], (String) params[1], (String) params[2]),
+                String.class, String.class, String.class));
+    }
+
+    /*
+     * ENDPOINT /matchstatistics
+     */
+    // Usa GET /matchstatistics/achievements/{matchId} per ottenere gli achievement ottenuti dall'utente su quel match
+    private GameModeAchievements getUserMatchAchievements(long matchId) {
+        final String endpoint = "/matchstatistics/achievements/" + matchId;
+        return callRestGET(endpoint, null, GameModeAchievements.class);
+    }
+
+    // Usa GET /matchstatistics/achievements/user/{matchId} per aggiungere nuovi achievement ottenuti dall'utente su quel match
+    private List<UserGameStatistics> getUserAchievements(long playerId) {
+        final String endpoint = "/matchstatistics/achievements/user/" + playerId;
+        return callRestGET(endpoint, null, new ParameterizedTypeReference<List<UserGameStatistics>>(){});
+    }
+
+    // Usa PUT /matchstatistics/achievements/{matchId} per aggiungere nuovi achievement ottenuti dall'utente su quel match
+    private GameModeAchievements updateUserMatchAchievements(long matchId, String[] achievements) {
+        final String endpoint = "/matchstatistics/achievements/" + matchId;
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("achievements", achievements);
+        return callRestPut(endpoint, requestBody, null, null, GameModeAchievements.class);
+    }
+
+    // Usa GET /matchstatistics/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty} per verificare se l'utente "playerId"
+    // ha già battuto il robot "robotType" alla difficoltà "difficulty" nella classe "classUT"
+    private MatchStatistics checkIfAlreadyWon(int playerId, String gameMode, String classUT, String robotType, String difficulty) {
+        final String endpoint =  String.format("/matchstatistics/%s/%s/%s/%s/%s", playerId, gameMode, classUT, robotType, difficulty);
+        return callRestGET(endpoint, null, MatchStatistics.class);
+    }
+
+    // Usa PUT /matchstatistics/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty} per settare il match come vinto
+    // dall'utente
+    private MatchStatistics matchIsWon(int playerId, String gameMode, String classUT, String robotType, String difficulty) {
+        final String endpoint =  String.format("/matchstatistics/%s/%s/%s/%s/%s", playerId, gameMode, classUT, robotType, difficulty);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("has_won", true);
+        return callRestPut(endpoint, requestBody, null, null, MatchStatistics.class);
+    }
+
+    // Usa POST /matchstatistics per creare un nuovo match
+    private MatchStatistics newMatch(int playerId, String gameMode, String classUT, String robotType, String difficulty) {
+        final String endpoint =  "/matchstatistics";
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("player_id", playerId);
+        requestBody.put("game_mode", gameMode);
+        requestBody.put("class_ut", classUT);
+        requestBody.put("robot_type", robotType);
+        requestBody.put("difficulty", difficulty);
+        return callRestPost(endpoint, requestBody, null, null, MatchStatistics.class);
+    }
+
+    // Usa GET /experience/{playerId} per ottenere i punti esperienza dell'utente identificato da "playerId"
+    private Experience getUserExperiencePoints(int playerId) {
+        final String endpoint = "/experience/" + playerId;
+        return callRestGET(endpoint, null, Experience.class);
+    }
+
+    // Usa PUT /experience/{playerId} per aggiornare i punti esperienza dell'utente identificato da "playerId", sommando
+    // "experiencePoints" ai punti già presenti
+    private Experience updateUserExperiencePoints(int playerId, int experiencePoints) {
+        final String endpoint = "/experience/" + playerId;
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("experience_points", experiencePoints);
+        return callRestPut(endpoint, requestBody, null, null, Experience.class);
     }
 
     // usa /robots/all per ottenere tutti i robot disponibili
@@ -183,6 +290,17 @@ public class T4Service extends BaseService {
 
         String response = callRestGET("/robots", formData, String.class);
         return response;
+    }
+
+    private String evosuiteRobotCoverage(String className, String robot_type, String difficulty) {
+        final String endpoint = "/robots/evosuitecoverage";
+
+        Map<String, String> formData = new HashMap<>();
+        formData.put("testClassId", className); // Nome della classe
+        formData.put("robotType", robot_type); // Tipo di robot
+        formData.put("difficulty", difficulty); // Livello di difficoltà corrente
+
+        return callRestGET(endpoint, formData, String.class);
     }
 
     private int CreateGame(String Time, String difficulty, String name, String description, String id) {

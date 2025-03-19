@@ -15,7 +15,9 @@ import (
 	"time"
 
 	"github.com/alarmfox/game-repository/api"
+	"github.com/alarmfox/game-repository/api/experience"
 	"github.com/alarmfox/game-repository/api/game"
+	"github.com/alarmfox/game-repository/api/matchStatistics"
 	"github.com/alarmfox/game-repository/api/playerhascategoryachievement"
 	"github.com/alarmfox/game-repository/api/robot"
 	"github.com/alarmfox/game-repository/api/round"
@@ -137,6 +139,9 @@ func run(ctx context.Context, c Configuration) error {
 		&model.PlayerGame{},
 		&model.Robot{},
 		&model.PlayerHasCategoryAchievement{},
+		&model.Experience{},
+		&model.MatchStatistics{},
+		&model.GameModeAchievements{},
 	)
 
 	if err != nil {
@@ -234,6 +239,10 @@ func run(ctx context.Context, c Configuration) error {
 			scalataController = scalatagame.NewController(scalatagame.NewRepository(db))
 			// phca endpoint
 			phcaController = playerhascategoryachievement.NewController(playerhascategoryachievement.NewRepository(db))
+			// experience endpoint
+			experienceController = experience.NewController(experience.NewRepository(db))
+			// matches win endpoint
+			matchStatisticsController = matchStatistics.NewController(matchStatistics.NewRepository(db))
 		)
 
 		/* Registra gli endpoint API.
@@ -245,6 +254,8 @@ func run(ctx context.Context, c Configuration) error {
 			robotController,
 			scalataController,
 			phcaController,
+			experienceController,
+			matchStatisticsController,
 		))
 	})
 
@@ -460,7 +471,15 @@ func makeDefaults(c *Configuration) {
 *	In particolare, crea endpoint per varie entità
 *	Ogni entità ha un set di operazioni CRUD (Create, Read, Update, Delete) definite tramite rotte HTTP
  */
-func setupRoutes(gc *game.Controller, rc *round.Controller, tc *turn.Controller, roc *robot.Controller, sgc *scalatagame.Controller, pc *playerhascategoryachievement.Controller) *chi.Mux {
+func setupRoutes(gc *game.Controller,
+	rc *round.Controller,
+	tc *turn.Controller,
+	roc *robot.Controller,
+	sgc *scalatagame.Controller,
+	pc *playerhascategoryachievement.Controller,
+	ec *experience.Controller,
+	mc *matchStatistics.Controller,
+) *chi.Mux {
 
 	r := chi.NewRouter()
 
@@ -476,6 +495,30 @@ func setupRoutes(gc *game.Controller, rc *round.Controller, tc *turn.Controller,
 	*	Ogni gruppo di rotte ha un set di operazioni come GET, POST, PUT, e DELETE per interagire con i dati associati.
 	*	Ogni rotta è associata a un handler che viene definito come una funzione.
 	 */
+	r.Route("/experience", func(r chi.Router) {
+		// Get experience by user
+		r.Get("/{playerId}", api.HandlerFunc(ec.GetExperience))
+		// Initialize experience for new user
+		r.Post("/", api.HandlerFunc(ec.Create))
+		// Update experience for user
+		r.Put("/{playerId}", api.HandlerFunc(ec.Update))
+	})
+
+	r.Route("/matchstatistics", func(r chi.Router) {
+		// Get match
+		r.Get("/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}", api.HandlerFunc(mc.GetMatchStatistics))
+		// Add new match
+		r.Post("/", api.HandlerFunc(mc.Create))
+		// Update match as won
+		r.Put("/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}", api.HandlerFunc(mc.UpdateHasWon))
+		// Update achievements for match
+		r.Put("/achievements/{matchId}", api.HandlerFunc(mc.UpdateAchievements))
+		// Add achievements for match
+		r.Get("/achievements/{matchId}", api.HandlerFunc(mc.GetAchievement))
+		// Get achievements for player
+		r.Get("/achievements/user/{playerId}", api.HandlerFunc(mc.GetAchievementByPlayerID))
+	})
+
 	r.Route("/games", func(r chi.Router) {
 		// Get game by his id
 		r.Get("/{id}", api.HandlerFunc(gc.FindByID))

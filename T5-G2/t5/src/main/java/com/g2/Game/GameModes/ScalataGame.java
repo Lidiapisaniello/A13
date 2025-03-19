@@ -29,8 +29,8 @@ public class ScalataGame extends GameLogic {
     private int currentGameIndex;
 
     public ScalataGame(ServiceManager serviceManager, String playerID, String classeUT,
-                       List<String> typesRobot, List<String> difficulties, String mode) {
-        super(serviceManager, playerID, classeUT, typesRobot.get(0), difficulties.get(0), mode); 
+                       List<String> typesRobot, List<String> difficulties, String mode, String testingClassCode) {
+        super(serviceManager, playerID, classeUT, typesRobot.get(0), difficulties.get(0), mode, testingClassCode);
         this.games = new ArrayList<>();
         this.currentRound = 1; // Inizia dal round 1
         this.currentGameIndex = 0; // Indice del gioco corrente
@@ -38,7 +38,7 @@ public class ScalataGame extends GameLogic {
         for (int i = 0; i < typesRobot.size(); i++) {
             String typeRobot = typesRobot.get(i);
             String difficulty = difficulties.get(i);
-            games.add(new Sfida(serviceManager, playerID, classeUT, typeRobot, difficulty, mode));
+            games.add(new Sfida(serviceManager, playerID, classeUT, typeRobot, difficulty, mode, testingClassCode));
         }
     }
 

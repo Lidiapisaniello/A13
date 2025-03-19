@@ -132,4 +132,8 @@ var currentDate = new Date();
 const mode      = GetMode();
 const ClassName = GetClassName();
 
+let timer = null; // oggetto timer, da attivare solo per la modalità PartitaSingola
+let timer_remainingTime = 0; // tempo restante per terminare una partita PartitaSingola
+
 document.getElementById("Nome_modalita").textContent = get_mode_text(mode);
+

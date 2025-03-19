@@ -1,9 +1,15 @@
 package com.g2.Controllers;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.g2.Components.ServiceObjectComponent;
+import com.g2.Model.*;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,11 +22,7 @@ import com.g2.Components.GenericObjectComponent;
 import com.g2.Components.PageBuilder;
 import com.g2.Components.UserProfileComponent;
 import com.g2.Interfaces.ServiceManager;
-import com.g2.Model.AchievementProgress;
 import com.g2.Model.DTO.ResponseTeamComplete;
-import com.g2.Model.Statistic;
-import com.g2.Model.StatisticProgress;
-import com.g2.Model.User;
 import com.g2.Service.AchievementService;
 
 
@@ -32,12 +34,26 @@ import com.g2.Service.AchievementService;
 public class UserProfileController {
 
     private final ServiceManager serviceManager;
-    private AchievementService achievementService;
+    private final AchievementService achievementService;
+
+    private GameConfigData gameConfigData = null;
 
     @Autowired
     public UserProfileController(ServiceManager serviceManager, AchievementService achievementService) {
         this.serviceManager = serviceManager;
         this.achievementService = achievementService;
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            File file = new File("game_config.json");
+            this.gameConfigData = objectMapper.readValue(file, GameConfigData.class);
+        } catch (IOException e) {
+            System.out.println("[PostConstruct init] Error in loading game_config.json, using default values.");
+            this.gameConfigData = new GameConfigData(10, 5, 1);
+        }
     }
 
     @GetMapping("/SearchFriend")
@@ -53,6 +69,14 @@ public class UserProfileController {
         profile.SetAuth();  // Gestisce l'autenticazione
         String userId = profile.getUserId();
         profile.setObjectComponents(new UserProfileComponent(serviceManager,false, userId));
+
+        /*
+         * Richiedo a T4 i punti esperienza correnti dell'utente
+         */
+        // ServiceObjectComponent userExperience = new ServiceObjectComponent(serviceManager, "user_experience", "T4", "getUserExperiencePoints", profile.getUserId());
+        // profile.setObjectComponents(userExperience);
+        Experience userCurrentExperience = (Experience) serviceManager.handleRequest("T4", "getUserExperiencePoints", Integer.parseInt(profile.getUserId()));
+        model.addAttribute("user_experience", userCurrentExperience);
         return profile.handlePageRequest();
     }
 
@@ -91,19 +115,38 @@ public class UserProfileController {
     public String Profileachievement(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
         PageBuilder achievement = new PageBuilder(serviceManager, "Achivement", model, jwt);
         achievement.SetAuth();
+
+        /*
+        // OLD
+        // Ottengo lista di Achievement
+        // Qui probabilmente ci sono delle inefficienze, andare a vedere achievementService
         int playerID_int = Integer.parseInt(achievement.getUserId());
-        //Ottengo lista di Achievement
-        //Qui probabilmente ci sono delle inefficienze, andare a vedere achievementService
         List<AchievementProgress> achievementProgresses = achievementService.getProgressesByPlayer(playerID_int);
         List<StatisticProgress> statisticProgresses = achievementService.getStatisticsByPlayer(playerID_int);
         Map<String, Statistic> IdToStatistic = achievementService.GetIdToStatistic();
 
         achievement.setObjectComponents(
-                new GenericObjectComponent("unlockedAchievements", achievementService.getUnlockedAchievementProgress(achievementProgresses)),
-                new GenericObjectComponent("lockedAchievements", achievementService.getLockedAchievementProgress(achievementProgresses)),
+                new GenericObjectComponent("lockedAchievements", achievementService.getUnlockedAchievementProgress(achievementProgresses)),
+                new GenericObjectComponent("unlockedAchievements", achievementService.getLockedAchievementProgress(achievementProgresses)),
                 new GenericObjectComponent("statisticProgresses", statisticProgresses),
                 new GenericObjectComponent("IdToStatistic", IdToStatistic)
         );
+         */
+
+        /*
+         * Richiedo a T4 i punti esperienza correnti dell'utente
+         */
+        Experience userCurrentExperience = (Experience) serviceManager.handleRequest("T4", "getUserExperiencePoints", Integer.parseInt(achievement.getUserId()));
+        model.addAttribute("userCurrentExperience", userCurrentExperience.getExperiencePoints());
+        model.addAttribute("startingLevel", gameConfigData.getStartingLevel());
+        model.addAttribute("expPerLevel", gameConfigData.getExpPerLevel());
+        model.addAttribute("maxLevel", gameConfigData.getMaxLevel());
+
+        /*
+         * Richiedo a T4 gli achievement sbloccati dall'utente
+         */
+        List<UserGameStatistics> achievements = (List<UserGameStatistics>) serviceManager.handleRequest("T4", "getUserAchievements", Long.parseLong(achievement.getUserId()));
+        model.addAttribute("achievements", achievements);
 
         return achievement.handlePageRequest();
     }

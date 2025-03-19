@@ -17,6 +17,7 @@
 
 package com.example.db_setup.Controllers;
 
+import com.example.db_setup.Service.RegistrationService;
 import com.example.db_setup.model.*;
 
 import java.io.IOException;
@@ -124,6 +125,11 @@ public class Controller {
     String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,16}$"; // maiuscola, minuscola, numero e chr. speciale
     Pattern p = Pattern.compile(regex);
 
+    private final RegistrationService registrationService;
+
+    public Controller(RegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
 
     //Modifica 04/12/2024 Giuleppe: Aggiunta rotta
     @PostMapping("/studentsByIds")
@@ -225,6 +231,13 @@ public class Controller {
 
         userRepository.save(n);
         Integer ID = n.getID();
+
+        // Richiedo l'inizializzazione deli punti esperienza per il nuovo utente. Se la richiesta fallisce, elimino
+        // l'utente e restituisco un messaggio di errore
+        if (!registrationService.initializeExperiencePoints(ID)) {
+            userRepository.delete(n);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error initializing experience points. Please retry to subscribe.");
+        }
 
         try {
             emailService.sendMailRegister(email, ID);

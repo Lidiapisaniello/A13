@@ -322,19 +322,16 @@ public class RobotService {
 
 	private void generateMissingEvoSuiteCoverage(String classUTName, String classUTPackageName, Path classUTPath, Path testPath, Path toCoveragePath, Path evoSuiteWorkingDir, String testPackageName) throws IOException {
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-
-
 			logger.info("serviceURL.getT8ServiceURL(): " + serviceURL.getT8ServiceURL());
 			HttpPost httpPostT8 = new HttpPost("http://" + serviceURL.getT8ServiceURL() + "/coverage/randoop");
 
-			// Creazione del body JSON
+
 			JSONObject reqBody = new JSONObject();
 			reqBody.put("classUTName", classUTName);
 			reqBody.put("classUTPath", classUTPath);
 			reqBody.put("classUTPackage", classUTPackageName);
 			reqBody.put("unitTestPath", testPath);
-			reqBody.put("evoSuitWorkingDir", evoSuiteWorkingDir);
-			reqBody.put("testPackageName", testPackageName);
+			reqBody.put("evosuiteWorkingDir", evoSuiteWorkingDir);
 
 			// Imposta il body della richiesta
 			StringEntity entity = new StringEntity(reqBody.toString(), ContentType.APPLICATION_JSON);
@@ -343,6 +340,7 @@ public class RobotService {
 			// Esegue la richiesta HTTP
 			try (CloseableHttpResponse response = httpClient.execute(httpPostT8)) {
 				JSONObject responseBody = new JSONObject(EntityUtils.toString(response.getEntity()));
+				logger.info("responseBody: " + responseBody);
 				FileOperationUtil.writeStringToFile(responseBody.get(classUTPackageName).toString(), new File(String.format("%s/%s", toCoveragePath, "statistics.csv")));
 			}
 

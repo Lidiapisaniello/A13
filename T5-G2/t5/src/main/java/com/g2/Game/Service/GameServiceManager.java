@@ -17,12 +17,14 @@
 
 package com.g2.Game.Service;
 
+import com.g2.Game.GameDTO.EndGameDTO.EndGameResponseDTO;
+import com.g2.Game.GameFactory.params.GameParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.g2.Game.GameDTO.GameResponseDTO;
+import com.g2.Game.GameDTO.RunGameDTO.RunGameResponseDTO;
 import com.g2.Game.GameModes.Compile.CompileResult;
 import com.g2.Game.GameModes.GameLogic;
 
@@ -37,6 +39,7 @@ public class GameServiceManager {
         this.gameService = gameService;
     }
 
+    /*
     public GameLogic CreateGameLogic(String playerId,
             String mode,
             String underTestClassName,
@@ -45,61 +48,94 @@ public class GameServiceManager {
         return gameService.CreateGame(playerId, mode, underTestClassName, type_robot, difficulty);
     }
 
+     */
+
+    public GameLogic CreateGameLogic(GameParams params) {
+        return gameService.CreateGame(params);
+    }
+
     protected GameLogic GetGameLogic(String playerId, String mode){
         return gameService.GetGame(mode, playerId);
     }
 
     protected CompileResult compileGame(GameLogic game, String testingClassCode) {
-        return gameService.handleCompile(game.getClasseUT(), testingClassCode);
+        return gameService.handleCompile(game, testingClassCode);
     }
 
-    public GameResponseDTO PlayGame(String playerId, String mode, String testingClassCode, Boolean isGameEnd){
+    public RunGameResponseDTO PlayGame(String playerId, String mode, GameParams updateParams) {
+        String testingClassCode = updateParams.getTestingClassCode();
+
         logger.info("[PlayGame] Inizio esecuzione per playerId={} e mode={}", playerId, mode);
         /*
-         * Recupero la sessioen di gioco 
+         * Recupero la sessione di gioco
          */
         GameLogic currentGame = GetGameLogic(playerId, mode);
         logger.info("[PlayGame] GameLogic recuperato: gameID={}", currentGame.getGameID());
         /*
-         * Compilo il test dell'utente  
+         * Compilo il test dell'utente
          */
         CompileResult Usercompile = compileGame(currentGame, testingClassCode);
         if (Usercompile == null) {
             throw new RuntimeException("compile is null");
         }
-        logger.info("[PlayGame] Esito compilazione: success={}", Usercompile.getSuccess());
+        logger.info("[PlayGame] Esito compilazione: success={}", Usercompile.hasSuccess());
         /*
-        *   getSuccess() mi dà l'esito della compilazione => se l'utente ha scritto un test senza errori 
+         *   getSuccess() mi dà l'esito della compilazione => se l'utente ha scritto un test senza errori
          */
-        if (Usercompile.getSuccess()) {
+        if (Usercompile.hasSuccess()) {
             /*
-             * Recuper i dati del robot da T4
+             * Recupero i dati del robot da T4
              */
             CompileResult RobotCompile = gameService.GetRobotCoverage(currentGame);
             /*
-            *  Lo score è definito dalle performance del file XML del test 
+             *  Lo score è definito dalle performance del file XML del test
              */
             int userScore = currentGame.GetScore(Usercompile);
             int robotScore = currentGame.GetScore(RobotCompile);
             /*
-            *  vado avanti col gioco 
-            *  restituisce l'oggetto json che rispecchia lo stato del game
-            *  l'utente può imporre la fine del gioco con isGameEnd
+             *  Vado avanti col gioco
+             *  Verifico gli achievement sbloccati nella partita corrente
+             *  Aggiorno la sessione corrente con i due CompileResult
+             *  Restituisco l'oggetto json che rispecchia lo stato del game
              */
-            boolean isGameFinished = gameService.handleGameLogic(userScore, robotScore, currentGame, isGameEnd);
-            return gameService.handleGameResponse(isGameFinished, currentGame, Usercompile, RobotCompile, userScore, robotScore);
+            gameService.handleGameLogic(userScore, robotScore, currentGame, updateParams, Usercompile, RobotCompile);
+            String[] unlockedAchievements = gameService.handleAchievementsUnlocked(currentGame, Usercompile, RobotCompile);
+
+            logger.info("[PlayGame]: Creazione risposta per la partita (canWin={}, userScore={}, robotScore={}).", currentGame.isWinner(), userScore, robotScore);
+            return new RunGameResponseDTO(Usercompile, RobotCompile, currentGame.isWinner(), userScore, robotScore, unlockedAchievements);
         } else {
             /*
-             * Restituisco un Json solo con info parziali 
+             * Restituisco un Json solo con info parziali
              */
-            return new GameResponseDTO(
+            return new RunGameResponseDTO(
                     Usercompile,
                     null,
                     false,
-                    0,
-                    0,
-                    false
+                    0, 0,
+                    new String[0]
             );
         }
     }
+
+    public void LeaveGame(String playerId, String mode, GameParams updateParams) {
+        GameLogic currentGame = GetGameLogic(playerId, mode);
+        logger.info("[LeaveGame] GameLogic recuperato: gameID={}", currentGame.getGameID());
+
+        gameService.UpdateGame(playerId, currentGame, updateParams, null, null);
+        logger.info("[LeaveGame] GameLogic aggiornato: gameID={}", currentGame.getGameID());
+    }
+
+    public EndGameResponseDTO EndGame(String playerId, String mode) {
+        logger.info("[EndGame] Inizio terminazione partita per playerId={} e mode={}", playerId, mode);
+        /*
+         * Recupero la sessione di gioco
+         */
+        GameLogic currentGame = GetGameLogic(playerId, mode);
+        logger.info("[EndGame] GameLogic recuperato: gameID={}", currentGame.getGameID());
+        /*
+         * Eseguo le operazioni di end game
+         */
+        return gameService.handleGameEnd(currentGame);
+    }
+
 }

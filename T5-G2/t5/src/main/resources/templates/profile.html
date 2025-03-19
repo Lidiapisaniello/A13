@@ -324,6 +324,12 @@
 		<span class="d-none" id="viewID" th:text="${viewID}"> </span>
 
 		<!-- Script personalizzato per gestire la visibilità dei blocchi -->
+		<script th:inline="javascript">
+			// Contiene i robot disponibili in T4 data la classe scelta
+			let userExperience = /*[[${user_experience}]]*/ {};
+			console.log(userExperience);
+		</script>
+
 		<script>
 			$(document).ready(function () {
 				function setupVisibilityAndSearch(config) {

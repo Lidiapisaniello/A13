@@ -20,6 +20,8 @@ package com.g2.Session;
 import java.util.List;
 import java.util.Map;
 
+import com.g2.Game.GameFactory.params.GameParams;
+import com.g2.Game.GameFactory.params.GameParamsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.g2.Game.GameDTO.GameLogicDTO;
+import com.g2.Game.GameDTO.GameLogicDTO.GameLogicDTO;
 import com.g2.Game.GameFactory.GameRegistry;
 import com.g2.Game.GameModes.GameLogic;
 import com.g2.Session.Exceptions.GameModeAlreadyExist;
@@ -191,12 +193,17 @@ public class SessionController {
     @PostMapping("/gamemode/{playerId}")    
     public ResponseEntity<?> createGameMode(@RequestBody GameLogicDTO gameLogicDTO) {
         try {
+            /*
             GameLogic gameObject = gameRegistry.createGame(gameLogicDTO.getMode(), 
                                                            null, 
                                                            gameLogicDTO.getPlayerId(), 
                                                            gameLogicDTO.getUnderTestClassName(), 
                                                            gameLogicDTO.getTypeRobot(), 
                                                            gameLogicDTO.getDifficulty());
+
+             */
+            GameParams gameParams = GameParamsFactory.createGameParams(gameLogicDTO);
+            GameLogic gameObject = gameRegistry.createGame(null, gameParams);
             sessionService.SetGameMode(gameLogicDTO.getPlayerId(), gameObject);
             return ResponseEntity.ok("Modalità Creata");
         } catch (SessionDontExist e) {
@@ -221,12 +228,17 @@ public class SessionController {
     @PutMapping("/gamemode/{playerId}")
     public ResponseEntity<?> updateGameMode(@RequestBody GameLogicDTO gameLogicDTO) {
         try {
+            /*
             GameLogic gameObject = gameRegistry.createGame(gameLogicDTO.getMode(), 
                                                            null, 
                                                            gameLogicDTO.getPlayerId(), 
                                                            gameLogicDTO.getUnderTestClassName(), 
                                                            gameLogicDTO.getTypeRobot(), 
                                                            gameLogicDTO.getDifficulty());
+
+            */
+            GameParams gameParams = GameParamsFactory.createGameParams(gameLogicDTO);
+            GameLogic gameObject = gameRegistry.createGame(null, gameParams);
             sessionService.updateGameMode(gameLogicDTO.getPlayerId(), gameObject);
             return ResponseEntity.ok("Modalità Creata");
         } catch (SessionDontExist e) {

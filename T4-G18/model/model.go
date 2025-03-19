@@ -5,6 +5,38 @@ import (
 	"time"
 )
 
+type MatchStatistics struct {
+	ID         int64  `gorm:"primaryKey;autoIncrement"`
+	PlayerID   int64  `gorm:"primaryKey;autoIncrement:false"`
+	GameMode   string `gorm:"primaryKey;autoIncrement:false"`
+	ClassUT    string `gorm:"primaryKey;autoIncrement:false"`
+	RobotType  string `gorm:"primaryKey;autoIncrement:false"`
+	Difficulty string `gorm:"primaryKey;autoIncrement:false"`
+	HasWon     bool   `gorm:"default:false"`
+}
+
+func (MatchStatistics) TableName() string {
+	return "match_statistics"
+}
+
+type GameModeAchievements struct {
+	Achievement string `gorm:"primaryKey;autoIncrement:false"`
+	MatchID     int64  `gorm:"primaryKey;autoIncrement:false"`
+}
+
+func (GameModeAchievements) TableName() string {
+	return "game_mode_achievements"
+}
+
+type Experience struct {
+	PlayerID         int64 `gorm:"primaryKey;autoIncrement:false"`
+	ExperiencePoints int   `gorm:"default:0"`
+}
+
+func (Experience) TableName() string {
+	return "experience"
+}
+
 type PlayerHasCategoryAchievement struct {
 	PlayerID int64   `gorm:"primaryKey;autoIncrement:false"`
 	Category string  `gorm:"primaryKey;autoIncrement:false"`

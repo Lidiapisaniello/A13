@@ -129,7 +129,10 @@
 						<a class="navbar-brand" id="Nome_modalita">
 						</a>
 					</div>
-						<div>
+					<div id="timer">
+						<p id="timerDisplay"></p>
+					</div>
+					<div>
 							<!-- Language -->
 							<button type="button" class="btn btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 								<i id="dropdownIcon">
@@ -723,6 +726,35 @@ public class TestClasse {
 			const score_partita_text    = /*[[#{partita_punteggio}]]*/ '';
 			const vai_home    			= /*[[#{home}]]*/ '';
 			const confirmationMessage   = /*[[#{confirmationMessage}]]*/ '';
+
+			const unlockedNewAchievementMessage = {
+				title: /*[[#{achievements_unlocked_title}]]*/ "Complimenti, hai sbloccato dei nuovi achievements",
+				desct: /*[[#{achievements_unlocked_text}]]*/ "Hai sbloccato i seguenti nuovi achievements:"
+			};
+			const previousGameObject	= /*[[${previousGameObject}]]*/ {};
+			const achievementData = {
+				"instructions": {
+					name: /*[[#{instructions_name}]]*/ "Coverage Master",
+					descr: /*#[[${instructions_desc}]]*/ "Ottenuto superando il robot nel numero di istruzioni coperte per la classe sotto test."
+				},
+				"instructionsAndWeakMutation": {
+					name: /*[[#{instructionsAndWeakMutation_name}]]*/ "Signore delle Weak Mutation",
+					descr: /*#[[${instructionsAndWeakMutation_desc}]]*/ "Ottenuto superando il robot sia nel numero di istruzioni coperte che nella metrica weakMutation."
+				},
+			};
+			const gameEndData = {
+				"game_score": /*[[#{game_score}]]*/ "Hai terminato la tua partita con un punteggio",
+				"game_end": /*[[#{game_end}]]*/ "Partita terminata",
+				"game_win": /*[[#{game_win}]]*/ "Complimenti, hai vinto!",
+				"game_lose": /*[[#{game_lose}]]*/ "Peccato, il robot ha vinto questa volta.",
+				"game_exp": {
+					zero: /*[[#{game_exp_zero}]]*/ "Non hai guadagnato punti esperienza perché hai già sconfitto questo robot. Prova a batterne un altro!",
+					base: /*[[#{game_exp_base}]]*/ "Hai guadagnato",
+					one: /*[[#{game_exp_one}]]*/ "1 punto esperienza!",
+					multi: /*[[#{game_exp_multi}]]*/ "punti esperienza!"
+				},
+				"game_retry": /*[[#{game_retry}]]*/ "Riprova e migliora la tua strategia!"
+			};
 		</script>
 
 		<!-- CODEMIRROR -->

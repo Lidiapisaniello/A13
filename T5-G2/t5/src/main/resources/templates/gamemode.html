@@ -62,6 +62,12 @@
 											</select>
 										</div>
 
+										<!-- Selezione Timer (visibile solo in PartitaSingola) -->
+										<div class="form-group mb-3" id="time_limit_selector" style="display: none;">
+											<label for="select_time_limit" th:text="#{time_limit}"></label>
+											<input type="number" class="form-control" id="select_time_limit" min="1" value="120">
+										</div>
+
 										<!-- Link editor -->
 										<div class="text-center pt-2">
 											<a
@@ -106,6 +112,10 @@
 											<li class="list-group-item">
 												<label th:text="#{modalità}"></label>
 												<span id="gamemode_modalita"> </span>
+											</li>
+											<li class="list-group-item">
+												<label th:text="#{time_limit}"></label>
+												<span id="gamemode_time_limit"> </span>
 											</li>
 										</ul>
 									</div>

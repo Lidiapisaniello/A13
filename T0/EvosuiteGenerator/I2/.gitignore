@@ -1,0 +1,4 @@
+# Caro GIT ignora TUTTO in questa cartella
+.gitignore
+# Tranne il seguente file
+!.gitignore

@@ -20,7 +20,11 @@ import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.BiFunction;
 
+import com.g2.Game.GameFactory.params.GameParams;
+import com.g2.Game.Service.GameServiceManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -29,6 +33,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.g2.Game.GameModes.Compile.CompileResult;
 import com.g2.Interfaces.ServiceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class GameLogic implements Serializable {
@@ -64,15 +70,27 @@ public abstract class GameLogic implements Serializable {
     @JsonProperty("mode")
     private String gamemode;
 
+    @JsonProperty("testingClassCode")
+    private String testingClassCode;
+
+    @JsonProperty("userCompileResult")
+    private CompileResult userCompileResult;
+
+    @JsonProperty("robotCompileResult")
+    private CompileResult robotCompileResult;
+
+
+
     // Costruttore con ServiceManager (utilizzato in produzione)
     public GameLogic(ServiceManager serviceManager, String playerID, String classeUT,
-            String typeRobot, String difficulty, String gamemode) {
+            String typeRobot, String difficulty, String gamemode, String testingClassCode) {
         this.serviceManager = serviceManager;
         this.playerID = playerID;
         this.classeUT = classeUT;
         this.typeRobot = typeRobot;
         this.difficulty = difficulty;
         this.gamemode = gamemode;
+        this.testingClassCode = testingClassCode;
     }
 
     // Costruttore senza argomenti (necessario per la deserializzazione JSON)
@@ -87,6 +105,20 @@ public abstract class GameLogic implements Serializable {
     public abstract int GetScore(CompileResult compileResult);
 
     public abstract Boolean isWinner();
+
+    // Metodo per aggiornare lo stato di GameLogic in seguito alla richiesta POST /run
+    // Da sovrascrivere in ogni sottoclasse per aggiornare i parametri specifici della stessa da mantenere nella sessione
+    public void updateState(GameParams gameParams, CompileResult userCompileResult, CompileResult robotCompileResult) {
+        this.testingClassCode = gameParams.getTestingClassCode();
+        this.userCompileResult = userCompileResult;
+        this.robotCompileResult = robotCompileResult;
+    }
+
+    // Metodo per inizializzare gli achievement specifici della modalità di gioco
+    // Da sovrascrivere nella modalità specifica
+    public Map<String, BiFunction<CompileResult, CompileResult, Boolean>> gameModeAchievements() {
+        return new HashMap<>();
+    }
 
     // Metodo per creare la partita
     public void CreateGame() {
@@ -195,8 +227,50 @@ public abstract class GameLogic implements Serializable {
         this.playerID = playerID;
     }
 
+    public String getTestingClassCode() {
+        return testingClassCode;
+    }
+
+    public void setTestingClassCode(String testingClassCode) {
+        this.testingClassCode = testingClassCode;
+    }
+
+    public CompileResult getUserCompileResult() {
+        return userCompileResult;
+    }
+
+    public void setUserCompileResult(CompileResult userCompileResult) {
+        this.userCompileResult = userCompileResult;
+    }
+
+    public CompileResult getRobotCompileResult() {
+        return robotCompileResult;
+    }
+
+    public void setRobotCompileResult(CompileResult robotCompileResult) {
+        this.robotCompileResult = robotCompileResult;
+    }
+
     // Setter per reiniettare il serviceManager dopo deserializzazione, se necessario
     public void setServiceManager(ServiceManager serviceManager) {
         this.serviceManager = serviceManager;
+    }
+
+    @Override
+    public String toString() {
+        return "GameLogic{" +
+                "serviceManager=" + serviceManager +
+                ", gameID=" + gameID +
+                ", roundID=" + roundID +
+                ", turnID=" + turnID +
+                ", playerID='" + playerID + '\'' +
+                ", classeUT='" + classeUT + '\'' +
+                ", typeRobot='" + typeRobot + '\'' +
+                ", difficulty='" + difficulty + '\'' +
+                ", gamemode='" + gamemode + '\'' +
+                ", testingClassCode='" + testingClassCode + '\'' +
+                ", userCompileResult=" + userCompileResult +
+                ", robotCompileResult=" + robotCompileResult +
+                '}';
     }
 }

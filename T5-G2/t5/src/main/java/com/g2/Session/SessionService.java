@@ -120,6 +120,7 @@ public class SessionService {
         String sessionKey = buildCompositeKey(playerId);
         logger.info("getSession - Recupero della sessione per sessionKey: {}", sessionKey);
         try{
+            logger.error("TEST - SESSION: {}", redisTemplate.opsForValue().get(sessionKey));
             Sessione sessione = redisTemplate.opsForValue().get(sessionKey);
             if (sessione == null) {
                 logger.error("getSession - Sessione non trovata per sessionKey: {}", sessionKey);
@@ -182,6 +183,7 @@ public class SessionService {
     public boolean updateSession(String playerId, Sessione updatedSession, Optional<Long> ttlSeconds) {
         long ttl = ttlSeconds.filter(ttlSec -> ttlSec > 0).orElse(DEFAULT_SESSION_TTL);
         logger.info("updateSession - Aggiornamento della sessione per playerId: {} con TTL: {}", playerId, ttl);
+        logger.info("TEST - UPDATEDSESSION {}", updatedSession);
 
         if (updatedSession == null) {
             logger.error("updateSession - La sessione aggiornata non può essere null");

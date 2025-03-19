@@ -58,6 +58,12 @@ function SetMode(setM) {
 	}
 }
 
+// Rendo visibile la selezione del timer se la partita è di tipo PartitaSingola
+document.addEventListener("DOMContentLoaded", function () {
+	let timeLimitField = document.getElementById("time_limit_selector");
+	timeLimitField.style.display = (GetMode() === "PartitaSingola") ? "block" : "none";
+});
+
 // ------------------------------
 // FUNZIONI PER GESTIRE LA SESSIONE CON REDIS
 // ------------------------------
@@ -204,13 +210,17 @@ async function startGame() {
 	const underTestClassName = document.getElementById("select_class").value;
 	let typeRobot = "";
 	let difficulty = "";
+	let remainingTime = 0;
 
-	if (mode === "Sfida") {
+	if (mode === "Sfida" || mode === "PartitaSingola") {
 		typeRobot = document.getElementById("select_robot").value;
 		difficulty = document.getElementById("select_diff").value;
 		if (!underTestClassName || !typeRobot || !difficulty) {
 			console.error("Parametri mancanti per la modalità Sfida.");
 			return;
+		}
+		if (mode === "PartitaSingola") {
+			remainingTime = document.getElementById("select_time_limit").value * 60; // Converto il timer da minuti a secondi
 		}
 	} else if (mode === "Allenamento") {
 		typeRobot = "NONE";
@@ -222,7 +232,7 @@ async function startGame() {
 	}
 
 	try {
-		const requestData = {
+		let requestData = {
 			playerId: playerId,
 			typeRobot: typeRobot,
 			difficulty: difficulty,
@@ -230,10 +240,18 @@ async function startGame() {
 			underTestClassName: underTestClassName,
 		};
 
+		if (mode === "PartitaSingola") {
+			requestData["remainingTime"] = remainingTime;
+		}
+
+		console.log("requestData: ", requestData);
+
 		startGameRequest(requestData)
 			.then((response) => {
-				console.log(response);
-				window.location.href = `/editor?ClassUT=${underTestClassName}&mode=${mode}`;
+				if (mode === "PartitaSingola")
+					window.location.href = `/editor?ClassUT=${underTestClassName}&mode=${mode}&remainingTime=${remainingTime}`;
+				else
+					window.location.href = `/editor?ClassUT=${underTestClassName}&mode=${mode}`;
 			})
 			.catch((error) => {
 				console.error("Errore nell'avvio della partita:", error);
@@ -265,8 +283,18 @@ function updateDOMWithPreviousGameData(previousGameObject) {
 			previousGameObject.difficulty || "";
 		document.getElementById("gamemode_modalita").innerText =
 			previousGameObject.mode || "";
+
+		if (previousGameObject.mode === "PartitaSingola")
+			document.getElementById("gamemode_time_limit").innerText =
+				formatTime(previousGameObject.remainingTime) || formatTime(0);
+
 		const link = document.getElementById("Continua");
-		link.href = `/editor?ClassUT=${previousGameObject.class_ut}&mode=${previousGameObject.mode}`;
+
+		if (previousGameObject.mode === "PartitaSingola")
+			link.href = `/editor?ClassUT=${previousGameObject.class_ut}&mode=${previousGameObject.mode}&remainingTime=${previousGameObject.remainingTime}`;
+		else
+			link.href = `/editor?ClassUT=${previousGameObject.class_ut}&mode=${previousGameObject.mode}`;
+
 	} else {
 		console.log(
 			"Nessuna partita in corso, pronta per avviare una nuova partita."

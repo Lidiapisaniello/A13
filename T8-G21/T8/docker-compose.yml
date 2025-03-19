@@ -1,0 +1,20 @@
+name: t8
+
+services:
+  t8_generazione:
+    image: mick0974/a13:t8-g21
+    container_name: t8-controller
+    expose:
+      - 8088
+    networks:
+      - global-network
+    volumes:
+      - VolumeT0:/VolumeT0
+
+networks:
+  global-network:
+    external: true
+
+volumes:
+  VolumeT0:
+    external: true

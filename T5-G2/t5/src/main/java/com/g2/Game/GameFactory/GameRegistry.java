@@ -1,6 +1,7 @@
 package com.g2.Game.GameFactory;
 import java.util.Map;
 
+import com.g2.Game.GameFactory.params.GameParams;
 import org.springframework.stereotype.Component;
 
 import com.g2.Game.GameModes.GameLogic;
@@ -29,6 +30,7 @@ public class GameRegistry {
         System.out.println("Factory registrate: " + gameFactories.keySet());
     }
 
+    /*
     public GameLogic createGame(String mode, ServiceManager sm, 
                                 String playerId, String underTestClassName, 
                                 String type_robot, String difficulty) {
@@ -39,5 +41,17 @@ public class GameRegistry {
         }
 
         return factory.create(sm, playerId, underTestClassName, type_robot, difficulty, mode);
+    }
+
+     */
+
+    public GameLogic createGame(ServiceManager sm, GameParams gameParams) {
+
+        GameFactoryFunction factory = gameRegistry.get(gameParams.getMode());
+        if (factory == null) {
+            throw new IllegalArgumentException("Gioco non registrato: " + gameParams.getMode());
+        }
+
+        return factory.create(sm, gameParams);
     }
 }

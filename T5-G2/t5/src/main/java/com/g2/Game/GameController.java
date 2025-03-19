@@ -19,6 +19,12 @@ package com.g2.Game;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.g2.Game.GameDTO.EndGameDTO.EndGameResponseDTO;
+import com.g2.Game.GameDTO.RunGameDTO.RunGameRequestDTO;
+import com.g2.Game.GameFactory.params.GameParams;
+import com.g2.Game.GameFactory.params.GameParamsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +32,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.g2.Game.GameDTO.GameResponseDTO;
-import com.g2.Game.GameDTO.StartGameRequestDTO;
-import com.g2.Game.GameDTO.StartGameResponseDTO;
+import com.g2.Game.GameDTO.RunGameDTO.RunGameResponseDTO;
+import com.g2.Game.GameDTO.StartGameDTO.StartGameRequestDTO;
+import com.g2.Game.GameDTO.StartGameDTO.StartGameResponseDTO;
 import com.g2.Game.GameModes.GameLogic;
 import com.g2.Game.Service.GameServiceManager;
 import com.g2.Session.Exceptions.GameModeAlreadyExist;
@@ -87,13 +87,9 @@ public class GameController {
                 request.getMode(), request.getUnderTestClassName());
 
         try {
-            GameLogic game = gameServiceManager.CreateGameLogic(
-                                                                    request.getPlayerId(),
-                                                                    request.getMode(),
-                                                                    request.getUnderTestClassName(),
-                                                                    request.getTypeRobot(),
-                                                                    request.getDifficulty()
-                                                                );
+            GameParams gameParams = GameParamsFactory.createGameParams(request);
+            GameLogic game = gameServiceManager.CreateGameLogic(gameParams);
+
             logger.info("[START_GAME] Partita creata con successo. GameID={}, mode={}", game.getGameID(), game.getMode());
             return ResponseEntity.ok(
                     new StartGameResponseDTO(game.getGameID(),
@@ -103,11 +99,15 @@ public class GameController {
             logger.error("[GAMECONTROLLER][StartGame] " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new StartGameResponseDTO(-1, "GameAlreadyExistsException"));
-        } catch (Exception e) {
+        }
+        /*
+        catch (Exception e) {
             logger.error("[GAMECONTROLLER][StartGame] Unexpected error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new StartGameResponseDTO(-1, "Internal Server Error"));
         }
+
+         */
     }
 
     /*
@@ -130,21 +130,74 @@ public class GameController {
      *  calcolare la coverage/compilazione, il campo isGameEnd è da utilizzato per indicare se è anche un submit e
      *  quindi vuole terminare la partita ed ottenere i risultati del robot
      */
-    @PostMapping(value = "/run", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<GameResponseDTO> Runner(
-                                                    @RequestParam(value = "testingClassCode", required = false, defaultValue = "") String testingClassCode,
-                                                    @RequestParam(value = "playerId") String playerId,
-                                                    @RequestParam("mode") String mode,
-                                                    @RequestParam("isGameEnd") boolean isGameEnd
-                                                ) {
+    @PostMapping(value = "/run", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RunGameResponseDTO> Runner(@RequestBody RunGameRequestDTO request) {
         try {
-            GameResponseDTO response = gameServiceManager.PlayGame(playerId, mode, testingClassCode, isGameEnd);
+            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
+            String playerId = request.getPlayerId();
+            String mode = request.getMode();
+            RunGameResponseDTO response = gameServiceManager.PlayGame(playerId, mode, updateGameParams);
             return ResponseEntity.ok().body(response);
         } catch (GameModeDontExist e) {
             /*
              * Il player non ha impostato una partita prima di arrivare all'editor
              */
             logger.error("[GAMECONTROLLER][run] " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    /*
+     *  Chiamata che gestisce l'abbandono della partita in corso da parte dell'utente (es: chiusura browser/scheda, ...),
+     *  salva i dati generici e specifici della partita disponibili in quel momento.
+     *
+     *  Dati generici: testingClassCode (codice di test scritto dall'utente)
+     *  Dati specifici:
+     *      - PartitaSingola: remainingTime (tempo rimanente alla conclusione della partita)
+     */
+    @PostMapping(value = "/leave", consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<RunGameResponseDTO> UpdateSession(@RequestBody String rawRequest) {
+        try {
+            logger.info("/leave request: {}", rawRequest);
+            ObjectMapper objectMapper = new ObjectMapper();
+            RunGameRequestDTO request = objectMapper.readValue(rawRequest, RunGameRequestDTO.class);
+
+            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
+            String playerId = request.getPlayerId();
+            String mode = request.getMode();
+            logger.info("[POST /leave] Ricevuta richiesta salvataggio sessione per playerId={}", playerId);
+            gameServiceManager.LeaveGame(playerId, mode, updateGameParams);
+            return ResponseEntity.ok().body(null);
+        } catch (GameModeDontExist e) {
+            /*
+             * Il player non ha impostato una partita prima di arrivare all'editor
+             */
+            logger.error("[GAMECONTROLLER][leave] " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping(value="/EndGame", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EndGameResponseDTO> EndGame(@RequestBody RunGameRequestDTO request) {
+        try {
+            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
+            String playerId = request.getPlayerId();
+            String mode = request.getMode();
+
+            if (!request.getTestingClassCode().isEmpty())
+                gameServiceManager.PlayGame(playerId, mode, updateGameParams);
+
+            logger.info("[POST /EndGame] Ricevuta richiesta terminazione partita per playerId={}", playerId);
+            EndGameResponseDTO response = gameServiceManager.EndGame(playerId, mode);
+            logger.info("[POST /EndGame] Invio risposta per playerId={}", playerId);
+            return ResponseEntity.ok().body(response);
+        } catch (GameModeDontExist e) {
+            /*
+             * Il player non ha impostato una partita prima di arrivare all'editor
+             */
+            logger.error("[GAMECONTROLLER][EndGame] " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }

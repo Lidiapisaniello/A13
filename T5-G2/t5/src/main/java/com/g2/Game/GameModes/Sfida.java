@@ -42,8 +42,8 @@ public class Sfida extends GameLogic {
 
     //Questa classe si specializza in una partita semplice basata sui turni, prende il nome di Sfida nella UI
     public Sfida(ServiceManager serviceManager, String PlayerID, String ClasseUT,
-                                String type_robot, String difficulty, String gamemode) {
-        super(serviceManager, PlayerID, ClasseUT, type_robot, difficulty, gamemode);
+                                String type_robot, String difficulty, String gamemode, String testingClassCode) {
+        super(serviceManager, PlayerID, ClasseUT, type_robot, difficulty, gamemode, testingClassCode);
         currentTurn = 0;
     }
 
@@ -82,5 +82,4 @@ public class Sfida extends GameLogic {
         this.userScore = (int) Math.ceil(score);
         return userScore;
     }
-
 }

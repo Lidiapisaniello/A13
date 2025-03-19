@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import com.g2.Components.GenericObjectComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -91,7 +92,7 @@ public class GuiController {
             @CookieValue(name = "jwt", required = false) String jwt,
             @RequestParam(value = "mode", required = false) String mode) {
 
-        if ("Sfida".equals(mode) || "Allenamento".equals(mode)) {
+        if ("Sfida".equals(mode) || "Allenamento".equals(mode) || "PartitaSingola".equals(mode)) {
             PageBuilder gamemode = new PageBuilder(serviceManager, "gamemode", model);
             VariableValidationLogicComponent valida = new VariableValidationLogicComponent(mode);
             valida.setCheckNull();
@@ -129,8 +130,12 @@ public class GuiController {
          */
         try {
             Sessione sessione = sessionService.getSession(editor.getUserId());
+            System.out.println("loading sessione");
+            System.out.println("sessione classUT: " + sessione.getGame(mode).getClasseUT());
+            System.out.println("sessione testingClassCode: " + sessione.getGame(mode).getTestingClassCode());
+            editor.setObjectComponents(new GenericObjectComponent("previousGameObject", sessione.getGame(mode)));
             /*
-             *  se non è settata la modalità che si sta provando a usare 
+             *  se non è settata la modalità che si sta provando a usare
              */
             // if (!sessione.hasModalita(mode)) {
             //    return "redirect:/main";

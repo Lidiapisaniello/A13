@@ -40,14 +40,6 @@ mvn clean package -DskipTests=true -Dspring.profiles.active=prod || { echo "Erro
 docker build -t mick0974/a13:t5-g2 .
 cd "$ROOT_DIR"
 
-# Build T6-G12
-echo "Building T6-G12"
-cd "$ROOT_DIR/T6-G12/T6"
-mvn clean package -DskipTests=true || { echo "Error in T6-G12 build during mvn clean package" ; exit 1; }
-cd ..
-docker build -t mick0974/a13:t6-g12 .
-cd "$ROOT_DIR"
-
 # Build T7-G31
 echo "Building T7-G31"
 cd "$ROOT_DIR/T7-G31/RemoteCCC"
@@ -57,17 +49,9 @@ cd "$ROOT_DIR"
 
 # Build T8-G21
 echo "Building T8-G21"
-cd "$ROOT_DIR/T8-G21/Progetto_SAD_GRUPPO21_TASK8/Progetto_def/opt_livelli/Prototipo2.0/Serv"
+cd "$ROOT_DIR/T8-G21/T8"
 mvn clean package || { echo "Error in T8-G21 build during mvn clean package" ; exit 1; }
-cd ..
 docker build -t mick0974/a13:t8-g21 .
-cd "$ROOT_DIR"
-
-# Build T9-G19
-echo "Building T9-G19"
-cd "$ROOT_DIR/T9-G19/Progetto-SAD-G19-master"
-mvn clean package || { echo "Error in T9-G19 build during mvn clean package" ; exit 1; }
-docker build -t mick0974/a13:t9-g19 .
 cd "$ROOT_DIR"
 
 # Build ui_gateway
@@ -81,6 +65,21 @@ echo "Building api_gateway"
 cd "$ROOT_DIR/api_gateway"
 mvn clean package || { echo "Error in api_gateway build during mvn clean package" ; exit 1; }
 docker build -t mick0974/a13:api-gateway .
+cd "$ROOT_DIR"
+
+# Build api_gateway
+echo "Building api_gateway"
+cd "$ROOT_DIR/api_gateway"
+mvn clean package || { echo "Error in api_gateway build during mvn clean package" ; exit 1; }
+docker build -t mick0974/a13:api-gateway .
+cd "$ROOT_DIR"
+
+# Build T0
+echo "Building T0"
+cd "$ROOT_DIR/T0/RandoopGenerator"
+mvn clean package || { echo "Error in RandoopGenerator mvn package"; exit 1; }
+cd ..
+docker build -t mick0974/a13:t0 .
 cd "$ROOT_DIR"
 
 echo "Build process completed"

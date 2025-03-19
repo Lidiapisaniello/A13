@@ -54,15 +54,6 @@ if %ERRORLEVEL% neq 0 (
 )
 cd /d "%ROOT_DIR%"
 
-echo Deploying T6-G12
-cd /d "%ROOT_DIR%\T6-G12\T6"
-docker compose up -d
-if %ERRORLEVEL% neq 0 (
-    echo Error deploying T6-G12
-    exit /b 1
-)
-cd /d "%ROOT_DIR%"
-
 echo Deploying T7-G31
 cd /d "%ROOT_DIR%\T7-G31\RemoteCCC"
 docker compose up -d
@@ -73,19 +64,10 @@ if %ERRORLEVEL% neq 0 (
 cd /d "%ROOT_DIR%"
 
 echo Deploying T8-G21
-cd /d "%ROOT_DIR%\T8-G21\Progetto_SAD_GRUPPO21_TASK8\Progetto_def\opt_livelli\Prototipo2.0\Serv"
+cd /d "%ROOT_DIR%\T8-G21\T8"
 docker compose up -d
 if %ERRORLEVEL% neq 0 (
     echo Error deploying T8-G21
-    exit /b 1
-)
-cd /d "%ROOT_DIR%"
-
-echo Deploying T9-G19
-cd /d "%ROOT_DIR%\T9-G19\Progetto-SAD-G19-master"
-docker compose up -d
-if %ERRORLEVEL% neq 0 (
-    echo Error deploying T9-G19
     exit /b 1
 )
 cd /d "%ROOT_DIR%"
@@ -104,6 +86,15 @@ cd /d "%ROOT_DIR%\api_gateway"
 docker compose up -d
 if %ERRORLEVEL% neq 0 (
     echo Error deploying api_gateway
+    exit /b 1
+)
+cd /d "%ROOT_DIR%"
+
+echo Deploying api_gateway
+cd /d "%ROOT_DIR%\T0"
+docker compose up -d
+if %ERRORLEVEL% neq 0 (
+    echo Error deploying T0
     exit /b 1
 )
 cd /d "%ROOT_DIR%"

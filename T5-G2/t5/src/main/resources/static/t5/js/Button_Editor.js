@@ -255,12 +255,15 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // Funzione per salvare il contenuto dell'editor nel localStorage
+/*
 function saveToLocalStorage() {
 	const content = editor_utente.getValue();
 	localStorage.setItem('codeMirrorContent', content);
 }
 // Aggiungi un listener per l'evento change
-editor_utente.on('change', saveToLocalStorage); 
+editor_utente.on('change', saveToLocalStorage);
+
+ */
 
 
 
