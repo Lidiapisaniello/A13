@@ -26,7 +26,6 @@ echo 6 - T8-G21
 echo 8 - ui_gateway
 echo 9 - api_gateway
 echo 9 - T0
-echo Select:
 set /p SELECTION=Scelte (es. 0 1 2 o 'all'):
 
 :: Se l'utente ha scelto "all", builda tutto
@@ -59,7 +58,7 @@ for %%i in (%SELECTION%) do (
         docker build -t mick0974/a13:t23-g1 .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
+            echo Error deploying T23-G1
             exit /b 1
         )
         cd /d "%ROOT_DIR%"
@@ -69,7 +68,7 @@ for %%i in (%SELECTION%) do (
         docker build -t mick0974/a13:t4-g18 .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
+            echo Error deploying T4-G18
             exit /b 1
         )
         cd /d "%ROOT_DIR%"
@@ -80,7 +79,7 @@ for %%i in (%SELECTION%) do (
         docker build -t mick0974/a13:t5-g2 .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
+            echo Error deploying T5-G2
             exit /b 1
         )
         cd /d "%ROOT_DIR%"
@@ -91,7 +90,7 @@ for %%i in (%SELECTION%) do (
         docker build -t mick0974/a13:t7-g31 .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
+            echo Error deploying T7-G31
             exit /b 1
         )
         cd /d "%ROOT_DIR%"
@@ -113,7 +112,7 @@ for %%i in (%SELECTION%) do (
         docker build -t mick0974/a13:ui-gateway .
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-            echo Error deploying T1-G11
+            echo Error deploying ui gateway
             exit /b 1
         )
         cd /d "%ROOT_DIR%"
@@ -123,7 +122,7 @@ for %%i in (%SELECTION%) do (
         call mvn clean package || (echo Error in api_gateway build & exit /b 1)
         docker build -t mick0974/a13:api-gateway .
         if ERRORLEVEL 1 (
-            echo Error in T8-G21 build during call mvn clean package
+            echo Error in API gateway build
             exit /b 1
         )
         docker compose up -d
@@ -136,15 +135,15 @@ for %%i in (%SELECTION%) do (
         echo Building T0
         cd /d "%ROOT_DIR%\T0\RandoopGenerator"
         call mvn clean package || (echo Error in T0 build & exit /b 1)
+        cd ..
         docker build -t mick0974/a13:t0 .
         if ERRORLEVEL 1 (
-          echo Error in T8-G21 build during call mvn clean package
+          echo Error in T0 build during call mvn clean package
           exit /b 1
         )
-        cd /d "%ROOT_DIR%\T0
         docker compose up -d
         if %ERRORLEVEL% neq 0 (
-          echo Error deploying T1-G11
+          echo Error deploying T0
           exit /b 1
         )
         cd /d "%ROOT_DIR%"
