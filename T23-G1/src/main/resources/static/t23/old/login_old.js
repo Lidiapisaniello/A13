@@ -59,23 +59,6 @@ function statusChangeCallback(response) {
   //    document.getElementById('status').innerHTML = 'Per favore loggati nella web-app.';
   //}
 
-//La funzione checkLoginState() viene invocata non appena viene cliccato
-//il bottone: "Accedi con Facebook"
-function checkLoginState() {
-  FB.getLoginStatus(function(response) {
-    statusChangeCallback(response);
-  });
-}
-
-//Aggiungere l'SDK di Facebook per Javascript
-(function(d, s, id){
-                    var js, fjs = d.getElementsByTagName(s)[0];
-                    if (d.getElementById(id)) {return;}
-                    js = d.createElement(s); js.id = id;
-                    js.src = "https://connect.facebook.net/it-IT/sdk.js";        //Impostazione lingua italiana 'it-IT'
-                    fjs.parentNode.insertBefore(js, fjs);
-                  }(document, 'script', 'facebook-jssdk')
-);
                   
 window.fbAsyncInit = function() {
   //Inizializzazione dell'SDK

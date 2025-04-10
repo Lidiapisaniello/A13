@@ -44,10 +44,10 @@ public class User {
     public String password;
 
     //MODIFICA
-    public boolean isRegisteredWithFacebook;
+    public boolean isRegisteredWithFacebook = false;
     //FINE MODIFICA
     //MODIFICA 18/06/2024
-    public boolean isRegisteredWithGoogle;
+    public boolean isRegisteredWithGoogle = false;
 
     @Enumerated (EnumType.STRING)
     public Studies studies;

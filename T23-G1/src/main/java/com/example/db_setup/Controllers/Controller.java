@@ -75,7 +75,6 @@ import com.example.db_setup.model.Studies;
 import com.example.db_setup.model.User;
 //MODIFICA (Deserializzazione risposta JSON)
 import com.fasterxml.jackson.databind.ObjectMapper;
-//FINE MODIFICA
 
 @RestController
 public class Controller {
@@ -91,19 +90,9 @@ public class Controller {
 
     @Autowired
     private MyPasswordEncoder myPasswordEncoder;
-    // Modifica 16/05/2024
-    // Questo è un servizio che gestisce le operazioni relative a Google OAuth2, potrebbe non servire, è solo per testare
-    @Autowired
-    private OAuthUserGoogleService oAuthUserGoogleService;
 
     @Autowired
     private EmailService emailService;
-
-    @Value("${recaptcha.secretkey}")
-    private String recaptchaSecret;
-
-    @Value("${recaptcha.url}")
-    private String recaptchaServerURL;
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder){
@@ -158,7 +147,6 @@ public class Controller {
         return userService.searchStudents(request);
     }
 
-
     // Registrazione
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestParam("name") String name,
@@ -171,10 +159,6 @@ public class Controller {
         if(isJwtValid(jwt)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Already logged in");
         }
-
-        //verifica del recaptcha
-        //MODIFICA (23/2/2024) : Commento alla riga riguardante il reCAPTCHA perchè non più utilizzato
-        //verifyReCAPTCHA(gRecaptchaResponse);
 
         User n = new User();
 
@@ -227,7 +211,6 @@ public class Controller {
 
         // STUDIES
         n.setStudies(studies);
-        n.setRegisteredWithFacebook(false);
 
         userRepository.save(n);
         Integer ID = n.getID();
@@ -257,21 +240,6 @@ public class Controller {
         return new ResponseEntity<String>(headers,HttpStatus.MOVED_PERMANENTLY);
 
     }
-
-    //Verifica del recaptcha
-    // private void verifyReCAPTCHA(String gRecaptchaResponse) {
-    //     HttpHeaders headers = new HttpHeaders();
-    //     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-    //     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-    //     map.add("secretkey", recaptchaSecret);
-    //     map.add("response", gRecaptchaResponse);
-
-    //     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-    //     ResponseEntity<String> response = restTemplate.postForEntity(recaptchaServerURL, request, String.class);
-
-    //     System.out.println(response);
-    // }
 
     // Autenticazione
     @PostMapping("/login")
@@ -315,165 +283,6 @@ public class Controller {
 
         return ResponseEntity.status(302).body("");
     }
-    //MODIFICA
-    @PostMapping("/login_with_facebook")
-    public ResponseEntity<String> login_with_facebook(@RequestParam("email") String email,
-                                                      @RequestParam("nome") String name,
-                                                      @RequestParam("access_token") String tokenFb, @CookieValue(name = "jwt", required = false) String jwt, HttpServletRequest request, HttpServletResponse response) {
-        // if(fb.isUserAuthenticated(tokenFb)) {
-        //     // if(userRepository.findByEmail(email) == null) {
-        //     //     //save user to db with email
-        //     // }
-
-
-        //Contattare FB  e validare il token
-        //     String token = generateToken(user);
-        //     AuthenticatedUser authenticatedUser = new AuthenticatedUser(user, token);
-        //     authenticatedUserRepository.save(authenticatedUser);
-
-        //     Cookie jwtTokenCookie = new Cookie("jwt", token);
-        //     jwtTokenCookie.setMaxAge(3600);
-        //     response.addCookie(jwtTokenCookie);
-        // }
-        System.out.println(email);
-        System.out.println(tokenFb);
-        System.out.println(name);
-
-        //Verificare token di accesso
-
-        //Invio GET presso end-point debug-token
-
-        // URL dell'endpoint a cui inviare la richiesta GET
-        String url = "https://graph.facebook.com/debug_token?input_token="+tokenFb+"&access_token="+app_token;
-
-        // Esegue la richiesta GET e ottiene la risposta come oggetto ResponseEntity<String>
-        ResponseEntity<String> login_with_facebook = restTemplate.getForEntity(url, String.class);
-
-        String responseBody = null;
-        boolean is_valid = false;
-
-         // Verifica lo stato della risposta
-         if (login_with_facebook.getStatusCode() == HttpStatus.OK) {
-            // La richiesta è andata a buon fine, puoi accedere ai dati della risposta
-            responseBody = login_with_facebook.getBody();
-            System.out.println("Risposta ricevuta:");
-            System.out.println(responseBody);
-        } else {
-            // Gestisci il caso in cui la richiesta non sia andata a buon fine
-            System.out.println("Errore nella richiesta: " + login_with_facebook.getStatusCode());
-        }
-
-        //Deserializzare risposta
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println("Deserializzazione JSON...");
-
-        try {
-            // Converti il corpo della risposta in un oggetto Java (es. MyResponseClass)
-            MyResponseClass responseObj = objectMapper.readValue(responseBody, MyResponseClass.class);
-
-            // Ora puoi accedere ai campi dell'oggetto responseObj
-            is_valid = responseObj.getData().isIs_valid();
-            //int campo2 = responseObj.getCampo2();
-
-            // Esegui le operazioni desiderate con i dati della risposta
-            System.out.println("is_valid: " + is_valid);
-            //System.out.println("Campo2: " + campo2);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //Token valido?
-        if (is_valid==true) {
-
-            System.out.println("Token valido");
-
-            //Ti sei già registrato?
-            User user = userRepository.findByUserProfileEmail(email);
-
-            if(user != null) {
-
-                //Utente esiste (mail trovata nel database)
-                System.out.println("Utente già registrato (mail trovata nel database)");
-
-                //Si è già registrato con Facebook?
-
-                if(user.isRegisteredWithFacebook){
-
-                    System.out.println("Utente registrato con Facebook");
-                    //Flusso JWT
-                    String token = generateToken(user);
-                    AuthenticatedUser authenticatedUser = new AuthenticatedUser(user, token);
-                    authenticatedUserRepository.save(authenticatedUser);
-                    System.out.println("authenticatedUser correttamente creato (login_with_facebook)");
-
-                    Cookie jwtTokenCookie = new Cookie("jwt", token);
-                    jwtTokenCookie.setMaxAge(3600);
-                    response.addCookie(jwtTokenCookie);
-                    System.out.println("Cookie aggiunto alla risposta (login_with_facebook)");
-
-                    try {
-                        response.sendRedirect("/main");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                } else {
-                    //Non si è registrato con Facebook
-                    System.out.println("Utente non registrato con Facebook");
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ti sei già registrato con email e password. Nella pagina di login, inserisci le tue credenziali.");
-                }
-            } else {
-                //Utente non si è mai registrato
-                System.out.println("Utente non si è mai registrato");
-
-                //Registrazione Utente
-                System.out.println("Registrazione Utente...");
-                User n = new User();
-                n.setName(name);
-                n.setSurname("");
-                n.setEmail(email);
-                n.setPassword("");
-                n.setRegisteredWithFacebook(true);
-                n.setStudies(Studies.ALTRO);
-
-                //Salvataggio
-                System.out.println("Salvataggio...");
-                userRepository.save(n);
-                System.out.println("Salvataggio completato.");
-
-                //Assegnazione ID
-                Integer ID = n.getID();
-
-                try {
-                    emailService.sendMailRegister(email, ID);
-                    //Flusso JWT
-                    String token = generateToken(n);
-                    AuthenticatedUser authenticatedUser = new AuthenticatedUser(n, token);
-                    authenticatedUserRepository.save(authenticatedUser);
-
-                    Cookie jwtTokenCookie = new Cookie("jwt", token);
-                    jwtTokenCookie.setMaxAge(3600);
-                    response.addCookie(jwtTokenCookie);
-                    //MODIFICA (03/02/2024) : Redirect
-                    try {
-                        response.sendRedirect("/main");
-                    } catch (IOException e) {
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to confirm your registration");
-                    }
-                    //FINE MODIFICA
-                } catch (MessagingException e) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to confirm your registration");
-                }
-            }
-        } else {
-            //token non valido, utente non loggato correttamente con facebook
-
-        }
-
-        return ResponseEntity.status(302).body("");
-
-    }
-    //FINE MODIFICA
 
     public static String generateToken(User user) {
         Instant now = Instant.now();
@@ -660,7 +469,6 @@ public class Controller {
         return new ModelAndView("password_reset_new");
     }
 
-
     @GetMapping("/password_change")
     public ModelAndView showChangeForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
         if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
@@ -671,19 +479,6 @@ public class Controller {
     public ModelAndView showMailForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
         if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
         return new ModelAndView("mail_register");
-    }
-
-    //Modifica 16/05/2024: Aggiunta login con Google
-    // Questo metodo reindirizza l'utente alla pagina di autorizzazione di Google per il login
-    @GetMapping("/loginWithGoogle")
-    public void loginWithGoogle(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/oauth2/authorization/google");
-    }
-
-    @GetMapping("/checkService")
-    @ResponseBody
-    public String checkService() {
-        return (oAuthUserGoogleService != null) ? "Service is defined" : "Service is not defined";
     }
 
     @GetMapping("/checkSession")
