@@ -40,9 +40,9 @@ export const options = {
     // Definizione delle metriche di soglia
     /*
     thresholds: {
-        'http_req_duration': ['p(95)<500'], // 95% delle richieste sotto 500ms
-        'http_req_failed': ['rate<0.01'],   // La percentuale di errori deve essere inferiore al 1%
-        'success_rate': ['rate>0.95'],      // Successo maggiore del 95%
+        'http_req_duration': ['p(95)<500'],
+        'http_req_failed': ['rate<0.01'],
+        'success_rate': ['rate>0.95'],
     },
 
      */
@@ -50,16 +50,16 @@ export const options = {
     // Configurazione dell'output InfluxDB
     ext: {
         influxdb: {
-            url: 'http://localhost:9090',  // URL di InfluxDB
-            database: 'k6db',             // Nome del database
-            precision: 's',               // Precisione del tempo in secondi
+            url: 'http://localhost:9090',
+            database: 'k6db',
+            precision: 's',
         },
     },
 
     scenarios: {
         gradual_test: {
             executor: 'per-vu-iterations',
-            vus: 15,
+            vus: 1,
             iterations: 1,
             maxDuration: '90m',
         },
@@ -88,8 +88,8 @@ export default function () {
 function startGame() {
     sleep(Math.random() * 9 + 1);
 
-    const vuIndex = __VU - 1; // __VU è il numero del virtual user, parte da 1
-    const user = users[vuIndex % users.length]; // Se abbiamo più VU dei user, cicliamo
+    const vuIndex = __VU - 1; // __VU -> number of virtual user, start at 1
+    const user = users[vuIndex % users.length];
 
     if (!user) {
         console.error(`Nessun utente disponibile per VU ${__VU}`);
