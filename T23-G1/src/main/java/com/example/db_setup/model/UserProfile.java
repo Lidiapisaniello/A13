@@ -57,7 +57,7 @@ public class UserProfile {
     public String surname;
     @Column(length = 30, nullable = false)
     private String nickname = "default_nickname";
-    @Column(length = 20)
+    @Column(length = 45)
     public String email;
 
     @PrePersist
