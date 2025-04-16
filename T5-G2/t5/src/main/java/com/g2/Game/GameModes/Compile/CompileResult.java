@@ -84,16 +84,16 @@ public class CompileResult {
     }
 
     // Costruttore per l'utente
-    public CompileResult(JSONObject response_T4, JSONObject response_T7) {
+    public CompileResult(JSONObject response_T8, JSONObject response_T7) {
         // Estraggo i valori dalle risposte
-        this.evosuiteLine = response_T4.optInt("evoSuiteLine", 0);
-        this.evosuiteBranch = response_T4.optInt("evoSuiteBranch", 0);
-        this.evosuiteException = response_T4.optInt("evoSuiteException", 0);
-        this.evosuiteWeakMutation = response_T4.optInt("evoSuiteWeakMutation", 0);
-        this.evosuiteOutput = response_T4.optInt("evoSuiteOutput", 0);
-        this.evosuiteMethod = response_T4.optInt("evoSuiteMethod", 0);
-        this.evosuiteMethodNoException = response_T4.optInt("evoSuiteMethodNoException", 0);
-        this.evosuiteCBranch = response_T4.optInt("evoSuiteCBranch", 0);
+        this.evosuiteLine = response_T8.optInt("evoSuiteLine", 0);
+        this.evosuiteBranch = response_T8.optInt("evoSuiteBranch", 0);
+        this.evosuiteException = response_T8.optInt("evoSuiteException", 0);
+        this.evosuiteWeakMutation = response_T8.optInt("evoSuiteWeakMutation", 0);
+        this.evosuiteOutput = response_T8.optInt("evoSuiteOutput", 0);
+        this.evosuiteMethod = response_T8.optInt("evoSuiteMethod", 0);
+        this.evosuiteMethodNoException = response_T8.optInt("evoSuiteMethodNoException", 0);
+        this.evosuiteCBranch = response_T8.optInt("evoSuiteCBranch", 0);
 
         this.XML_coverage = response_T7.optString("coverage", null);
         this.compileOutput = response_T7.optString("outCompile", null);

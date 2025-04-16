@@ -17,22 +17,31 @@
 package RemoteCCC.App;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin
 @RestController
 public class AppController {
+
+    @Autowired
+    @Qualifier("compileExecutor")
+    private ThreadPoolTaskExecutor compileExecutor;
 
     protected static final Logger logger = LoggerFactory.getLogger(CompilationService.class);
 
@@ -61,13 +70,24 @@ public class AppController {
                         request.getUnderTestClassName(),
                         request.getUnderTestClassCode(),
                         mvn_path);
-            compilationService.compileAndTest();
+
+            Future<?> future = compileExecutor.submit(() -> {
+                try {
+                    compilationService.compileAndTest();
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // Blocco finchè il servizio di compilazione non termina
+            future.get();
+
             JSONObject result = new JSONObject();
             result.put("outCompile", compilationService.outputMaven);
             result.put("coverage", compilationService.Coverage);
             result.put("error", compilationService.Errors);
             return ResponseEntity.status(HttpStatus.OK).header("Content-Type", "application/json").body(result.toString()); // Imposta l'intestazione Content-Type
-        } catch (IOException | InterruptedException | JSONException e) {
+        } catch (RuntimeException | ExecutionException e) {
             logger.error("[Compile-and-codecoverage]", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.toString());
         }

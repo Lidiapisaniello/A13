@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     formData.append("password", password);
     formData.append("check_password", confermaPassword);
     formData.append("studies", corsoDiStudi);
-    formData.append("g-recaptcha-response", recaptchaToken); // Aggiungi il token di reCAPTCHA
 
     // Validazione lato client
     if (nome === '') {
@@ -69,13 +68,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
       
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
-    }
-
-    //MODIFICA (05/11/2024) Aggiunto controllo reCAPTCHA
-    if (!recaptchaToken) {
-      //controllo reCAPTCHA
-      alert("Per favore, completa il reCAPTCHA.");
-      return;
     }
 
     try {

@@ -17,9 +17,12 @@
 
 package com.g2.Game.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.g2.Game.GameDTO.EndGameDTO.EndGameResponseDTO;
 import com.g2.Game.GameFactory.params.GameParams;
@@ -144,15 +147,21 @@ public class GameService {
         String responseT7Raw = this.serviceManager.handleRequest("T7", "CompileCoverage", String.class, testingClassFileName, testingClassCode, underTestClassFileName, underTestClassCode);
         JSONObject response_T7 = new JSONObject(responseT7Raw);
 
-        // Chiamata a T8 per calcolare evosuite coverage
-        String responseT8Raw = this.serviceManager.handleRequest("T8", "evosuiteUserCoverage", String.class,
-                testingClassName, testingClassCode, underTestClassName, underTestClassCode, "");
-        JSONObject response_T8 = new JSONObject(responseT8Raw);
-
+        // Chiamata a T8 per calcolare evosuite coverage solo se il codice è compilabile
+        JSONObject response_T8 = new JSONObject();
+        if (response_T7.optString("coverage", null) != null) {
+            String responseT8Raw = this.serviceManager.handleRequest("T8", "evosuiteUserCoverage", String.class,
+                    testingClassName, testingClassCode, underTestClassName, underTestClassCode, "");
+            response_T8 = new JSONObject(responseT8Raw);
+        }
 
         // Salvo in VolumeT0 testingClassCode, response_T8 (csv) e response_T7 (xml)
-        String userDir = String.format("/VolumeT0/FolderTree/StudentTest/Player%s/%s/%s/Game%s/Round%s/Turn%s",
-                currentGame.getPlayerID(), currentGame.getMode(), currentGame.getClasseUT(), currentGame.getGameID(), currentGame.getRoundID(), currentGame.getTurnID());
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+        int randomFourDigits = ThreadLocalRandom.current().nextInt(1000, 10000); // 1000 (incluso) e 10000 (escluso)
+        String suffix = timestamp + "-" + randomFourDigits;
+
+        String userDir = String.format("/VolumeT0/FolderTree/StudentTest/Player%s/%s/%s/%s/Game%s/Round%s/Turn%s",
+                currentGame.getPlayerID(), currentGame.getMode(), currentGame.getClasseUT(), suffix, currentGame.getGameID(), currentGame.getRoundID(), currentGame.getTurnID());
         String userCoverageDir = String.format("%s/coverage", userDir);
         String userSrcDir = String.format("%s/project/src/java/main", userDir);
         String userTestDir = String.format("%s/project/src/test/main", userDir);

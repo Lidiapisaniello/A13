@@ -9,7 +9,7 @@ public class StartGameResponseDTO {
     private String status;
 
     public StartGameResponseDTO(){
-        //costruttore vuot per jackson
+        //costruttore vuoto per jackson
     }
 
     public StartGameResponseDTO(int gameId, String status){

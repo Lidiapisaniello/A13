@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -143,9 +144,14 @@ public class CoverageService {
         List<String> criteria = Arrays.asList("LINE", "BRANCH", "EXCEPTION", "WEAKMUTATION", "OUTPUT", "METHOD", "METHODNOEXCEPTION", "CBRANCH");
 
         for (String criterion : criteria) {
-            runCommand(workingDir, 30, "/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", workingDir + "/evosuite-1.0.6.jar",
+            boolean foundError = runCommand(workingDir, 30, "/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", workingDir + "/evosuite-1.0.6.jar",
                     "-measureCoverage", "-class", classUTPackage + classUTName,
                     "-projectCP", projectCP, "-Dcriterion=" + criterion);
+
+            if (foundError) {
+                logger.error("[calculateEvosuiteCoverage] Errore durante la verifica della copertura: Uno o più goal non sono stati trovati");
+                return null;
+            }
         }
 
         Path coverageFilePath = Paths.get(workingDir, "evosuite-report", "statistics.csv");
@@ -159,8 +165,9 @@ public class CoverageService {
         }
     }
 
-    private void runCommand(String workingDir, Integer timer, String ...command){
+    private boolean runCommand(String workingDir, Integer timer, String ...command){
         Process process = null;
+        AtomicBoolean foundError = new AtomicBoolean(false);
         try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
             ProcessBuilder processBuilder = new ProcessBuilder();
 
@@ -175,8 +182,8 @@ public class CoverageService {
             process = processBuilder.start();
 
             Process finalProcess = process;
-            executor.submit(() -> streamGobbler(finalProcess.getInputStream(), "OUTPUT"));
-            executor.submit(() -> streamGobbler(finalProcess.getErrorStream(), "ERROR"));
+            executor.submit(() -> streamGobbler(finalProcess.getInputStream(), "OUTPUT", foundError));
+            executor.submit(() -> streamGobbler(finalProcess.getErrorStream(), "ERROR", foundError));
 
             logger.info("[runCommand] Avviato timer {} per comando {}", timer, command);
             boolean finished = process.waitFor(timer, TimeUnit.MINUTES);
@@ -200,13 +207,18 @@ public class CoverageService {
             if (process != null && process.isAlive())
                 process.destroyForcibly();
         }
+
+        return foundError.get();
     }
 
-    private static void streamGobbler(InputStream inputStream, String streamType){
+    private static void streamGobbler(InputStream inputStream, String streamType, AtomicBoolean foundError){
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                System.out.println("[" + streamType + "] " + line);
+                logger.info("[{}] {}", streamType, line);
+                if (line.contains("ERROR SearchStatistics")) {
+                    foundError.set(true);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

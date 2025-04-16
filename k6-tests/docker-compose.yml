@@ -1,0 +1,18 @@
+name: k6-grafana
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - "9090:8086"
+    environment:
+      - INFLUXDB_DB=k6db
+      - INFLUXDB_HTTP_AUTH_ENABLED=false
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
