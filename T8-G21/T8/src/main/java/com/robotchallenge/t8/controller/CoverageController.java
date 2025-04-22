@@ -1,5 +1,6 @@
 package com.robotchallenge.t8.controller;
 
+import com.robotchallenge.t8.config.CustomExecutorConfiguration;
 import com.robotchallenge.t8.dto.request.RobotCoverageRequestDTO;
 import com.robotchallenge.t8.dto.request.StudentCoverageRequestDTO;
 import com.robotchallenge.t8.service.CoverageService;
@@ -20,26 +21,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Controller
 @CrossOrigin
 public class CoverageController {
 
-    @Autowired
-    @Qualifier("compileExecutor")
-    private ThreadPoolTaskExecutor compileExecutor;
-
-    CoverageService coverageService;
-
     private static final Logger logger = LoggerFactory.getLogger(CoverageService.class);
+    private final CustomExecutorConfiguration.CustomExecutorService compileExecutor;
+    private final CoverageService coverageService;
 
-    public CoverageController(CoverageService coverageService, ThreadPoolTaskExecutor compileExecutor) {
-        this.coverageService = coverageService;
+    public CoverageController(CustomExecutorConfiguration.CustomExecutorService compileExecutor,
+                              CoverageService coverageService) {
         this.compileExecutor = compileExecutor;
+        this.coverageService = coverageService;
     }
 
     @PostMapping(value = "/coverage/randoop", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -58,19 +54,41 @@ public class CoverageController {
     ResponseEntity<String> calculateStudentEvosuiteCoverage(@RequestBody StudentCoverageRequestDTO request) {
         logger.info("[CoverageController] [POST /api/VolumeT0] Ricevuta richiesta");
 
-        Future<String> future = compileExecutor
-                .getThreadPoolExecutor()
-                .submit(() -> coverageService.calculateStudentCoverage(request));
+        Callable<String> compilationTimedTask = () -> coverageService.calculateStudentCoverage(request);
 
-        String result = null;
+        Future<String> future;
         try {
-            result = future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("[StudentCoverage]", e);
-            throw new RuntimeException("Errore durante il calcolo della coverage", e);
+            future = compileExecutor.submitTask(compilationTimedTask);
+        } catch (RejectedExecutionException e) {
+            logger.warn("[CoverageController] Task rifiutato: sistema sovraccarico: {}", e.getStackTrace()[0]);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Il sistema è temporaneamente sovraccarico. Riprova più tardi.");
         }
 
-        int[] evoSuiteStatistics = result != null ? coverageService.getCoveragePercentageStatistics(result) : new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+        String result;
+        try {
+            result = future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("[CoverageController] Il processo è stato interrotto: {}", e.getStackTrace()[0]);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Il processo è stato interrotto.");
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof TimeoutException) {
+                logger.warn("[CoverageController] Timeout: il task ha impiegato troppo tempo: {}", e.getStackTrace()[0]);
+                return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT)
+                        .body("Il task ha superato il tempo massimo disponibile.");
+            } else {
+                logger.error("[CoverageController] Errore interno durante l'esecuzione: ", e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Errore durante la compilazione o l'esecuzione.");
+            }
+        }
+
+        int[] evoSuiteStatistics = result != null
+                ? coverageService.getCoveragePercentageStatistics(result)
+                : new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 
         JSONObject response = new JSONObject();
         response.put("statistics", result);
