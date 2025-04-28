@@ -56,12 +56,18 @@ cd "$ROOT_DIR"
 
 echo "Deploying api_gateway"
 cd "$ROOT_DIR/apiGateway"
-docker compose up -d || { echo "Error deploying api_gateway"; exit 1; }
+docker compose up -d || { echo "Error deploying apiGateway"; exit 1; }
 cd "$ROOT_DIR"
 
 echo "Deploying T0"
 cd "$ROOT_DIR/T0"
-docker compose up -d || { echo "Error deploying api_gateway"; exit 1; }
+docker compose up -d || { echo "Error deploying T0"; exit 1; }
+cd "$ROOT_DIR"
+
+# Build T0
+echo "Deploying db-backup"
+cd "$ROOT_DIR/db-backup"
+docker compose up -d || { echo "Error deploying db-backup"; exit 1; }
 cd "$ROOT_DIR"
 
 # Avvio script di configurazione finale

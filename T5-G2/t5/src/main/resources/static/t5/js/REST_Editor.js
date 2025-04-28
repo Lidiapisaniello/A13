@@ -124,9 +124,19 @@ function handleServerInternalError(error, loadingKey, buttonKey) {
     console.error("[handleGameAction] Errore durante l'esecuzione:", error);
 
     try {
-        // Rendo il json leggibile
-        const formattedError = JSON.stringify(JSON.parse(error.responseText), null, 4);
-        console_robot.setValue(formattedError);
+        const errorObject = JSON.parse(error.responseText);
+        switch (errorObject.code) {
+            case 429:
+                console_robot.setValue(errorMessages["429"]);
+                break;
+            case 504:
+                console_robot.setValue(errorMessages["504"]);
+                break;
+            default:
+                const formattedError = JSON.stringify(errorObject, null, 4);
+                console_robot.setValue(formattedError);
+                break;
+        }
     } catch (e) {
         // Se non è un JSON valido stampo l'errore raw
         console_robot.setValue(error.responseText);

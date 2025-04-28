@@ -75,4 +75,10 @@ cd ..
 docker build -t mick0974/a13:t0 .
 cd "$ROOT_DIR"
 
+# Build T0
+echo "Building db-backup"
+cd "$ROOT_DIR/db-backup"
+docker build -t mick0974/a13:db-backup .
+cd "$ROOT_DIR"
+
 echo "Build process completed"

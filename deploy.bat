@@ -90,11 +90,20 @@ if %ERRORLEVEL% neq 0 (
 )
 cd /d "%ROOT_DIR%"
 
-echo Deploying api_gateway
+echo Deploying T0
 cd /d "%ROOT_DIR%\T0"
 docker compose up -d
 if %ERRORLEVEL% neq 0 (
     echo Error deploying T0
+    exit /b 1
+)
+cd /d "%ROOT_DIR%"
+
+echo Deploying db-backup
+cd /d "%ROOT_DIR%\db-backup"
+docker compose up -d
+if %ERRORLEVEL% neq 0 (
+    echo Error deploying db-backup
     exit /b 1
 )
 cd /d "%ROOT_DIR%"

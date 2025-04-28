@@ -113,4 +113,10 @@ cd ..
 docker build -t mick0974/a13:t0 .
 cd /d "%ROOT_DIR%"
 
+rem Build db-backup
+echo Building db-backup
+cd /d "%ROOT_DIR%\db-backup"
+docker build -t mick0974/a13:db-backup .
+cd /d "%ROOT_DIR%"
+
 echo Build process completed

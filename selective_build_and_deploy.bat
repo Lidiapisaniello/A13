@@ -26,11 +26,12 @@ echo 6 - T8-G21
 echo 7 - ui_gateway
 echo 8 - api_gateway
 echo 9 - T0
+echo 10 - db-backup
 set /p SELECTION=Scelte (es. 0 1 2 o 'all'):
 
 :: Se l'utente ha scelto "all", builda tutto
 if /i "%SELECTION%"=="all" (
-    set SELECTION=0 1 2 3 4 5 6 7 8 9
+    set SELECTION=0 1 2 3 4 5 6 7 8 9 10
 )
 
 :: Loop per ciascuna selezione
@@ -145,6 +146,16 @@ for %%i in (%SELECTION%) do (
         if %ERRORLEVEL% neq 0 (
           echo Error deploying T0
           exit /b 1
+        )
+        cd /d "%ROOT_DIR%"
+    ) else if %%i==10 (
+        echo Building db-backup
+        cd /d "%ROOT_DIR%\db-backup
+        docker build -t mick0974/a13:db-backup .
+        docker compose up -d
+        if %ERRORLEVEL% neq 0 (
+        echo Error deploying db-backup
+        exit /b 1
         )
         cd /d "%ROOT_DIR%"
     ) else (

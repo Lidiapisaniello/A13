@@ -16,6 +16,7 @@ docker_images=(
     "mick0974/a13:ui-gateway"
     "mick0974/a13:api-gateway"
     "mick0974/a13:t0"
+    "mick0974/a13:db-backup"
 )
 
 for image in "${docker_images[@]}"; do

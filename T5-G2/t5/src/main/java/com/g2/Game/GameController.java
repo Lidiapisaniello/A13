@@ -41,7 +41,6 @@ import com.g2.Game.GameModes.GameLogic;
 import com.g2.Game.Service.GameServiceManager;
 import com.g2.Session.Exceptions.GameModeAlreadyExist;
 import com.g2.Session.Exceptions.GameModeDontExist;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
@@ -146,7 +145,7 @@ public class GameController {
     }
 
     @ExceptionHandler(RestClientException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RestClientException ex) {
+    public ResponseEntity<Map<String, String>> handleRestClientException(RestClientException ex) {
         Map<String, String> errorResponse = new HashMap<>();
 
         errorResponse.put("error", ex.getMessage());
