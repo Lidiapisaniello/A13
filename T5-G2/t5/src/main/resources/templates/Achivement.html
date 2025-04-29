@@ -104,7 +104,7 @@
     <div class="d-sm-flex align-items-center justify-content-around mt-3 mb-5">
         <div class="text-center">
             <h4 class="mb-0 fw-semibold lh-1" th:text="${userCurrentExperience}"></h4>
-            <p class="mb-0 fs-5">Punti esperienza totali</p>
+            <p class="mb-0 fs-5" th:text="#{total_exp_label}"></p>
         </div>
         <div class="progress_container" th:attr="data-progress=(${userCurrentExperience} % ${expPerLevel}) / ${expPerLevel}">
             <svg class="progress-svg" width="150" height="150" viewBox="0 0 120 120">
@@ -117,7 +117,7 @@
         </div>
         <div class="text-center">
             <h4 class="mb-0 fw-semibold lh-1" th:text="${expPerLevel - (userCurrentExperience % expPerLevel)}"></h4>
-            <p class="mb-0 fs-5">XP per il prossimo livello</p>
+            <p class="mb-0 fs-5" th:text="#{exp_next_level_label}"></p>
         </div>
     </div>
 
@@ -146,11 +146,11 @@
     let achievementData = {
         "instructions": {
             name: /*[[#{instructions_name}]]*/ "Coverage Master",
-            descr: /*#[[${instructions_desc}]]*/ "Ottenuto superando il robot nel numero di istruzioni coperte per la classe sotto test."
+            descr: /*[[#{instructions_descr}]]*/ "Ottenuto superando il robot nel numero di istruzioni coperte per la classe sotto test."
         },
         "instructionsAndWeakMutation": {
-            name: /*[[#{instructionsAndWeakMutation_name}]]*/ "Signore delle Weak Mutation",
-            descr: /*#[[${instructionsAndWeakMutation_desc}]]*/ "Ottenuto superando il robot sia nel numero di istruzioni coperte che nella metrica weakMutation."
+            name: /*[[#{instructionsAndWeakMutation_name}]]*/ "Signore della Weak Mutation",
+            descr: /*[[#{instructionsAndWeakMutation_descr}]]*/ "Ottenuto superando il robot sia nel numero di istruzioni coperte che nella metrica weakMutation."
         },
     };
 </script>

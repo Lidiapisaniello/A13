@@ -13,9 +13,9 @@ import java.util.logging.Logger;
 @Configuration
 public class CustomExecutorConfiguration {
 
-    private static final int CORE_POOL_SIZE = 2;
-    private static final int MAX_POOL_SIZE = 2;
-    private static final int MAX_QUEUE_SIZE = 5;
+    private static final int CORE_POOL_SIZE = 1;
+    private static final int MAX_POOL_SIZE = 1;
+    private static final int MAX_QUEUE_SIZE = 8;
     private static final int EXECUTION_TIME_THRESHOLD = 120_000; // 2 minuti
     private static final int MAX_QUEUE_TIME = 60_000; // 1 minuto
 
