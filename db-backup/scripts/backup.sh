@@ -11,6 +11,6 @@ while true; do
   echo "[T23] Backing up MySQL..."
   mysqldump -h t23-mysql_db -uroot -ppassword studentsrepo | gzip > /Backups/T23_mysql_backup_${TS}.sql.gz
 
-  echo "Backup completed. Sleeping for 24h..."
+  echo "Backup completed. Sleeping for 6h..."
   sleep 21600 # 6 hours
 done

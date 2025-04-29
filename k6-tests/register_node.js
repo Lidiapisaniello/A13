@@ -16,8 +16,8 @@ function randomString(length) {
 
 const successfulUsers = [];
 const TOTAL_USERS = 80;
-const ENDPOINT = "https://51b5-143-225-28-159.ngrok-free.app";
-//const ENDPOINT = "http://localhost";
+//const ENDPOINT = "https://51b5-143-225-28-159.ngrok-free.app";
+const ENDPOINT = "http://localhost";
 const REGISTER_URL = `${ENDPOINT}/register`;
 
 async function registerUser() {

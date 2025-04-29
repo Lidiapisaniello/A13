@@ -122,10 +122,10 @@ async function handleGameAction(isGameEnd, compileUponEndTime=false) {
 
 function handleServerInternalError(error, loadingKey, buttonKey) {
     console.error("[handleGameAction] Errore durante l'esecuzione:", error);
+    const errorObject = JSON.parse(error.responseText);
 
     try {
-        const errorObject = JSON.parse(error.responseText);
-        switch (errorObject.code) {
+        switch (error.status) {
             case 429:
                 console_robot.setValue(errorMessages["429"]);
                 break;

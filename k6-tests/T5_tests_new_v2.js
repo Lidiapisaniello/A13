@@ -6,8 +6,8 @@ import { scenario } from 'k6/execution';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 
 // Endpoint ngrok
-const ENDPOINT = "https://51b5-143-225-28-159.ngrok-free.app";
-//const ENDPOINT = "http://localhost";
+//const ENDPOINT = "https://51b5-143-225-28-159.ngrok-free.app";
+const ENDPOINT = "http://localhost";
 
 // Test type
 const testType = 1
@@ -21,17 +21,17 @@ const code = [
 ];
 
 // Metriche custom
-export let run_duration = new Trend('run_duration');                                                    // Durata (ms) di ogni chiamata all'endpoint /run
-export let run_duration_successful = new Trend('run_duration_successful');                              // Durata (ms) di ogni chiamata all'endpoint /run terminata con successo
-export let run_duration_successful_with_retries = new Trend('run_duration_successful_with_retry');      // Durata (ms) di ogni chiamata all'endpoint /run terminata con successo contando il tempo dei retries
-export let failed_run_duration = new Trend('run_duration_failure');                                     // Durata (ms) di ogni chiamata all'endpoint /run non completata per errore 504 o 429
-export let failed_run_duration_other_errors = new Trend('run_duration_failure_other');                  // Durata (ms) di ogni chiamata all'endpoint /run non completata per altri motivi
+export let run_duration = new Trend('run_duration', true);                                                    // Durata (ms) di ogni chiamata all'endpoint /run
+export let run_duration_successful = new Trend('run_duration_successful', true);                              // Durata (ms) di ogni chiamata all'endpoint /run terminata con successo
+export let run_duration_successful_with_retries = new Trend('run_duration_successful_with_retry', true);      // Durata (ms) di ogni chiamata all'endpoint /run terminata con successo contando il tempo dei retries
+export let failed_run_duration = new Trend('run_duration_failure', true);                                     // Durata (ms) di ogni chiamata all'endpoint /run non completata per errore 504 o 429
+export let failed_run_duration_other_errors = new Trend('run_duration_failure_other', true);                  // Durata (ms) di ogni chiamata all'endpoint /run non completata per altri motivi
 
 export let total_retries = new Counter('total_retries');                                                // Numero totale di retry su /run per errori 504 o 429
 export let retry_due_to_timeout = new Counter('retry_due_to_timeout');                                  // Numero totale di retry su /run per errori 504
 export let retry_due_to_too_many_requests = new Counter('retry_due_to_too_many_requests');              // Numero totale di retry su /run per errori 429
 
-export let delay_between_retry = new Trend('delay_between_retry');                                                  // Tempo (s) di sleep tra retries
+export let delay_between_retry = new Trend('delay_between_retry', true);                                                  // Tempo (ms) di sleep tra retries
 export let successful_run_rate = new Rate('successful_run_rate');                                                   // Tasso di fallimento delle chiamate a /run
 export let successful_run_rate_after_retries = new Rate('successful_run_rate_after_retries');                       // Tasso di successo delle chiamate a /run
 export let total_failed_run_rate = new Rate('total_failed_run_rate');                                               // Tasso di successo delle chiamate a /run con retries
@@ -204,14 +204,19 @@ function runGame(playerId, jwt, email, selectedCode) {
             body = null;
         }
 
-        const is504Error = res.status === 504 || (res.body && res.body.includes('504 GATEWAY_TIMEOUT'));
-        const is429Error = res.status === 429 || (res.body && res.body.includes('429 TOO_MANY_REQUESTS'));
+        const is504Error = res.status === 504 || (body && res.body.includes('504 GATEWAY_TIMEOUT'));
+        const is429Error = res.status === 429 || (body && res.body.includes('429 TOO_MANY_REQUESTS'));
 
-        successful_run_rate.add(body && res.status <= 299);
-        successful_run_rate_after_retries.add(body && res.status <= 299 && retryCount === 0);
+
+        successful_run_rate.add(body !== null && res.status <= 299);
         total_failed_run_rate.add(body === null || (body && res.status > 299));
-        failed_run_due_to_gateway_timeout_rate.add(is504Error);
-        failed_run_due_to_too_many_requests_rate.add(is429Error);
+
+        if (body !== null && res.status <= 299) {
+            successful_run_rate_after_retries.add(retryCount === 0);
+        } else {
+            failed_run_due_to_gateway_timeout_rate.add(is504Error);
+            failed_run_due_to_too_many_requests_rate.add(is429Error);
+        }
 
         if (is504Error || is429Error) {
             failed_run_duration.add(duration);
@@ -229,7 +234,7 @@ function runGame(playerId, jwt, email, selectedCode) {
 
             const delay = Math.random() * 30 + baseDelay * retryCount;
             // totalDelay += delay;
-            delay_between_retry.add(delay);
+            delay_between_retry.add(delay * 1000);
 
             if (retryCount === maxRetries) {
                 // Timeout definitivo
@@ -257,7 +262,10 @@ function runGame(playerId, jwt, email, selectedCode) {
                 console.error(`/run error ${res.status}: `, body);
             } else {
                 run_duration_successful.add(duration);
-                run_duration_successful_with_retries.add(endTryTime - startTime);
+
+                if (retryCount !== 0)
+                    run_duration_successful_with_retries.add(endTryTime - startTime);
+
                 successful_run_count.add(1);
             }
 
@@ -310,6 +318,25 @@ function endGame(playerId, jwt, email, canWin) {
     sleep(Math.random() * 9 + 1);
 }
 
+
+// ==============================
+// Funzione per stampare i risultati
+// ==============================
+export function handleSummary(data) {
+    const now = new Date();
+    const pad = (n) => (n < 10 ? '0' + n : n);
+    const timestamp = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const filePath = `summary-${timestamp}.json`;
+
+    return {
+        [filePath]: JSON.stringify(data, null, 2),
+        stdout: textSummary(data, { indent: ' ', enableColors: true }),
+    };
+}
+
+
+
+/*
 // ==============================
 // Stampa risultati
 // ==============================
@@ -358,3 +385,5 @@ export function handleSummary(data) {
         stdout: textSummary(data, { indent: ' ', enableColors: true }),
     };
 }
+
+ */
