@@ -1,0 +1,9 @@
+TARGET_CLASS,criterion,Coverage,Total_Goals,Covered_Goals
+OutputFormat,LINE,0.6,155,93
+OutputFormat,BRANCH,0.373134328358209,67,25
+OutputFormat,EXCEPTION,1.0,0,0
+OutputFormat,WEAKMUTATION,0.34558823529411764,272,94
+OutputFormat,OUTPUT,0.0,74,0
+OutputFormat,METHOD,0.0,35,0
+OutputFormat,METHODNOEXCEPTION,0.0,35,0
+OutputFormat,CBRANCH,0.0,67,0

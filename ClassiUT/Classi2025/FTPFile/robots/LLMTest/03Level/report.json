@@ -1,0 +1,208 @@
+{
+    "model": "chatgpt",
+    "prompt": "prompt_1",
+    "scope": "method",
+    "java_class": "FTPFile",
+    "reports": [
+        {
+            "generation_target": "setRawListing",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getRawListing",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "isDirectory",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "isFile",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": false,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "isSymbolicLink",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": false,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "isUnknown",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        },
+        {
+            "generation_target": "isValid",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": false,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setType",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getType",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setName",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getName",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        },
+        {
+            "generation_target": "setSize",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getSize",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setHardLinkCount",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getHardLinkCount",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setGroup",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "getGroup",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setUser",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        },
+        {
+            "generation_target": "getUser",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setLink",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        },
+        {
+            "generation_target": "getLink",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "setTimestamp",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 2
+        },
+        {
+            "generation_target": "getTimestamp",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        },
+        {
+            "generation_target": "setPermission",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "hasPermission",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "toString",
+            "executable_after_heuristics": true,
+            "executable_after_cleanup": null,
+            "removed_methods_during_cleanup": 0
+        },
+        {
+            "generation_target": "toFormattedString",
+            "executable_after_heuristics": false,
+            "executable_after_cleanup": true,
+            "removed_methods_during_cleanup": 1
+        }
+    ],
+    "coverage_summary": {
+        "INSTRUCTION": {
+            "percentage": 94.33,
+            "covered": 416,
+            "missed": 25,
+            "total": 441
+        },
+        "LINE": {
+            "percentage": 96.36,
+            "covered": 106,
+            "missed": 4,
+            "total": 110
+        },
+        "COMPLEXITY": {
+            "percentage": 76.92,
+            "covered": 40,
+            "missed": 12,
+            "total": 52
+        },
+        "METHOD": {
+            "percentage": 90.62,
+            "covered": 29,
+            "missed": 3,
+            "total": 32
+        },
+        "BRANCH": {
+            "percentage": 68.42,
+            "covered": 26,
+            "missed": 12,
+            "total": 38
+        },
+        "CLASS": {
+            "percentage": 100.0,
+            "covered": 1,
+            "missed": 0,
+            "total": 1
+        }
+    }
+}

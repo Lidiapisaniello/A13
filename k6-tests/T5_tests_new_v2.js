@@ -204,9 +204,8 @@ function runGame(playerId, jwt, email, selectedCode) {
             body = null;
         }
 
-        const is504Error = res.status === 504 || (body && res.body.includes('504 GATEWAY_TIMEOUT'));
-        const is429Error = res.status === 429 || (body && res.body.includes('429 TOO_MANY_REQUESTS'));
-
+        const is504Error = body !== null && (res.status === 504 || (body && res.body.includes('504 GATEWAY_TIMEOUT')));
+        const is429Error = body !== null && ( res.status === 429 || (body && res.body.includes('429 TOO_MANY_REQUESTS')));
 
         successful_run_rate.add(body !== null && res.status <= 299);
         total_failed_run_rate.add(body === null || (body && res.status > 299));
