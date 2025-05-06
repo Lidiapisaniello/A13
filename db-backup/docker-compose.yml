@@ -1,7 +1,6 @@
 services:
   db-backup:
-    build:
-      context: .
+    image: mick0974/a13:db-backup
     container_name: db-backup
     volumes:
       - Backups:/Backups

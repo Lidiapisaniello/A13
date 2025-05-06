@@ -2,7 +2,7 @@
 
 SERVICE="$1"
 BACKUP_FILE="$2"
-CONTAINER_NAME="multi_db_backup"
+CONTAINER_NAME="db-backup"
 
 if [[ -z "$SERVICE" || -z "$BACKUP_FILE" ]]; then
   echo "Usage: ./restore_backup.sh <T23|T4> <backup_filename.sql.gz>"
