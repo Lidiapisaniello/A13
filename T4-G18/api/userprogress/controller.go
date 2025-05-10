@@ -10,7 +10,9 @@ type Service interface {
 	GetUserGameProgress(playerId Long, gameMode StringWrapper, classUT StringWrapper, robotType StringWrapper, difficulty StringWrapper) (UserGameProgressResponse, error)
 	UpdateHasWon(playerId Long, gameMode StringWrapper, classUT StringWrapper, robotType StringWrapper, difficulty StringWrapper, hasWon bool) (UserGameProgressResponse, error)
 	UpdateAchievements(playerId Long, gameMode StringWrapper, classUT StringWrapper, robotType StringWrapper, difficulty StringWrapper, newAchievements []string) (UserGameProgressResponse, error)
+	UpdateGlobalAchievements(playerId Long, newAchievements []string) (GlobalAchievementProgressResponse, error)
 	GetAllUserGameProgresses(playerId Long) ([]UserGameProgressResponse, error)
+	GetAllGlobalAchievementsByPlayerID(playerId Long) (GlobalAchievementProgressResponse, error)
 }
 
 type Controller struct {
@@ -149,6 +151,25 @@ func (rc *Controller) UpdateAchievements(w http.ResponseWriter, r *http.Request)
 	return api.WriteJson(w, http.StatusOK, winMatch)
 }
 
+func (rc *Controller) UpdateGlobalAchievements(w http.ResponseWriter, r *http.Request) error {
+	playerId, err := api.FromUrlParams[Long](r, "playerId")
+	if err != nil {
+		return api.MakeHttpError(err)
+	}
+
+	request, err := api.FromJsonBody[UpdateAchievementsRequest](r.Body)
+	if err != nil {
+		return err
+	}
+
+	winMatch, err := rc.service.UpdateGlobalAchievements(playerId, request.Achievements)
+	if err != nil {
+		return api.MakeHttpError(err)
+	}
+
+	return api.WriteJson(w, http.StatusOK, winMatch)
+}
+
 func (rc *Controller) GetAllUserGameProgresses(w http.ResponseWriter, r *http.Request) error {
 	playerId, err := api.FromUrlParams[Long](r, "playerId")
 	if err != nil {
@@ -156,6 +177,20 @@ func (rc *Controller) GetAllUserGameProgresses(w http.ResponseWriter, r *http.Re
 	}
 
 	winMatch, err := rc.service.GetAllUserGameProgresses(playerId)
+	if err != nil {
+		return api.MakeHttpError(err)
+	}
+
+	return api.WriteJson(w, http.StatusOK, winMatch)
+}
+
+func (rc *Controller) GetAllGlobalAchievementsByPlayerID(w http.ResponseWriter, r *http.Request) error {
+	playerId, err := api.FromUrlParams[Long](r, "playerId")
+	if err != nil {
+		return api.MakeHttpError(err)
+	}
+
+	winMatch, err := rc.service.GetAllGlobalAchievementsByPlayerID(playerId)
 	if err != nil {
 		return api.MakeHttpError(err)
 	}

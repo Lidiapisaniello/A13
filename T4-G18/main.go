@@ -33,6 +33,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Configuration struct {
@@ -111,12 +112,25 @@ func main() {
 
 func run(ctx context.Context, c Configuration) error {
 
+	log.Printf("Executing run function")
+
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // writer
+		logger.Config{
+			SlowThreshold:             time.Second, // soglia per query lente
+			LogLevel:                  logger.Info, // livello di log
+			IgnoreRecordNotFoundError: false,       // non ignorare errori "record not found"
+			Colorful:                  true,        // disabilita colori
+		},
+	)
+
 	/*
 	*	Apre una connessione a un database PostgreSQL utilizzando GORM.
 	*	SkipDefaultTransaction: true: Disabilita le transazioni automatiche per migliorare le performance.
 	*   TranslateError: true: Converte gli errori SQL in errori GORM leggibili
 	 */
 	db, err := gorm.Open(postgres.Open(c.PostgresUrl), &gorm.Config{
+		Logger:                 newLogger,
 		SkipDefaultTransaction: true,
 		TranslateError:         true,
 	})
@@ -143,6 +157,7 @@ func run(ctx context.Context, c Configuration) error {
 		&model.GameRecord{},
 		&model.UserGameProgress{},
 		&model.AchievementProgress{},
+		&model.GlobalAchievementProgress{},
 	)
 
 	if err != nil {
@@ -529,6 +544,10 @@ func setupRoutes(gc *game.Controller,
 		r.Put("/achievements/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}", api.HandlerFunc(uc.UpdateAchievements))
 		// Get all user progresses
 		r.Get("/{playerId}", api.HandlerFunc(uc.GetAllUserGameProgresses))
+		// Get all user global achievements
+		r.Get("/global-achievements/{playerId}", api.HandlerFunc(uc.GetAllGlobalAchievementsByPlayerID))
+		// Update global achievements unlocked
+		r.Put("/global-achievements/{playerId}", api.HandlerFunc(uc.UpdateGlobalAchievements))
 	})
 
 	r.Route("/games", func(r chi.Router) {

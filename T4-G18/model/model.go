@@ -38,6 +38,16 @@ func (AchievementProgress) TableName() string {
 	return "achievement_progresses"
 }
 
+type GlobalAchievementProgress struct {
+	ID                int64  `gorm:"primaryKey"`
+	PlayerID          int64  `gorm:"not null"`
+	GlobalAchievement string `gorm:"not null"`
+}
+
+func (GlobalAchievementProgress) TableName() string {
+	return "global_achievement_progresses"
+}
+
 type Experience struct {
 	PlayerID         int64 `gorm:"primaryKey;autoIncrement:false"`
 	ExperiencePoints int   `gorm:"default:0"`

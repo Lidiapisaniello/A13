@@ -1,5 +1,5 @@
 {
-    "postgresUrl": "postgresql://postgres:postgres@127.0.0.1:5432/postgres",
+    "postgresUrl": "postgresql://t4_service:t4_password@127.0.0.1:5432/t4_database",
     "listenAddress": "0.0.0.0:8084",
     "apiPrefix": "/",
     "dataPath": "data",

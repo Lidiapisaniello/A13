@@ -266,6 +266,60 @@ func (ms *GameRecordStorage) UpdateAchievements(playerId Long, gameMode StringWr
 	}, nil
 }
 
+func (ms *GameRecordStorage) UpdateGlobalAchievements(playerId Long, newAchievements []string) (GlobalAchievementProgressResponse, error) {
+	log.Printf("Updating global achievements for player %d", playerId)
+
+	// Recupera gli achievement globali esistenti per il giocatore
+	var existing []GlobalAchievementProgress
+	if err := ms.db.Where("player_id = ?", playerId).Find(&existing).Error; err != nil {
+		log.Printf("Error retrieving GlobalAchievementProgress: %v", err)
+		return GlobalAchievementProgressResponse{}, api.MakeServiceError(err)
+	}
+
+	// Crea mappa degli achievement esistenti per evitare duplicati
+	existingMap := make(map[string]bool)
+	for _, entry := range existing {
+		existingMap[entry.GlobalAchievement] = true
+	}
+
+	// Aggiunge solo quelli mancanti
+	for _, achievement := range newAchievements {
+		if existingMap[achievement] {
+			log.Printf("Skipping existing achievement: %s", achievement)
+			continue
+		}
+
+		newEntry := GlobalAchievementProgress{
+			PlayerID:          playerId.AsInt64(),
+			GlobalAchievement: achievement,
+		}
+
+		if err := ms.db.Create(&newEntry).Error; err != nil {
+			log.Printf("Error inserting global achievement %s: %v", achievement, err)
+			return GlobalAchievementProgressResponse{}, api.MakeServiceError(err)
+		}
+		log.Printf("Added new global achievement: %s", achievement)
+	}
+
+	// Ricarica la lista aggiornata
+	var updated []GlobalAchievementProgress
+	if err := ms.db.Where("player_id = ?", playerId).Find(&updated).Error; err != nil {
+		log.Printf("Error retrieving updated GlobalAchievementProgress: %v", err)
+		return GlobalAchievementProgressResponse{}, api.MakeServiceError(err)
+	}
+
+	// Estrae la lista di achievement come []string
+	achievements := make([]string, 0, len(updated))
+	for _, entry := range updated {
+		achievements = append(achievements, entry.GlobalAchievement)
+	}
+
+	return GlobalAchievementProgressResponse{
+		PlayerID:           playerId.AsInt64(),
+		GlobalAchievements: achievements,
+	}, nil
+}
+
 func (ms *GameRecordStorage) GetAllUserGameProgresses(playerId Long) ([]UserGameProgressResponse, error) {
 	var userGameProgressList []UserGameProgress
 
@@ -308,6 +362,21 @@ func (ms *GameRecordStorage) GetAllUserGameProgresses(playerId Long) ([]UserGame
 	return responses, nil
 }
 
+func (ms *GameRecordStorage) GetAllGlobalAchievementsByPlayerID(playerId Long) (GlobalAchievementProgressResponse, error) {
+	log.Printf("Fetching global achievements for player %d", playerId)
+
+	// Recupero gli achievement aggiornati
+	achievements, err := ms.GetGlobalAchievements(playerId.AsInt64())
+	if err != nil {
+		return GlobalAchievementProgressResponse{}, err
+	}
+
+	return GlobalAchievementProgressResponse{
+		PlayerID:           playerId.AsInt64(),
+		GlobalAchievements: achievements,
+	}, nil
+}
+
 // GetAchievements Funzione di supporto che recupera gli achievement associati a un UserGameProgress
 func (ms *GameRecordStorage) GetAchievements(progressID int64) ([]string, error) {
 	var achievements []string
@@ -335,5 +404,35 @@ func (ms *GameRecordStorage) GetAchievements(progressID int64) ([]string, error)
 	}
 
 	log.Printf("Final achievements list: %v", achievements)
+	return achievements, nil
+}
+
+// GetGlobalAchievements Funzione di supporto che recupera i global achievement associati a un PlayerID
+func (ms *GameRecordStorage) GetGlobalAchievements(playerID int64) ([]string, error) {
+	var achievements []string
+	var achievementRecords []GlobalAchievementProgress
+
+	log.Printf("Retrieving global achievements for player ID: %d", playerID)
+
+	err := ms.db.Where("player_id = ?", playerID).Find(&achievementRecords).Error
+	if err != nil {
+		log.Printf("Error retrieving global achievements: %v", err)
+		return nil, api.MakeServiceError(err)
+	}
+
+	if len(achievementRecords) == 0 {
+		log.Printf("No global achievements found for player ID: %d", playerID)
+	} else {
+		log.Println("All global achievement progress records:")
+		for _, record := range achievementRecords {
+			log.Printf("PlayerID: %d, Global Achievement: %s", record.PlayerID, record.GlobalAchievement)
+		}
+	}
+
+	for _, record := range achievementRecords {
+		achievements = append(achievements, record.GlobalAchievement)
+	}
+
+	log.Printf("Final Global achievements list: %v", achievements)
 	return achievements, nil
 }

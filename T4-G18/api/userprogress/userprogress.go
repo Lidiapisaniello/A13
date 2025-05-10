@@ -26,6 +26,17 @@ type AchievementProgress struct {
 	Achievement        string `json:"achievement"`
 }
 
+type GlobalAchievementProgress struct {
+	ID                int64  `json:"global_achievement_progress_id"`
+	PlayerID          int64  `json:"player_id"`
+	GlobalAchievement string `json:"global_achievement"`
+}
+
+type GlobalAchievementProgressResponse struct {
+	PlayerID           int64    `json:"player_id"`
+	GlobalAchievements []string `json:"global_achievements"`
+}
+
 type CreateRequest struct {
 	PlayerID   int64  `json:"player_id"`
 	GameMode   string `json:"game_mode"`
@@ -63,6 +74,10 @@ func (UpdateRequest) Validate() error {
 }
 
 func (UpdateAchievementsRequest) Validate() error {
+	return nil
+}
+
+func (GlobalAchievementProgressResponse) Validate() error {
 	return nil
 }
 
