@@ -114,8 +114,8 @@ public class T4Service extends BaseService {
 
         registerAction("CreateGame", new ServiceActionDefinition(
                 params -> CreateGame((String) params[0], (String) params[1], (String) params[2], (String) params[3],
-                        (String) params[4]),
-                String.class, String.class, String.class, String.class, String.class));
+                        (String) params[4], (String) params[5]),
+                String.class, String.class, String.class, String.class, String.class, String.class));
 
         registerAction("EndGame", new ServiceActionDefinition(
                 params -> EndGame((int) params[0], (String) params[1], (int) params[2], (Boolean) params[3]),
@@ -323,15 +323,18 @@ public class T4Service extends BaseService {
         return callRestGET(endpoint, formData, String.class);
     }
 
-    private int CreateGame(String Time, String difficulty, String name, String description, String id) {
+    private int CreateGame(String Time, String difficulty, String name, String description, String id, String classUT) {
         final String endpoint = "/games";
         JSONObject obj = new JSONObject();
         obj.put("difficulty", difficulty);
         obj.put("name", name);
         /*
-         * Stiamo usando descrizione per salvare la modalità di gioco 
+         * Stiamo usando descrizione per salvare la modalità di gioco
+         * Stiamo usando username per salvare la classe sotto test
          */
         obj.put("description", description);
+        obj.put("username", classUT);
+
         obj.put("startedAt", Time);
         JSONArray playersArray = new JSONArray();
         playersArray.put(String.valueOf(id));

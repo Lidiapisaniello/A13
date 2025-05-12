@@ -135,7 +135,7 @@ function getConsoleTextRun(userCoverageDetails, robotCoverageDetails, canWin, ga
 	// JaCoCo
 	result +=
 		'    ' + '─'.repeat(maxLineLength) + '\n' +
-		`    ${centerText('JaCoCo', maxLineLength)}\n` +
+		`    ${centerText(terminalMessages.jacoco_table_title, maxLineLength)}\n` +
 		'    ' + '─'.repeat(maxLineLength) + '\n' +
 		header +
 		formatJacocoRow('Instruction', userCoverageDetails.jacoco_instruction, robotCoverageDetails.jacoco_instruction) + '\n' +
@@ -145,7 +145,7 @@ function getConsoleTextRun(userCoverageDetails, robotCoverageDetails, canWin, ga
 	// EvoSuite
 	result +=
 		'    ' + '─'.repeat(maxLineLength) + '\n' +
-		`    ${centerText('EvoSuite', maxLineLength)}\n` +
+		`    ${centerText(terminalMessages.evosuite_table_title, maxLineLength)}\n` +
 		'    ' + '─'.repeat(maxLineLength) + '\n' +
 		header +
 		formatEvoRow('Line', userCoverageDetails.evosuite_line, robotCoverageDetails.evosuite_line) + '\n' +

@@ -222,6 +222,7 @@ function generateEndGameMessage(userScore, robotScore, isWinner, expGained, achi
     let resultMessage = isWinner ? gameEndData.game_win : gameEndData.game_lose;
     let expMessage = "";
     let achievementsMessage = ""
+    let rememberSaveMessage = gameEndData.game_remember_save;
 
     if (isWinner) {
         if (expGained === 0) {
@@ -232,17 +233,18 @@ function generateEndGameMessage(userScore, robotScore, isWinner, expGained, achi
             expMessage = `${gameEndData.game_exp.base} ${expGained} ${gameEndData.game_exp.multi}`;
         }
 
-        if (achievementsUnlocked.length > 0)
+        if (achievementsUnlocked.length > 0) {
             achievementsMessage = "\n\n" + `${unlockedNewAchievementMessage.descr}\n${achievementsUnlocked.map(a => ` - ${achievementData[a]?.name || a}\n`).join("")}`;
-
+            achievementsMessage = achievementsMessage.slice(0, -1);
+        }
     } else {
         expMessage = gameEndData.game_retry;
     }
 
     openModalWithText(
         gameEndData.game_end,
-        `${gameEndData.game_score}: ${userScore} pt.\n${resultMessage}\n${expMessage}${achievementsMessage}`,
-        [{ tagName: "a", text: `${modalButtonText.go_to_home}`, href: '/main', class: 'btn btn-primary' }]
+        `${gameEndData.game_score}: ${userScore} pt.\n${resultMessage}\n${expMessage}${achievementsMessage}\n\n${rememberSaveMessage}`,
+        [{ tagName: "button", text: `${modalButtonText.close}`, data_bs_dismiss: "modal", class: 'btn btn-primary' }]
     );
 }
 

@@ -28,9 +28,6 @@ function Disconnessione() {
       console.log("Response:", response);
       if (response.status == 200) {
         response.text().then((okMessage) => {
-          alert(
-            "Logout avvenuto con successo, a breve verrai indirizzato nella pagina di login"
-          );
           localStorage.removeItem("usernameAdmin");
         });
 

@@ -4,7 +4,7 @@ import (
 	"github.com/alarmfox/game-repository/api"
 	"github.com/alarmfox/game-repository/model"
 	"gorm.io/gorm"
-	
+
 	"strconv"
 )
 
@@ -29,6 +29,7 @@ func (gs *Repository) Create(r *CreateRequest) (Game, error) {
 			ScalataGameID: r.ScalataGameID,
 			Players:       make([]model.Player, len(r.Players)),
 			Description:   r.Description,
+			Username:      r.Username,
 		}
 	)
 	// detect duplication in player
@@ -73,10 +74,10 @@ func (gs *Repository) FindByPID(pid int64) ([]Game, error) {
 		Find(&games).
 		Error
 
-    res := make([]Game, len(games))
-    for i, game := range games {
-        res[i] = fromModel(&game)
-    }
+	res := make([]Game, len(games))
+	for i, game := range games {
+		res[i] = fromModel(&game)
+	}
 
 	return res, api.MakeServiceError(err)
 }
