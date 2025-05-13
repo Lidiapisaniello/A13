@@ -75,50 +75,6 @@ public class ClassUTService {
         return ResponseEntity.ok(classNames);
     }
 
-    public ResponseEntity<FileUploadResponse> uploadClassAndGenerateRobots(MultipartFile classFile, String model, String jwt, HttpServletRequest request) throws IOException {
-        if (jwtService.isJwtValid(jwt)) {
-            //Legge i metadati della classe della parte "model" del body HTTP e li salva in un oggetto ClasseUT
-            ObjectMapper mapper = new ObjectMapper();
-            ClassUT classe = mapper.readValue(model, ClassUT.class);
-
-            //Salva il nome del file caricato
-            String fileName = StringUtils.cleanPath(classFile.getOriginalFilename());
-            long size = classFile.getSize();
-
-            //Salva la classe nel filesystem condiviso
-            FileUploadUtil.saveCLassFile(fileName, classe.getName(), classFile);
-            //Genera e salva i test nel filesystem condiviso
-            robotService.generateAndSaveRobots(fileName, classe.getName(), classFile);
-
-            //Prepara la risposta per il front-end
-            FileUploadResponse response = new FileUploadResponse();
-            response.setFileName(fileName);
-            response.setSize(size);
-            response.setDownloadUri("/downloadFile");
-
-            //Setta data di caricamento e percorso di download
-            classe.setUri("Files-Upload/" + classe.getName() + "/" + fileName);
-            classe.setDate(today.toString());
-
-            //Creazione dell'oggetto riguardante l'operazione appena fatta
-            LocalDate currentDate = LocalDate.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String data = currentDate.format(formatter);
-            Operation operation1= new Operation((int) operationRepository.count(),userAdmin.getUsername(),classe.getName(),0,data);
-
-            //Salva i dati sull'operazione fatta nel database
-            operationRepository.save(operation1);
-            //Salva i dati sulla classe nel database
-            classRepository.save(classe);
-            System.out.println("Operazione completata con successo (uploadFile)");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            FileUploadResponse response = new FileUploadResponse();
-            response.setErrorMessage("Errore, il token non è valido");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-    }
-
     public ResponseEntity<FileUploadResponse> uploadClassAndRobotZip(MultipartFile classUTFile, String classUTDetails, MultipartFile robotTestsZip, String jwt, HttpServletRequest request) throws IOException {
         // Se il token Jwt non è valido restituisci un errore al frontend e esci
         if (! jwtService.isJwtValid(jwt)) {
@@ -152,7 +108,8 @@ public class ClassUTService {
         response.setSize(size);
         response.setDownloadUri("/downloadFile");
 
-        classe.setUri("Files-Upload/" + classe.getName() + "/" + classUTFileName);
+        // classe.setUri("Files-Upload/" + classe.getName() + "/" + classUTFileName);
+        classe.setUri(String.format("%s/%s/%s/%s", RobotService.VOLUME_T0_BASE_PATH, RobotService.UNMODIFIED_SRC, classe.getName(), classUTFileName));
         classe.setDate(today.toString());
 
         LocalDate currentDate = LocalDate.now();

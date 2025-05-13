@@ -221,3 +221,21 @@ background-color: #d32f2f;
   font-size: 14px;
   color: #ddd;
 }
+
+
+.disabled {
+  opacity: 0.5;  /* Riduce la visibilità */
+  pointer-events: none;  /* Impedisce l'interazione (clic, hover) */
+}
+
+a.language_select,
+a.language_select * {
+  cursor: pointer;
+}
+
+div.button-class,
+div.button-class * {
+  cursor: pointer;
+}
+
+

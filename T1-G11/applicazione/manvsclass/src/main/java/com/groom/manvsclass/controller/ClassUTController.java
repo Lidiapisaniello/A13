@@ -51,12 +51,6 @@ public class ClassUTController {
         }
     }
 
-    @PostMapping("/uploadFile")
-    @ResponseBody
-    public ResponseEntity<FileUploadResponse> uploadClassAndGenerateRobots(@RequestParam("file") MultipartFile classFile, @RequestParam("model") String model, @CookieValue(name = "jwt", required = false) String jwt, HttpServletRequest request) throws IOException {
-        return classUTService.uploadClassAndGenerateRobots(classFile, model, jwt, request);
-    }
-
     @PostMapping("/uploadrobots")
     @ResponseBody
     public ResponseEntity<FileUploadResponse> uploadClassAndRobotZip(

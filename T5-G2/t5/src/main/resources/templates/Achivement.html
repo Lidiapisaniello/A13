@@ -63,6 +63,7 @@
             flex-wrap: wrap;
             gap: 15px;
             padding: 10px 0;
+            width: 100%;
         }
 
         .achievement-item {
@@ -127,6 +128,7 @@
                 <span th:text="#{achievements_list}"></span>
                 <select id="game-mode-select" class="form-select w-auto">
                     <option value="PartitaSingola"></option>
+                    <option value="General"></option>
                 </select>
             </div>
             <div class="card-body d-flex flex-wrap" id="achievements-container"></div>
@@ -137,33 +139,57 @@
 <div th:replace="fragments/footer :: footer"></div>
 
 <script th:inline="javascript">
-    let achievements = /*[[${achievements}]]*/ [];
+    let gamemode_achievements = /*[[${gamemode_achievements}]]*/ [];
+    let general_achievements = /*[[${general_achievements}]]*/ [];
+
+
     let difficultyTranslation = {
         easy: /*[[#{d_facile}]]*/ "Facile",
         medium: /*[[#{d_medio}]]*/ "Medio",
         hard: /*[[#{d_difficile}]]*/ "Difficile"
     };
-    let achievementData = {
+    const achievementData = {
         "instructions": {
             name: /*[[#{instructions_name}]]*/ "Coverage Master",
             descr: /*[[#{instructions_descr}]]*/ "Ottenuto superando il robot nel numero di istruzioni coperte per la classe sotto test."
         },
         "instructionsAndWeakMutation": {
-            name: /*[[#{instructionsAndWeakMutation_name}]]*/ "Signore della Weak Mutation",
+            name: /*[[#{instructionsAndWeakMutation_name}]]*/ "Signore delle Weak Mutation",
             descr: /*[[#{instructionsAndWeakMutation_descr}]]*/ "Ottenuto superando il robot sia nel numero di istruzioni coperte che nella metrica weakMutation."
         },
+        "firstMatchWon": {
+            name: /*[[#{firstMatchWon_text}]]*/ "Primi passi",
+            descr: /*[[#{firstMatchWon_descr}]]*/ "Ottenuto vincendo la tua prima partita."
+        },
+        "thirdMatchWon": {
+            name: /*[[#{thirdMatchWon_text}]]*/ "In ritmo",
+            descr: /*[[#{thirdMatchWon_descr}]]*/ "Ottenuto vincendo la tua terza partita."
+        },
+        "allBeatenOneClass": {
+            name: /*[[#{allBeatenOneClass_text}]]*/ "Classe completata",
+            descr: /*[[#{allBeatenOneClass_descr}]]*/ "Ottenuto superando tutti gli avversari di una classe."
+        },
+        "allBeatenTwoClass": {
+            name: /*[[#{allBeatenTwoClass_text}]]*/ "Doppia padronanza",
+            descr: /*[[#{allBeatenTwoClass_descr}]]*/ "Ottenuto superando tutti gli avversari di due classi."
+        }
     };
+
     const gameMode = {
         PartitaSingola: /*[[#{singola}]]*/ "Partita Singola",
         Allenamento: /*[[#{allenamento}]]*/ "Allenamento",
         Multiplayer: /*[[#{multiplayer}]]*/ "Multi-giocatore",
         Scalata: /*[[#{scalata}]]*/ "Scalata",
     }
+
+    const no_achievement_message = /*[[#{no_achievement_message}]]*/ "Nessun achievement sbloccato";
+    const general = /*[[#{general}]]*/ "Generici";
 </script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelector('option[value="PartitaSingola"]').textContent = gameMode.PartitaSingola;
+        document.querySelector('option[value="General"]').textContent = general;
 
         let progressContainer = document.querySelector('.progress_container');
         let progress = parseFloat(progressContainer.getAttribute('data-progress'));
@@ -179,12 +205,46 @@
             }, {});
         }
 
-        function renderAchievements(selectedMode) {
+        function renderGeneralAchievements() {
             let container = document.getElementById("achievements-container");
             container.innerHTML = "";
 
-            if (achievements && achievements.length > 0) {
-                let filteredAchievements = achievements.filter(a => a.game_mode === selectedMode);
+            if (!general_achievements || general_achievements.length === 0) {
+                let messageDiv = document.createElement("div");
+                messageDiv.textContent = no_achievement_message;
+                messageDiv.classList.add("text-center", "mt-3", "fw-bold");
+                container.appendChild(messageDiv);
+                return;
+            }
+
+            let achievementsContainer = document.createElement("div");
+            achievementsContainer.classList.add("achievements-container");
+
+            general_achievements.forEach(ach => {
+                let achDiv = document.createElement("div");
+                achDiv.classList.add("achievement-item");
+                achDiv.innerHTML = `
+            <img src="/images/achievements/${ach}.png"
+                 alt="${achievementData[ach]?.name || ach}">
+            <div class="achievement-info">
+                <h6>${achievementData[ach]?.name || ach}</h6>
+                <p>${achievementData[ach]?.descr || ""}</p>
+            </div>
+        `;
+                achievementsContainer.appendChild(achDiv);
+            });
+
+            container.appendChild(achievementsContainer);
+        }
+
+
+        function renderGameModeAchievements(selectedMode) {
+            let container = document.getElementById("achievements-container");
+            container.innerHTML = "";
+
+            let hasAchievements = false; // Flag per verificare se ci sono achievement sbloccati
+            if (gamemode_achievements && gamemode_achievements.length > 0) {
+                let filteredAchievements = gamemode_achievements.filter(a => a.game_mode === selectedMode);
                 let groupedByClassUT = groupBy(filteredAchievements, "class_ut");
 
                 for (let classUT in groupedByClassUT) {
@@ -192,7 +252,7 @@
                     classUTDiv.innerHTML = `<div class='class-ut'>${classUT}</div>`;
 
                     let groupedByRobot = groupBy(groupedByClassUT[classUT], "robot_type");
-                    let hasAchievements = false; // Flag per verificare se ci sono obiettivi
+                    hasAchievements = false;
                     for (let robotType in groupedByRobot) {
                         let robotDiv = document.createElement("div");
                         let groupedByDifficulty = groupBy(groupedByRobot[robotType], "difficulty");
@@ -245,17 +305,20 @@
             // Se non ci sono obiettivi, aggiungo il messaggio "Nessun obiettivo sbloccato"
             if (!hasAchievements) {
                 let messageDiv = document.createElement("div");
-                messageDiv.textContent = "Nessun obiettivo sbloccato";
+                messageDiv.textContent = no_achievement_message;
                 messageDiv.classList.add("text-center", "mt-3", "fw-bold");
                 container.appendChild(messageDiv);
             }
         }
 
         document.getElementById("game-mode-select").addEventListener("change", function () {
-            renderAchievements(this.value);
+            if (this.value === "General")
+                renderGeneralAchievements();
+            else
+                renderGameModeAchievements(this.value);
         });
 
-        renderAchievements("PartitaSingola");
+        renderGameModeAchievements("PartitaSingola");
     });
 </script>
 </body>

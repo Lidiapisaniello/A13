@@ -28,9 +28,6 @@ function Disconnessione() {
       console.log("Response:", response);
       if (response.status == 200) {
         response.text().then((okMessage) => {
-          alert(
-            "Logout avvenuto con successo, a breve verrai indirizzato nella pagina di login"
-          );
           localStorage.removeItem("usernameAdmin");
         });
 
@@ -175,13 +172,6 @@ function getAdmin() {
 
 // Inizializzazione al caricamento della pagina
 document.addEventListener("DOMContentLoaded", () => getAdmin());
-
-// Modifica per il bottone Achievement
-document
-  .querySelector(".button-achievement")
-  .addEventListener("click", function () {
-    window.location.href = "/achievements"; // Reindirizza alla pagina degli achievement
-  });
 
 // Modifica per il bottone Classes
 document.querySelector(".button-class").addEventListener("click", function () {

@@ -139,6 +139,10 @@
 			}
 
 			const coverage_capitalized= /*[[#{coverage_capitalized}]]*/ "Copertura";
+			const victory = {
+				win_label: /*[[#{win_label}]]*/ "VITTORIA",
+				loss_label: /*[[#{loss_label}]]*/ "SCONFITTA",
+			}
 		</script>
 
 		<script>
@@ -196,21 +200,21 @@ function renderGameHistory(games) {
     games.forEach((game) => {
         const formattedDate = formatDate(game.closedAt);
         const badge = game.isWinner
-            ? '<span class="badge text-bg-success"> WIN </span>'
-            : '<span class="badge text-bg-danger"> LOSS </span>';
+            ? `<span class="badge text-bg-success"> ${victory.win_label} </span>`
+            : `<span class="badge text-bg-danger"> ${victory.loss_label} </span>`;
 
 
         const gameItem = `
             <a href="#" class="list-group-item list-group-item-action" aria-current="true">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-1">${gameMode[game.description]}</h4>
-                        <p class="mb-0">${game.name} - ${difficulty[game.difficulty]}</p>
+                        <h4 class="mb-1">${game.username}</h4>
+                        <p class="mb-0">${gameMode[game.description]} - ${game.name} - ${difficulty[game.difficulty]}</p>
                         <small>${formattedDate}</small>
                     </div>
                     <div class="text-center p-3">
                         <h4 class="mb-0 fw-semibold lh-1">${badge}</h4>
-                        <small>${coverage_capitalized} ${game.score}pt.</small>
+                        <small>${coverage_capitalized} ${game.score}%</small>
                     </div>
                 </div>
             </a>

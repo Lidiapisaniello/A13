@@ -47,14 +47,14 @@ cd "$ROOT_DIR/T8-G21/T8"
 docker compose up -d || { echo "Error deploying T8-G21"; exit 1; }
 cd "$ROOT_DIR"
 
-echo "Deploying ui_gateway"
-cd "$ROOT_DIR/ui_gateway"
-docker compose up -d || { echo "Error deploying ui_gateway"; exit 1; }
-cd "$ROOT_DIR"
-
 echo "Deploying api_gateway"
 cd "$ROOT_DIR/apiGateway"
 docker compose up -d || { echo "Error deploying apiGateway"; exit 1; }
+cd "$ROOT_DIR"
+
+echo "Deploying ui_gateway"
+cd "$ROOT_DIR/ui_gateway"
+docker compose up -d || { echo "Error deploying ui_gateway"; exit 1; }
 cd "$ROOT_DIR"
 
 echo "Deploying T0"

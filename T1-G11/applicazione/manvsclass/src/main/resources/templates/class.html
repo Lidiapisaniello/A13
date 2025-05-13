@@ -19,7 +19,7 @@
           <a class="navbar-brand" href="/home_adm"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-fill-gear" viewBox="0 0 16 16">
             <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
           </svg></a>
-          <a class="navbar-brand" href="/class">Classes</a>
+          <a class="navbar-brand" href="/class" th:text="#{class_title}"></a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -29,38 +29,31 @@
               <li class="nav-item">
                 <a class="nav-link" href="/home_adm">Home</a>
               </li>
-              <!--
               <li class="nav-item">
-                <a class="nav-link" href="/uploadClasse">+ Add Class</a>
-              </li>
-              -->
-              <li class="nav-item">
-                <a class="nav-link" href="/uploadrobots">+ Add Class and Robots</a>
+                <a class="nav-link" href="/uploadrobots"  th:text="#{class_navbar_add}"></a>
               </li>
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="sortByDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Sort By
+                <a class="nav-link dropdown-toggle" href="#" id="sortByDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"  th:text="#{class_navbar_sort}">
                 </a>
                 <div class="dropdown-menu" aria-labelledby="sortByDropdown">
-                  <a class="dropdown-item" href="/class?parametro=1">Date</a>
-                  <a class="dropdown-item" href="/class?parametro=2">Name</a>
+                  <a class="dropdown-item" href="/class?parametro=1" th:text="#{class_navbar_sort_date}"></a>
+                  <a class="dropdown-item" href="/class?parametro=2" th:text="#{class_navbar_sort_name}"></a>
 
                 </div>
               </li>
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="filterDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Filter by Difficulty
+                <a class="nav-link dropdown-toggle" href="#" id="filterDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" th:text="#{class_navbar_filter}">
                 </a>
                 <div class="dropdown-menu" aria-labelledby="filterDropdown">
-                  <a class="dropdown-item" href="/class?parametro=3">Beginner</a>
-                  <a class="dropdown-item" href="/class?parametro=4">Intermediate</a>
-                  <a class="dropdown-item" href="/class?parametro=5">Advanced</a>
+                  <a class="dropdown-item" href="/class?parametro=3" th:text="#{difficulty_beginner}"></a>
+                  <a class="dropdown-item" href="/class?parametro=4" th:text="#{difficulty_Intermediate}"></a>
+                  <a class="dropdown-item" href="/class?parametro=5" th:text="#{difficulty_Advanced}"></a>
                 </div>
               </li>
             </ul>
             <form class="form-inline my-2 my-lg-0" action="class" method="get">
               <input class="form-control mr-sm-2" type="search" name = "parametro" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit" th:text="#{search}"></button>
             </form>
           </div>
         </div>
@@ -70,6 +63,21 @@
 
       <div class="row clearfix" id="classut-list">
       </div>
+
+      <script th:inline="javascript">
+        const class_title = /*[[#{class_title}]]*/ "Classi";
+        const class_navbar_add = /*[[#{class_navbar_add}]]*/ "Aggiungi Classe e Robot";
+        const class_navbar_sort = /*[[#{class_navbar_sort}]]*/ "Ordina per";
+        const class_navbar_sort_name = /*[[#{class_navbar_sort_name}]]*/ "Nome";
+        const class_navbar_sort_date = /*[[#{class_navbar_sort_date}]]*/ "Data";
+        const class_navbar_filter = /*[[#{class_navbar_filter}]]*/ "Filtra per difficoltà";
+        const search = /*[[#{search}]]*/ "Cerca";
+        const difficulty = {
+          Beginner: /*[[#{difficulty_beginner}]]*/ "Facile",
+          Intermediate: /*[[#{difficulty_Intermediate}]]*/ "Medio",
+          Advanced: /*[[#{difficulty_Advanced}]]*/ "Difficile",
+        }
+      </script>
 
       <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
       <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>

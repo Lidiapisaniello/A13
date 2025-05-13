@@ -1,67 +1,136 @@
-<!--MODIFICA: Restyling file-->
 <!DOCTYPE html>
 <html lang="it">
 
 <head>
-<meta charset="utf-8">
-<title>documents app - Bootdey.com</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="t1/css/login_admin.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <title>documents app - Bootdey.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+
+  <!-- Custom CSS -->
+  <link href="t1/css/login_admin.css" rel="stylesheet">
 </head>
 
 <body>
 <!--Il mio codice HTML qui-->
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
 <div id="main-content" class="file_manager">
-<div class="container w-50">
-<div class="card">
-<div class="file">
-<br>
-<center><p class="h3">Login Amministratore</p></center>
-<div class="icon">
-<svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" fill="currentColor" class="bi bi-person-fill-gear text-primary" viewBox="0 0 16 16">
-  <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
-</svg>
-<br><br>
-</div>
-</a>
-</div>
+  <div class="container w-50">
+    <div class="card">
 
-<div class="card-body">
-  <form id="uploadForm">
-  <div class="mb-3">
-    <label for="username" class="form-label">Username</label>
-    <input type="text" class="form-control" id="username" aria-describedby="classNameHelp" autocomplete="username" placeholder="*campo obbligatorio">
+      <div class="file">
+        <br>
+        <center>
+          <p class="h3" th:text="#{loginAdmin_title}"></p>
+        </center>
+        <div class="icon text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" fill="currentColor" class="bi bi-person-fill-gear text-primary" viewBox="0 0 16 16">
+            <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
+          </svg>
+          <br><br>
+        </div>
+      </div>
+      <div class="btn-group d-flex">
+        <!-- Language -->
+        <button type="button" class="btn btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <i id="dropdownIcon">
+          </i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end p-0">
+          <div class="list-group">
+            <!-- English -->
+            <a class="list-group-item list-group-item-action language_select" aria-current="true" data-lang="en">
+              <div class="d-flex justify-content-between">
+                <h6>
+                  <svg width="16px" height="16px" enable-background="new 0 0 512 512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><circle cx="256" cy="256" fill="#f0f0f0" r="256"/><g fill="#0052b4"><path d="m52.92 100.142c-20.109 26.163-35.272 56.318-44.101 89.077h133.178z"/><path d="m503.181 189.219c-8.829-32.758-23.993-62.913-44.101-89.076l-89.075 89.076z"/><path d="m8.819 322.784c8.83 32.758 23.993 62.913 44.101 89.075l89.074-89.075z"/><path d="m411.858 52.921c-26.163-20.109-56.317-35.272-89.076-44.102v133.177z"/><path d="m100.142 459.079c26.163 20.109 56.318 35.272 89.076 44.102v-133.176z"/><path d="m189.217 8.819c-32.758 8.83-62.913 23.993-89.075 44.101l89.075 89.075z"/><path d="m322.783 503.181c32.758-8.83 62.913-23.993 89.075-44.101l-89.075-89.075z"/><path d="m370.005 322.784 89.075 89.076c20.108-26.162 35.272-56.318 44.101-89.076z"/></g><g fill="#d80027"><path d="m509.833 222.609h-220.44-.001v-220.442c-10.931-1.423-22.075-2.167-33.392-2.167-11.319 0-22.461.744-33.391 2.167v220.44.001h-220.442c-1.423 10.931-2.167 22.075-2.167 33.392 0 11.319.744 22.461 2.167 33.391h220.44.001v220.442c10.931 1.423 22.073 2.167 33.392 2.167 11.317 0 22.461-.743 33.391-2.167v-220.44-.001h220.442c1.423-10.931 2.167-22.073 2.167-33.392 0-11.317-.744-22.461-2.167-33.391z"/><path d="m322.783 322.784 114.236 114.236c5.254-5.252 10.266-10.743 15.048-16.435l-97.802-97.802h-31.482z"/><path d="m189.217 322.784h-.002l-114.235 114.235c5.252 5.254 10.743 10.266 16.435 15.048l97.802-97.804z"/><path d="m189.217 189.219v-.002l-114.236-114.237c-5.254 5.252-10.266 10.743-15.048 16.435l97.803 97.803h31.481z"/><path d="m322.783 189.219 114.237-114.238c-5.252-5.254-10.743-10.266-16.435-15.047l-97.802 97.803z"/></g><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>
+                </h6>
+                <h6>
+                  English
+                </h6>
+              </div>
+            </a>
+            <!-- Italian -->
+            <a class="list-group-item list-group-item-action language_select" aria-current="true" data-lang="it">
+              <div class="d-flex justify-content-between">
+                <h6>
+                  <svg width="16px" height="16px" enable-background="new 0 0 512 512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><circle cx="256" cy="256" fill="#f0f0f0" r="256"/><path d="m512 256c0-110.071-69.472-203.906-166.957-240.077v480.155c97.485-36.172 166.957-130.007 166.957-240.078z" fill="#d80027"/><path d="m0 256c0 110.071 69.472 203.906 166.957 240.077v-480.154c-97.485 36.171-166.957 130.006-166.957 240.077z" fill="#6da544"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>
+                </h6>
+                <h6>
+                  Italian
+                </h6>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form id="uploadForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" autocomplete="username">
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" autocomplete="current-password">
+          </div>
+
+          <!--MODIFICA (18/02/2024): Accentramento bottone-->
+          <div class="col-12 text-center">
+            <button type="button" onclick="Login()" class="btn btn-primary">Login</button>
+          </div>
+
+          <!--MODIFICA (18/02/2024): Aggiunta bottone Menu + accentramento bottone-->
+          <div class="col-12 mt-3 text-center">
+            <button type="button" onclick="window.location.href='/menu'" class="btn btn-primary">Home</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Link di servizio -->
+      <!-- <a class="login-signup-now" href="/registraAdmin">Non sei ancora registrato? Registrati.</a> -->
+      <a class="login-change-psw" href="/password_reset_admin" th:text="#{loginAdmin_psw_reset_link}"></a>
+      <!-- <a class="login-invitation" href="/login_with_invitation">Hai ricevuto un token di invito?</a> -->
+
+      <!-- Script con variabili internazionalizzate -->
+      <script th:inline="javascript">
+        const loginAdmin_title = /*[[#{loginAdmin_title}]]*/ "Login Amministratore";
+        const loginAdmin_required_field = /*[[#{loginAdmin_required_field}]]*/ "campo obbligatorio";
+        const loginAdmin_psw_reset_link = /*[[#{loginAdmin_psw_reset_link}]]*/ "Hai dimenticato la password?";
+        const loginAdmin_login_success = /*[[#{loginAdmin_login_success}]]*/ "Autenticazione avvenuta con successo";
+
+        const loginErrorMessages = {
+          loginAdmin_login_success: /*[[#{loginAdmin_login_success}]]*/ "Authentication successful",
+          loginAdmin_login_error_fields_incomplete: /*[[#{loginAdmin_login_error_fields_incomplete}]]*/ "Please fill in all fields!",
+          loginAdmin_login_error_not_found: /*[[#{loginAdmin_login_error_not_found}]]*/ "Login error, admin not found.",
+          loginAdmin_login_error_already_logged: /*[[#{loginAdmin_login_error_already_logged}]]*/ "You are already logged in.",
+          loginAdmin_login_error_fields_incorrect: /*[[#{loginAdmin_login_error_fields_incorrect}]]*/ "Login error, incorrect credentials."
+        };
+
+      </script>
+
+      <script>
+        // Imposta dinamicamente il placeholder usando la variabile di messaggio
+        document.addEventListener("DOMContentLoaded", function () {
+          document.getElementById("username").placeholder = loginAdmin_required_field;
+          document.getElementById("password").placeholder = loginAdmin_required_field;
+        });
+      </script>
+
+    </div>
   </div>
-
-  <div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input type="password" class="form-control" id="password" aria-describedby="passwordHelp" autocomplete="current-password" placeholder="*campo obbligatorio">
-  </div>
-
-  <!--MODIFICA (18/02/2024): Accentramento bottone-->
-  <div class="col-12 text-center">    
-    <button type="button" onclick="Logi()" class="btn btn-primary">Login</button>
-  </div>
-
-  <!--MODIFICA (18/02/2024) : Aggiunta bottone Menu + accentramento bottone-->
-  <div class="col-12 mt-3 text-center">                                       <!-- Aggiungi la classe "mt-3" per un margine top di 3 unità di misura -->
-    <button type="button" onclick="window.location.href='/menu'" class="btn btn-primary">Home</button>
-</div>
-  </form>
 </div>
 
-<!-- <a class="login-signup-now" data-uia="login-signup-now" href="/registraAdmin">Non sei ancora registrato? Registrati.</a> -->
-<a class="login-change-psw" data-uia="login-change-psw" href="/password_reset_admin">Hai dimenticato la password? </a>
-<!-- <a class="login-invitation" data-uia="login-invitation" href="/login_with_invitation">Hai ricevuto un token di invito? </a> -->
-
-<!--Includi JQuery-->
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<!-- Includi jQuery e Bootstrap JS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/t1/js/login_admin.js"></script>
+<script src="/t1/js/language.js"></script>
 </body>
 
 </html>
-

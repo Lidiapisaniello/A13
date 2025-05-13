@@ -47,55 +47,117 @@ ______ _____  _____   ____   _____
 |______|_|  \_\_|  \_\\____/|_____/  
 `;
 
+ +
+'════════════════════════════════════════════════════════════════════════\n\n\n' +
+ + '\n\n\n';
+
 function getConsoleTextRun(userCoverageDetails, robotCoverageDetails, canWin, gameScore, robotScore) {
+	const maxLineLength = 62; // Ridotto per accomodare 4 spazi laterali
+
+	function wrapAtSpaces(str) {
+		const limit = maxLineLength;
+		let result = '';
+		let i = 0;
+
+		while (i < str.length) {
+			let end = i + limit;
+			if (end >= str.length) {
+				result += '    ' + str.slice(i);
+				break;
+			}
+
+			let spaceIndex = str.lastIndexOf(' ', end);
+			if (spaceIndex <= i) {
+				spaceIndex = str.indexOf(' ', end);
+				if (spaceIndex === -1) {
+					result += '    ' + str.slice(i);
+					break;
+				}
+			}
+
+			result += '    ' + str.slice(i, spaceIndex) + '\n';
+			i = spaceIndex + 1;
+		}
+
+		return result;
+	}
+
 	function roundToTwoDecimals(value) {
 		return Math.round(value * 100) / 100;
 	}
 
-	function getCoverageStats(label, user, robot, isLast) {
-		let userPercentage = roundToTwoDecimals(user.covered / (user.covered + user.missed) * 100);
-		let robotPercentage = roundToTwoDecimals(robot.covered / (robot.covered + robot.missed) * 100);
-
-		return (
-			`${terminalMessages.coverage_capitalized} ${label} COV%: ${userPercentage}% LOC\n` +
-			`${terminalMessages.covered}: ${user.covered}  ${terminalMessages.missed}: ${user.missed}\n` +
-			`Robot ${terminalMessages.coverage_capitalized} ${label} COV%: ${robotPercentage}% LOC\n` +
-			`${terminalMessages.covered}: ${robot.covered} ${terminalMessages.missed}: ${robot.missed}\n` +
-			(isLast ? "" : `----------------------------------------------------------------------\n`)
-		);
+	function centerText(text, width) {
+		const totalPadding = width - text.length;
+		const paddingLeft = Math.floor(totalPadding / 2);
+		const paddingRight = totalPadding - paddingLeft;
+		return ' '.repeat(paddingLeft) + text + ' '.repeat(paddingRight);
 	}
 
-	function getEvoSuiteStats(label, user, robot, isLast) {
-		return (
-			`${terminalMessages.your_evosuite_points}: ${roundToTwoDecimals(user)}% ${label}\n` +
-			`${terminalMessages.robot_evosuite_points}: ${roundToTwoDecimals(robot)}% ${label}\n` +
-			(isLast ? "" : `----------------------------------------------------------------------\n`)
-		);
+	function formatJacocoRow(label, user, robot) {
+		const userPct = roundToTwoDecimals(user.covered / (user.covered + user.missed) * 100);
+		const robotPct = roundToTwoDecimals(robot.covered / (robot.covered + robot.missed) * 100);
+		const userTotal = user.covered + user.missed;
+		const robotTotal = robot.covered + robot.missed;
+
+		const userStr = `${userPct.toFixed(2)}% (${user.covered}/${userTotal} LOC)`;
+		const robotStr = `${robotPct.toFixed(2)}% (${robot.covered}/${robotTotal} LOC)`;
+
+		return `    ${label.padEnd(14)} | ${userStr.padStart(21)} | ${robotStr.padStart(21)}`;
 	}
 
-	let consoleText2 = canWin ? `===================================================================== \n` +
-		`${terminalMessages.you_can_win}` + "\n" : "";
+	function formatEvoRow(label, user, robot) {
+		const userPct = roundToTwoDecimals(user);
+		const robotPct = roundToTwoDecimals(robot);
 
-	let consoleText =
-		consoleText2 +
-		`============================== ${terminalMessages.results} ===============================\n` +
-		`${terminalMessages.your_points}:${gameScore}pt\n` +
-		"----------------------------------------------------------------------\n" +
-		`${terminalMessages.robot_points}:${robotScore}pt\n` +
-		"============================== JaCoCo ================================\n" +
-		getCoverageStats("Line", userCoverageDetails.jacoco_line, robotCoverageDetails.jacoco_line, false) +
-		getCoverageStats("Branch", userCoverageDetails.jacoco_branch, robotCoverageDetails.jacoco_branch, false) +
-		getCoverageStats("Instruction", userCoverageDetails.jacoco_instruction, robotCoverageDetails.jacoco_instruction, true) +
-		"============================== EvoSuite ===============================\n" +
-		getEvoSuiteStats("Line", userCoverageDetails.evosuite_line, robotCoverageDetails.evosuite_line, false) +
-		getEvoSuiteStats("Branch", userCoverageDetails.evosuite_branch, robotCoverageDetails.evosuite_branch, false) +
-		getEvoSuiteStats("Exception", userCoverageDetails.evosuite_exception, robotCoverageDetails.evosuite_exception, false) +
-		getEvoSuiteStats("WeakMutation", userCoverageDetails.evosuite_weak_mutation, robotCoverageDetails.evosuite_weak_mutation, false) +
-		getEvoSuiteStats("CBranch", userCoverageDetails.evosuite_cbranch, robotCoverageDetails.evosuite_cbranch, true) +
-		"======================================================================";
+		const userStr = `${userPct.toFixed(2)}%`;
+		const robotStr = `${robotPct.toFixed(2)}%`;
 
-	return consoleText;
+		return `    ${label.padEnd(14)} | ${userStr.padStart(21)} | ${robotStr.padStart(21)}`;
+	}
+
+	const userInstructionCov = roundToTwoDecimals(userCoverageDetails.jacoco_instruction.covered / (userCoverageDetails.jacoco_instruction.covered + userCoverageDetails.jacoco_instruction.missed) * 100);
+	const robotInstructionCov = roundToTwoDecimals(robotCoverageDetails.jacoco_instruction.covered / (robotCoverageDetails.jacoco_instruction.covered + robotCoverageDetails.jacoco_instruction.missed) * 100);
+
+	let result =
+	wrapAtSpaces(terminalMessages.points_descr) + "\n\n\n" +
+	'    ' + '═'.repeat(maxLineLength) + '\n' +
+	`    ${terminalMessages.your_instruction_coverage}: ${userInstructionCov}% LOC\n` +
+	`    ${terminalMessages.robot_instruction_coverage}: ${robotInstructionCov}% LOC\n` +
+	'    ' + '═'.repeat(maxLineLength) + '\n\n\n' +
+	wrapAtSpaces(canWin ? terminalMessages.you_can_win : terminalMessages.you_cant_win) + '\n\n\n\n';
+
+	const header =
+		`    ${centerText(terminalMessages.metrics, 14)} |` +
+		` ${centerText(terminalMessages.you, 21)} |` +
+		` ${centerText(terminalMessages.robot, 21)}\n` +
+		`    ${'─'.repeat(14)} | ${'─'.repeat(21)} | ${'─'.repeat(21)}\n`;
+
+	// JaCoCo
+	result +=
+		'    ' + '─'.repeat(maxLineLength) + '\n' +
+		`    ${centerText(terminalMessages.jacoco_table_title, maxLineLength)}\n` +
+		'    ' + '─'.repeat(maxLineLength) + '\n' +
+		header +
+		formatJacocoRow('Instruction', userCoverageDetails.jacoco_instruction, robotCoverageDetails.jacoco_instruction) + '\n' +
+		formatJacocoRow('Line', userCoverageDetails.jacoco_line, robotCoverageDetails.jacoco_line) + '\n' +
+		formatJacocoRow('Branch', userCoverageDetails.jacoco_branch, robotCoverageDetails.jacoco_branch) + '\n\n\n\n';
+
+	// EvoSuite
+	result +=
+		'    ' + '─'.repeat(maxLineLength) + '\n' +
+		`    ${centerText(terminalMessages.evosuite_table_title, maxLineLength)}\n` +
+		'    ' + '─'.repeat(maxLineLength) + '\n' +
+		header +
+		formatEvoRow('Line', userCoverageDetails.evosuite_line, robotCoverageDetails.evosuite_line) + '\n' +
+		formatEvoRow('Branch', userCoverageDetails.evosuite_branch, robotCoverageDetails.evosuite_branch) + '\n' +
+		formatEvoRow('Exception', userCoverageDetails.evosuite_exception, robotCoverageDetails.evosuite_exception) + '\n' +
+		formatEvoRow('WeakMutation', userCoverageDetails.evosuite_weak_mutation, robotCoverageDetails.evosuite_weak_mutation) + '\n' +
+		formatEvoRow('CBranch', userCoverageDetails.evosuite_cbranch, robotCoverageDetails.evosuite_cbranch) + '\n\n';
+
+	return result;
 }
+
+
 
 
 function getConsoleTextError(){
@@ -232,13 +294,7 @@ function highlightCodeCoverage(reportContent, robotContent, editor) {
 		}
 	}
 
-
-	console.log(packages);
-	console.log("decreaseRobotLines: ", decreaseRobotLines);
-
 	coveredLinesRobot.forEach(function (lineNumber) {
-		console.log("lineNumber", lineNumber);
-		console.log("lineNumber -- ", lineNumber - decreaseRobotLines);
 		editor.removeLineClass(lineNumber - decreaseRobotLines, "gutter", "bg-danger");
 		editor.removeLineClass(lineNumber - decreaseRobotLines, "gutter", "bg-warning");
 		editor.addLineClass	(lineNumber - decreaseRobotLines, "gutter", "  bg-success");
@@ -263,8 +319,6 @@ function highlightCodeCoverage(reportContent, robotContent, editor) {
 	});
 
 	uncoveredLines.forEach(function (lineNumber) {
-		console.log("lineNumber", lineNumber);
-		console.log("lineNumber -- ", lineNumber - 3);
 		editor.removeLineClass(lineNumber - 3, "background", "bg-coverage-warning");
 		editor.removeLineClass(lineNumber - 3, "background", "bg-coverage-success");
 		editor.addLineClass	(lineNumber - 3, "background", "bg-coverage-danger");

@@ -144,7 +144,7 @@ public class T23Service extends BaseService {
         HttpEntity<List<String>> requestEntity = new HttpEntity<>(idsStudenti);
         // Esegui la chiamata POST all'endpoint
         ResponseEntity<?> responseEntity = restTemplate.exchange(
-                BASE_URL + endpoint, // URL dell'endpoint
+                BASE_URL + "/" + SERVICE_PREFIX + endpoint, // URL dell'endpoint
                 HttpMethod.POST, // Tipo di richiesta POST
                 requestEntity, // Corpo della richiesta (lista di studenti)
                 new ParameterizedTypeReference<List<User>>() {

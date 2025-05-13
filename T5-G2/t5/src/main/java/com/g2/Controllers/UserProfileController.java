@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.g2.Components.ServiceObjectComponent;
 import com.g2.Model.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import com.g2.Components.PageBuilder;
 import com.g2.Components.UserProfileComponent;
 import com.g2.Interfaces.ServiceManager;
 import com.g2.Model.DTO.ResponseTeamComplete;
-import com.g2.Service.AchievementService;
 
 
 /*
@@ -34,14 +31,12 @@ import com.g2.Service.AchievementService;
 public class UserProfileController {
 
     private final ServiceManager serviceManager;
-    private final AchievementService achievementService;
 
     private GameConfigData gameConfigData = null;
 
     @Autowired
-    public UserProfileController(ServiceManager serviceManager, AchievementService achievementService) {
+    public UserProfileController(ServiceManager serviceManager) {
         this.serviceManager = serviceManager;
-        this.achievementService = achievementService;
     }
 
     @PostConstruct
@@ -138,7 +133,9 @@ public class UserProfileController {
          * Richiedo a T4 gli achievement sbloccati dall'utente
          */
         List<UserGameProgress> achievements = (List<UserGameProgress>) serviceManager.handleRequest("T4", "getAllUserGameProgresses", Integer.parseInt(achievement.getUserId()));
-        model.addAttribute("achievements", achievements);
+        GeneralAchievement generalAchievements = (GeneralAchievement) serviceManager.handleRequest("T4", "getGlobalAchievements", Integer.parseInt(achievement.getUserId()));
+        model.addAttribute("gamemode_achievements", achievements);
+        model.addAttribute("general_achievements", generalAchievements.getAchievements());
 
         return achievement.handlePageRequest();
     }

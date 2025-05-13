@@ -75,7 +75,7 @@ public class PartitaSingola extends GameLogic {
 
     @Override
     public Boolean isWinner(){
-        return userScore >= robotScore;
+        return userScore > 0 && robotScore > 0 && userScore >= robotScore;
     }
 
     @Override

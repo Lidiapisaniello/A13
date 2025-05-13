@@ -2,6 +2,9 @@ package com.g2.Game.GameDTO.EndGameDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EndGameResponseDTO {
 
     @JsonProperty("robotScore")
@@ -16,11 +19,23 @@ public class EndGameResponseDTO {
     @JsonProperty("expGained")
     private int expGained;
 
+    @JsonProperty("achievementsUnlocked")
+    List<String> achievementsUnlocked;
+
     public EndGameResponseDTO(int robotScore, int userScore, Boolean isWinner, int expGained) {
         this.robotScore = robotScore;
         this.userScore = userScore;
         this.isWinner = isWinner;
         this.expGained = expGained;
+        this.achievementsUnlocked = new ArrayList<>();
+    }
+
+    public EndGameResponseDTO(int robotScore, int userScore, Boolean isWinner, int expGained, List<String> achievementsUnlocked) {
+        this.robotScore = robotScore;
+        this.userScore = userScore;
+        this.isWinner = isWinner;
+        this.expGained = expGained;
+        this.achievementsUnlocked = achievementsUnlocked;
     }
 
     public int getRobotScore() {
@@ -55,6 +70,14 @@ public class EndGameResponseDTO {
         this.expGained = expGained;
     }
 
+    public List<String> getAchievementsUnlocked() {
+        return achievementsUnlocked;
+    }
+
+    public void setAchievementsUnlocked(List<String> achievementsUnlocked) {
+        this.achievementsUnlocked = achievementsUnlocked;
+    }
+
     @Override
     public String toString() {
         return "EndGameResponseDTO{" +
@@ -62,6 +85,7 @@ public class EndGameResponseDTO {
                 ", userScore=" + userScore +
                 ", isWinner=" + isWinner +
                 ", expGained=" + expGained +
+                ", achievementsUnlocked=" + achievementsUnlocked +
                 '}';
     }
 }

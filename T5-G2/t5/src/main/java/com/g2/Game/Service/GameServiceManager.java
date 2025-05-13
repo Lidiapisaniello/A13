@@ -99,7 +99,7 @@ public class GameServiceManager {
              *  Restituisco l'oggetto json che rispecchia lo stato del game
              */
             gameService.handleGameLogic(userScore, robotScore, currentGame, updateParams, Usercompile, RobotCompile);
-            String[] unlockedAchievements = gameService.handleAchievementsUnlocked(currentGame, Usercompile, RobotCompile);
+            String[] unlockedAchievements = gameService.handleGameModeAchievementsUnlocked(currentGame, Usercompile, RobotCompile);
 
             logger.info("[PlayGame]: Creazione risposta per la partita (canWin={}, userScore={}, robotScore={}).", currentGame.isWinner(), userScore, robotScore);
             return new RunGameResponseDTO(Usercompile, RobotCompile, currentGame.isWinner(), userScore, robotScore, unlockedAchievements);

@@ -70,20 +70,20 @@ if %ERRORLEVEL% neq 0 (
 )
 cd /d "%ROOT_DIR%"
 
-echo Deploying ui_gateway
-cd /d "%ROOT_DIR%\ui_gateway"
-docker compose up -d
-if %ERRORLEVEL% neq 0 (
-    echo Error deploying ui_gateway
-    exit /b 1
-)
-cd /d "%ROOT_DIR%"
-
 echo Deploying api_gateway
 cd /d "%ROOT_DIR%\apiGateway"
 docker compose up -d
 if %ERRORLEVEL% neq 0 (
     echo Error deploying api_gateway
+    exit /b 1
+)
+cd /d "%ROOT_DIR%"
+
+echo Deploying ui_gateway
+cd /d "%ROOT_DIR%\ui_gateway"
+docker compose up -d
+if %ERRORLEVEL% neq 0 (
+    echo Error deploying ui_gateway
     exit /b 1
 )
 cd /d "%ROOT_DIR%"

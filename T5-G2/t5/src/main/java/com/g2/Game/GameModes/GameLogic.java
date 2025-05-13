@@ -124,7 +124,7 @@ public abstract class GameLogic implements Serializable {
     public void CreateGame() {
         String time = ZonedDateTime.now(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_INSTANT);
-        this.gameID = serviceManager.handleRequest("T4", "CreateGame", Integer.class, time, this.difficulty, this.typeRobot, this.gamemode, this.playerID);
+        this.gameID = serviceManager.handleRequest("T4", "CreateGame", Integer.class, time, this.difficulty, this.typeRobot, this.gamemode, this.playerID, this.classeUT);
         this.roundID = serviceManager.handleRequest("T4", "CreateRound", Integer.class, this.gameID, this.classeUT, time);
     }
 

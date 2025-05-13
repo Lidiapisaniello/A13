@@ -149,13 +149,13 @@ a:hover {
 
 <br>
 
-<h2>Elenco Amministratori</h2>
+<h2 th:text="#{info_title}"></h2>
 
 <table id="adminTable" class="table table-striped table-bordered table-hover">
   <thead class="thead-dark">
       <tr>
-          <th>Name</th>
-          <th>Surname</th>
+          <th th:text="#{player_name}"></th>
+          <th th:text="#{player_surname}"></th>
           <th>Username</th>
           <th>Email</th>
       </tr>
@@ -175,11 +175,22 @@ a:hover {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript">
-  
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
 
   document.addEventListener("DOMContentLoaded", function () {
 
     const dominio=location.hostname;
+    const dataTable_lang_urls = {
+        it: "//cdn.datatables.net/plug-ins/1.13.7/i18n/it-IT.json",
+        en: "//cdn.datatables.net/plug-ins/1.13.7/i18n/en-US.json",
+    }
+
+    const lang = getCookie("lang");
 
     // Effettua una richiesta FETCH per ottenere la lista degli amministratori
     const adminsPromise = fetch('/admins_list')
@@ -192,7 +203,10 @@ a:hover {
                         { data: 'cognome' },
                         { data: 'username' },
                         { data: 'email' }
-                    ]
+                    ],
+                    language: {
+                        url: dataTable_lang_urls[lang],
+                    }
                 });
 
                 // Mostra la tabella una volta caricati i dati

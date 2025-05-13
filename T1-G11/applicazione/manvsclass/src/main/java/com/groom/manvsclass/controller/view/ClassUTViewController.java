@@ -35,10 +35,4 @@ public class ClassUTViewController {
         if (jwtService.isJwtValid(jwt)) return new ModelAndView("modificaClasse");
         return new ModelAndView("redirect:/loginAdmin");
     }
-
-    @GetMapping("/uploadClasse")
-    public ModelAndView showUploadClasse(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if (jwtService.isJwtValid(jwt)) return new ModelAndView("uploadClasse");
-        return new ModelAndView("redirect:/loginAdmin");
-    }
 }

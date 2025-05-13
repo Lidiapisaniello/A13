@@ -22,7 +22,6 @@ public class OtherViewController {
         this.achievementService = achievementService;
     }
 
-
     /*
     *   Non esiste la pagina gestione_assignments.html
     public ModelAndView showGestioneAssignments(HttpServletRequest request, String jwt) {
@@ -31,11 +30,6 @@ public class OtherViewController {
     }
 
      */
-
-
-
-
-
 
     @GetMapping("/reportClasse")
     public ModelAndView showReportClasse(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {

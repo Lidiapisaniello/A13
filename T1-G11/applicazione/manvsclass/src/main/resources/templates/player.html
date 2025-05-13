@@ -137,19 +137,18 @@ a:hover {
 
 <br>
 
-<h2>Elenco Studenti</h2>
+<h2 th:text="#{player_title}"></h2>
 
 <table id="studentTable">
   <thead>
       <tr>
-          <th>Posizione</th>
-          <th>Punti</th>
-          <th>Name</th>
-          <th>Surname</th>
+          <th th:text="#{player_position}"></th>
+          <th th:text="#{player_name}"></th>
+          <th th:text="#{player_surname}"></th>
           <th>Email</th>
-          <th>Studies</th>
-          <th>Partite Giocate</th>
-          <th>Tempo Totale (min)</th>
+          <th th:text="#{player_studies}"></th>
+          <th th:text="#{player_played_games}"></th>
+          <th th:text="#{player_played_time}"></th>
       </tr>
   </thead>
   <tbody>
@@ -170,6 +169,19 @@ a:hover {
 <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript">
   var dominio=location.hostname;
+
+  const getCookie = (name) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+  }
+
+  const dataTable_lang_urls = {
+      it: "//cdn.datatables.net/plug-ins/1.13.7/i18n/it-IT.json",
+      en: "//cdn.datatables.net/plug-ins/1.13.7/i18n/en-US.json",
+  }
+  const lang = getCookie("lang");
 
   document.addEventListener("DOMContentLoaded", function () {
     // Effettua una richiesta FETCH per ottenere la lista degli studenti
@@ -229,7 +241,6 @@ a:hover {
                     accountId: accountId,
                     count: stats.count,
                     totalTime: stats.totalTime.toFixed(2),
-                    points: stats.score
                 };
             }).sort((a, b) => b.points - a.points)
             .map((student, index) => ({ ...student, position: index + 1 }));
@@ -239,14 +250,16 @@ a:hover {
                 data: combinedData,
                 columns: [
                     { data: 'position' },
-                    { data: 'points' },
                     { data: 'name' },
                     { data: 'surname' },
                     { data: 'email' },
                     { data: 'studies' },
                     { data: 'count' },
                     { data: 'totalTime' }
-                ]
+                ],
+                language: {
+                    url: dataTable_lang_urls[lang],
+                }
             });
 
             $("#studentTable").css({"display":"block"});

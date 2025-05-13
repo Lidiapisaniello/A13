@@ -144,37 +144,6 @@ public class RobotService {
 		return values.stream().mapToInt(i -> i).toArray();
 	}
 
-	private void outputProcess(Process process) throws IOException{
-		// Legge l'output del processo esterno tramite un BufferedReader, che a sua
-		// volta usa
-		// un InputStreamReader per convertire i byte in caratteri. Il metodo
-		// 'process.getInputStream()'
-		// restituisce lo stream di input del processo esterno.
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-
-		// All'interno del loop viene letta ogni linea disponibile finché il processo
-		// continua a produrre output.
-        while ((line = reader.readLine()) != null)
-            System.out.println(line);
-		
-		// funzionamento analogo al precedente, invece di leggere l'output leggiamo gli
-		// errori
-        reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        while ((line = reader.readLine()) != null)
-            System.out.println(line);
-
-        try {
-			// Attende che il processo termini e restituisce il codice di uscita
-			int exitCode = process.waitFor();
-
-			System.out.println("ERRORE CODE: " + exitCode);
-		} catch (InterruptedException e) {
-			System.out.println(e);
-			e.printStackTrace();
-		}
-	}
-
 	private void uploadRobotCoverageInT4(int[] evoSuiteStatistics, int[][] jacocoStatistics, int livello, String className, String robotName, String coverage) throws IOException{
 		HttpClient httpClient = HttpClientBuilder.create().build();
 
@@ -186,12 +155,6 @@ public class RobotService {
 		// Creazione di un oggetto JSON per rappresentare un singolo robot generato
 		JSONObject rob = new JSONObject();
 
-		// l'array JSON viene utilizzato per raggruppare gli oggetti JSON che
-		// rappresentano le informazioni sui robot generati.
-		// L'array arr contiene una serie di oggetti rob, ognuno dei quali rappresenta
-
-
-		// Aggiunge al robot l'informazione relativa al punteggio convertito in stringa
 		rob.put("jacocoLineCovered", jacocoStatistics[0][0]);
 		rob.put("jacocoLineMissed", jacocoStatistics[0][1]);
 		rob.put("jacocoBranchCovered", jacocoStatistics[1][0]);
@@ -233,92 +196,6 @@ public class RobotService {
 		HttpResponse response = httpClient.execute(httpPost);
 		logger.info("T4 upload robot response: " + EntityUtils.toString(response.getEntity()));
 	}
-
-    public void generateAndSaveRobots(String fileName, String className, MultipartFile classFile) throws IOException {
-
-        // RANDOOP - T9			    
-		Path directory = Paths.get("/VolumeT9/FolderTree/ClassUT/" + className + "/src/main/java");
-		FileOperationUtil.saveFileInFileSystem(fileName, directory, classFile);
-		
-		//Randoop T9
-		// creazione del processo esterno di generazione dei test
-        ProcessBuilder processBuilder = new ProcessBuilder();
-
-		// con command si configura il comando del processo esterno per eseguire il file
-		// JAR 'Task9-G19-0.0.1-SNAPSHOT.jar'
-		// l'esecuzione avviene attraverso la JVM di Java.
-		// Il parametro "-jar" specifica l'esecuzione di un file JAR.
-        processBuilder.command("java", "-jar", "Task9-G19-0.0.1-SNAPSHOT.jar");
-
-		// La directory di lavoro per il processo esterno viene impostata su
-		// "/VolumeT9/" utilizzando
-		// questo metodo garantisce che il processo lavori nella directory desiderata
-        processBuilder.directory(new File("/VolumeT9/"));
-		
-		// si avvia il processo
-        Process process = processBuilder.start();
-
-		//Legge l'output del processo appena creato
-		outputProcess(process);
-
-		File robotCoverageDirBasePath = new File(String.format("%s/%s/%s", VOLUME_T0_BASE_PATH, className, BASE_COVERAGE_PATH));
-		String robotName = "Randoop";
-		for (File levelFolder : Objects.requireNonNull(robotCoverageDirBasePath.listFiles())) {
-			String emmaCoveragePath = String.format("%s/%s", levelFolder, "coveragetot.xml");
-
-			int[] evoSuiteStatistics = getEvoSuiteCoverageStatistics(String.format("%s/%s", levelFolder, "statistics.csv"));
-			int[][] emmaStatistics = {
-					getEmmaCoverageByCoverageType(emmaCoveragePath, "line, %"),
-					getEmmaCoverageByCoverageType(emmaCoveragePath, "method, %"),
-					getEmmaCoverageByCoverageType(emmaCoveragePath, "block, %")
-			};
-
-			int level = Integer.parseInt(levelFolder.toString().substring(levelFolder.toString().length() - 7, levelFolder.toString().length() - 5));
-			String coverage = Files.lines(Paths.get(emmaCoveragePath)).collect(Collectors.joining(System.lineSeparator()));
-
-			uploadRobotCoverageInT4(evoSuiteStatistics, emmaStatistics, level, className, robotName, coverage);
-
-		}
-
-
-		// Il seguente codice è l'adattamento ad evosuite del codice appena visto, i
-		// passaggi sono gli stessi
-        // EVOSUITE - T8
-		// TODO: RICHIEDE AGGIUSTAMENTI IN T8
-		Path directoryE = Paths.get("/VolumeT8/FolderTree/ClassUT/" + className + "/src/main/java");
-
-		FileOperationUtil.saveFileInFileSystem(fileName, directoryE, classFile);
-
-		ProcessBuilder processBuilderE = new ProcessBuilder();
-
-        processBuilderE.command("bash", "robot_generazione.sh", className, "\"\"", "/VolumeT9/FolderTree/ClassUT/" + className + "/src/main/java", String.valueOf("1"));
-        processBuilderE.directory(new File("/VolumeT8/Prototipo2.0/"));
-
-		Process processE = processBuilderE.start();
-
-		outputProcess(processE);
-
-		robotCoverageDirBasePath = new File(String.format("%s/%s/%s", VOLUME_T0_BASE_PATH, className, BASE_COVERAGE_PATH));
-		robotName = "Evosuite";
-		for (File levelFolder : Objects.requireNonNull(robotCoverageDirBasePath.listFiles())) {
-			String jacocoCoveragePath = String.format("%s/%s", levelFolder, "coveragetot.xml");
-
-			int[] evoSuiteStatistics = getEvoSuiteCoverageStatistics(String.format("%s/%s", levelFolder, "statistics.csv"));
-			int[][] jacocoStatistics = {
-					getJacocoCoverageByCoverageType(jacocoCoveragePath, "LINE"),
-					getJacocoCoverageByCoverageType(jacocoCoveragePath, "BRANCH"),
-					getJacocoCoverageByCoverageType(jacocoCoveragePath, "INSTRUCTION")
-			};
-
-			int level = Integer.parseInt(levelFolder.toString().substring(levelFolder.toString().length() - 7, levelFolder.toString().length() - 5));
-			String coverage = Files.lines(Paths.get(jacocoCoveragePath)).collect(Collectors.joining(System.lineSeparator()));
-
-			uploadRobotCoverageInT4(evoSuiteStatistics, jacocoStatistics, level, className, robotName, coverage);
-
-		}
-
-    }
-
 
 	private void generateMissingEvoSuiteCoverage(String classUTName, String classUTPackageName, Path classUTPath, Path testPath, Path toCoveragePath, Path evoSuiteWorkingDir, String testPackageName) throws IOException {
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -521,46 +398,6 @@ public class RobotService {
 		return new boolean[]{jacocoFound, evosuiteFound};
 	}
 
-	/*
-	private boolean checkExtractedFolderStructure(Path extractedFolder) throws IOException {
-		File[] robotGroupFolder = extractedFolder.toFile().listFiles();
-		if (robotGroupFolder == null)
-			throw new IOException("The zipped folder doesn't contain folders");
-
-		File[] robotFolders = robotGroupFolder[0].listFiles();
-		if (robotFolders == null)
-			throw new IOException("The zipped folder doesn't contain folders");
-
-		File[] acceptedRobotFolders = Arrays.stream(robotFolders).filter(folder -> folder.getName().endsWith("Test") && folder.isDirectory()).toArray(File[]::new);
-		if (acceptedRobotFolders.length == 0)
-			throw new IOException("The zipped folder doesn't contain robot folders");
-
-		for (File robotFolder : acceptedRobotFolders) {
-			File[] levelFolder = robotFolder.listFiles();
-
-
-
-
-			if (!robotFolder.isDirectory()) {
-				logger.info("Ignoring file " + robotFolder + " because it is not a directory");
-				continue;
-			}
-
-			String robotType = robotFolder.getName();
-			if (!robotType.endsWith("Test")) {
-				logger.info("Ignoring directory " + robotFolder + " because it does not follow the naming convention");
-				continue;
-			}
-			robotType = robotType.substring(0, robotType.length() - 4).toLowerCase();
-			robotType = Character.toUpperCase(robotType.charAt(0)) + robotType.substring(1);
-
-			logger.info("Robot folder " + robotFolder);
-			logger.info("Saving robot type " + robotType);
-			uploadGenericRobot(classUTFileName, classUTName, classUTFile, robotFolder.toPath(), robotType, Paths.get(VOLUME_T0_BASE_PATH));
-		}
-	}
-
-	 */
 
 	public void saveRobotsFromZip(String classUTFileName, String classUTName, MultipartFile classUTFile, MultipartFile robotTestsZip) throws IOException {
 		Path operationTmpFolder = Paths.get(String.format("%s/%s/tmp", VOLUME_T0_BASE_PATH, classUTName));

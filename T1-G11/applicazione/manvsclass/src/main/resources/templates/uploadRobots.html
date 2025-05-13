@@ -108,6 +108,7 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
+
     </style>
 </head>
 <body>
@@ -117,7 +118,7 @@
         <div class="card">
             <div class="file">
                 <br>
-                <center><p class="h3">Test upload</p></center>
+                <center><p class="h3" th:text="#{uploadRobots_title}"></p></center>
                 <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill text-success" viewBox="0 0 16 16">
                         <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707L6.354 9.854z"></path>
@@ -128,49 +129,70 @@
             <div class="card-body">
                 <form id="uploadForm">
                     <div class="mb-3">
-                        <label for="className" class="form-label">Class name</label>
+                        <label for="className" class="form-label" th:text="#{uploadRobots_class_name}"></label>
                         <input type="text" class="form-control" id="className" aria-describedby="classNameHelp">
                     </div>
                     <div class="mb-3">
-                        <label for="date" class="form-label">Date</label>
+                        <label for="date" class="form-label" th:text="#{uploadRobots_date}"></label>
                         <input type="date" class="form-control" id="date" aria-describedby="dateHelp">
                     </div>
                     <div class="mb-3">
-                        <label for="difficulty" class="form-label">Difficulty</label>
+                        <label for="difficulty" class="form-label" th:text="#{uploadRobots_difficulty}"></label>
                         <select class="form-select" id="difficulty" aria-describedby="difficultyHelp">
-                            <option value="Beginner">Beginner</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="Advanced">Advanced</option>
+                            <option value="Beginner" th:text="#{difficulty_beginner}"></option>
+                            <option value="Intermediate" th:text="#{difficulty_Intermediate}"></option>
+                            <option value="Advanced" th:text="#{difficulty_Advanced}"></option>
                         </select>
-                        <div id="difficultyHelp" class="form-text">Select the difficulty level of this item</div>
+                        <div id="difficultyHelp" class="form-text" th:text="#{uploadRobots_difficulty_descr}"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
+                        <label for="description" class="form-label" th:text="#{uploadRobots_description}"></label>
                         <textarea class="form-control" id="description" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="category1" class="form-label">Category 1</label>
+                        <label for="category1" class="form-label" th:text="#{uploadRobots_category_1}"></label>
                         <input type="text" class="form-control" id="category1" aria-describedby="categoryHelp">
                     </div>
                     <div class="mb-3">
-                        <label for="category2" class="form-label">Category 2</label>
+                        <label for="category2" class="form-label" th:text="#{uploadRobots_category_2}"></label>
                         <input type="text" class="form-control" id="category2" aria-describedby="categoryHelp">
                     </div>
                     <div class="mb-3">
-                        <label for="category3" class="form-label">Category 3</label>
+                        <label for="category3" class="form-label" th:text="#{uploadRobots_category_3}"></label>
                         <input type="text" class="form-control" id="category3" aria-describedby="categoryHelp">
                     </div>
+
                     <div class="form-group mt-3">
-                        <label class="mr-2">Upload your class (.java) :</label>
-                        <input type="file" name="file" id="fileInput">
+                        <label class="mr-2" th:text="#{uploadRobots_upload_class_text}"></label>
+                        <input type="file" name="test" id="fileInput">
                     </div>
+
                     <div class="form-group mt-3">
-                        <label class="mr-2">Upload your tests (.zip) :</label>
-                        <input type="file" name="test" id="zipRobotInput">
+                        <label class="mr-2" th:text="#{uploadRobots_upload_robot_text}"></label>
+                        <input type="file" name="test" id="zipRobotInput" >
                     </div>
+
+                    <!--
+                    <div class="custom-file-group">
+                        <label for="fileInput" class="form-label" th:text="#{uploadRobots_upload_class_text}"></label>
+                        <div>
+                            <input type="file" class="form-control" id="fileInput" aria-describedby="fileHelp">
+                            <label class="input-group-text custom-file-label" for="fileInput" id="fileLabel" th:text="#{uploadRobots_choose}"></label>
+                        </div>
+                    </div>
+
+                    <div class="custom-file-group">
+                        <label for="zipRobotInput" class="form-label" th:text="#{uploadRobots_upload_robot_text}"></label>
+                        <div>
+                            <input type="file" class="form-control" id="zipRobotInput" aria-describedby="zipHelp">
+                            <label class="input-group-text custom-file-label" for="zipRobotInput" id="zipFileNameLabel" th:text="#{uploadRobots_choose}"></label>
+                        </div>
+                    </div>
+                    -->
+
                     <div class="form-group mt-3">
-                        <button type="button" onclick="uploadTest()" class="btn btn-success" id="uploadButton">Upload class and tests</button>
-                        <button type="button" onclick="goBack()" class="btn btn-secondary">Go Back</button>
+                        <button type="button" onclick="uploadTest()" class="btn btn-success" id="uploadButton" th:text="#{uploadRobots_upload}"></button>
+                        <button type="button" onclick="goBack()" class="btn btn-secondary" th:text="#{uploadRobots_go_back}"></button>
                     </div>
                 </form>
             </div>
@@ -178,7 +200,7 @@
         <!-- Schermata di caricamento -->
         <div id="loadingOverlay">
             <div id="loadingModal">
-                <p>Caricamento in corso...</p>
+                <p th:text="#{uploadRobots_uploading}"></p>
             </div>
         </div>
         <!--MODIFICA (05/11/2024) messaggio di successo per uploadClasseandTest -->
@@ -186,13 +208,12 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel">Successo</h5>
+                        <h5 class="modal-title" id="successModalLabel" th:text="#{uploadRobots_success_title}"></h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
-                        La classe è stata aggiunta correttamente.
+                    <div class="modal-body" th:text="#{uploadRobots_upload_success}">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" onclick="redirectToClass()">OK</button>
@@ -207,6 +228,13 @@
 <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript"></script>
+
+<script th:inline="javascript">
+    const uploadRobots_upload_error = /*[[#{uploadRobots_upload_error}]]*/ "Si è verificato un errore durante il caricamento. Controlla i log del server per ulteriori dettagli.";
+    const uploadRobots_choose = /*[[#{uploadRobots_choose}]]*/ "Scegli file";
+    const uploadRobots_no_chosen = /*[[#{uploadRobots_no_chosen}]]*/ "Nessun file scelto";
+</script>
+
 <script>
     document.addEventListener("DOMContentLoaded", uploadButtonState);
     document.getElementById('className').addEventListener("input", uploadButtonState);
@@ -273,7 +301,7 @@
                 //MODIFICA (05/11/2024) messaggio per classe duplicata
                 //alert('Si è verificato un errore durante la richiesta. Classe già presente nel sistema."');
 
-                alert('Si è verificato un errore durante la richiesta. Classe già presente nel sistema."');
+                alert(uploadRobots_upload_error);
             }
         });
     }
