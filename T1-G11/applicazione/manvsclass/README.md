@@ -1,15 +1,15 @@
 # T1 Service - Administrator Service
-
 The T1 service handles all features related to the "Administrator" role. The current version of T1 provides:
 - Registration and login functionalities;
 - Ability to recover/change the account password via email service;
 - Ability to add and remove test classes and related robots (opponents) that can be challenged by players;
 - Ability to view, in list form, all registered administrators and players.
 
+The service interacts with a MongoDB database to store administrator accounts and a reference to the path where the Java class file to be tested is saved. This file will later be provided to T5 to load the class code during a game session.
+
 Features such as the "Ladder" game mode and team management are currently under development.
 
 ## Adding Test Classes and Robots
-
 The form for adding new test classes and robots includes a set of required fields. Below are the mandatory fields that must be filled in:
 - `Java Class Name`: specifies the name of the Java test class to add. As per Java standards, this name must match the actual class name and the corresponding `.java` file name;
 - `Difficulty`: specifies the difficulty level of the new test class. It is completely independent of the difficulty of the robots. This is purely an informational field, visible only to the administrator. Its default value is "Beginner";
@@ -17,7 +17,6 @@ The form for adding new test classes and robots includes a set of required field
 - `Upload your tests (.zip)`: specifies the ZIP file containing the robots related to the class being uploaded.
 
 ### ZIP File Structure Specification for Robot Upload
-
 The ZIP file uploaded by the administrator must follow the structure below to be accepted and correctly processed by the system:
 
 1. The ZIP file must contain a single top-level folder named `robots/`;

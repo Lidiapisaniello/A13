@@ -1,100 +1,99 @@
 # T4 Service - Game Repository
-Il servizio T4 si occupa di tracciare e mantenere tutte le informazioni riguardanti le partite e lo stato del giocatore, quali:
-- Le partite giocate, con relative vittorie e sconfitte;
-- I robot (avversari) disponibili per ogni classe di test;
-- I punti esperienza ottenuti, gli achievement sbloccati e i robot battuti.
+The T4 service is responsible for tracking and maintaining all information related to games and the player’s status, including:
+- Games played, with related victories and defeats;
+- Available robots (opponents) for each test class;
+- Experience points earned, unlocked achievements, and defeated robots.
 
 ---
 
 ## Robots data model and Rest endpoints
-I robot (avversari) disponibili per le varie classi da testare sono descritti attraverso l'entità **Robots**.
+The available robots (opponents) for the various classes under test are described by the **Robots** entity.
 
 ![robots.png](documentation/robots.png)
 
 ### Robot - `/robots`
 
-| HTTP Method | Endpoint                          | Function                                                        |
-|-------------|-----------------------------------|-----------------------------------------------------------------|
-| GET         | `/robots/`                        | Restituisce i robot disponibili con tutte le loro informazioni. |
-| GET         | `/robots/all`                     | Restituisce i robot disponibili.                                |
-| GET         | `/robots/evosuitecoverage`        | Restituisce le metriche evosuite associate al robot indicato.   |
-| POST        | `/robots/`                        | Aggiunge uno o più nuovi robot.                                 |
-| DELETE      | `/robots/`                        | Rimuove uno o più robot                                         |
+| HTTP Method | Endpoint                   | Function                                                          |
+| ----------- | -------------------------- | ----------------------------------------------------------------- |
+| GET         | `/robots/`                 | Returns the available robots with all their information.          |
+| GET         | `/robots/all`              | Returns the available robots.                                     |
+| GET         | `/robots/evosuitecoverage` | Returns the EvoSuite metrics associated with the specified robot. |
+| POST        | `/robots/`                 | Adds one or more new robots.                                      |
+| DELETE      | `/robots/`                 | Removes one or more robots.                                       |
 
 ---
 
 ## Player status data model and Rest endpoints
-Lo stato dell'utente come giocatore è descritto attraverso le seguenti entità:
-- **Experience**: traccia i punti esperienza accumulati dall'utente;
-- **GlobalAchievementProgress**: traccia gli achievement non legati alle modalità di gioco sbloccati dal giocatore. Un giocatore può essere associato a 0, 1 o multipli GlobalAchievementProgress, dove ognuno di questi rappresenta un achievement sbloccato dal giocatore;
-- **UserGameProgress**: traccia gli avversari, intesi come coppia robot-modalità di gioco, affrontati dal giocatore, indicando se sono stati battuti o meno;
-- **AchievementProgress**: traccia gli achievement sbloccati dal giocatore legati a un certo avversario.  Un giocatore può essere associato a 0, 1 o multipli AchievementProgress, dove ognuno di questi rappresenta un achievement sbloccato.
+The player’s game status is described by the following entities:
+- **Experience**: tracks the experience points accumulated by the player;
+- **GlobalAchievementProgress**: tracks achievements unlocked by the player that are not tied to a specific game mode. A player can have 0, 1, or multiple `GlobalAchievementProgress` entries, each representing a global unlocked achievement;
+- **UserGameProgress**: tracks the opponents faced by the player, identified by robot-game mode pairs, and whether they have been defeated;
+- **AchievementProgress**: tracks the achievements unlocked by the player related to a specific opponent. A player can have 0, 1, or multiple `AchievementProgress` entries, each corresponding to a specific unlocked achievement.
 
 ![player_status.png](documentation/player_status.png)
 
-###  Avversari sconfitti e Achievement - `/progress`
+### Defeated Opponents and Achievements - `/progress`
 
-| HTTP Method | Endpoint                                                                 | Function                                                                                                                                                                                           |
-|-------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| GET         | `/progress/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}`     | Restituisce lo stato del giocatore rispetto a un avversario (identificato dalla modalità di gioco e dal robot scelto), ovvero gi achievement sbloccati e se è già stato battuto in passato o meno. |
-| POST        | `/progress/`                                                              | Crea un nuovo stato (vuoto - nessun achievement e avversario non ancora battuto) per il giocatore rispetto a un avversario.                                                                        |
-| PUT         | `/progress/state/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}` | Aggiorna lo stato del giocatore rispetto all'avversario per indicare che quest'ultimo è stato battuto.                                                                                             |
-| PUT         | `/progress/achievements/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}` | Aggiorna lo stato del giocatore rispetto all'veersario con i nuovi achievement sbloccati.                                                                                                          |
-| GET         | `/progress/{playerId}`                                                   | Restituisce lo stato del giocatore per ovvi avversario che ha affrontato.                                                                                                                          |
-| GET         | `/progress/global-achievements/{playerId}`                               | Restituisce gli achievement sbloccati dal giocatore che non sono legati agli avversari.                                                                                                            |
-| PUT         | `/progress/global-achievements/{playerId}`                               | Aggiorna gli achievement del giocatore non legati agli avversari.                                                                                                                                  |
+| HTTP Method | Endpoint                                                                          | Function                                                                                                                                                                 |
+| ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET         | `/progress/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}`              | Returns the player's status against a specific opponent (identified by game mode and robot), including unlocked achievements and whether the opponent has been defeated. |
+| POST        | `/progress/`                                                                      | Initializes a new progress state (no achievements unlocked, opponent not yet defeated) for a player against a specific opponent.                                         |
+| PUT         | `/progress/state/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}`        | Updates the player's state to indicate the opponent has been defeated.                                                                                                   |
+| PUT         | `/progress/achievements/{playerId}/{gameMode}/{classUT}/{robotType}/{difficulty}` | Updates the player's state with newly unlocked achievements related to the opponent.                                                                                     |
+| GET         | `/progress/{playerId}`                                                            | Returns the player's progress for all faced opponents.                                                                                                                   |
+| GET         | `/progress/global-achievements/{playerId}`                                        | Returns the player's unlocked achievements not related to specific opponents.                                                                                            |
+| PUT         | `/progress/global-achievements/{playerId}`                                        | Updates the player's global (non-opponent-related) achievements.                                                                                                         |
 
-### Punti Esperienza Utente - `/experience`
+### User Experience Points - `/experience`
 
-| HTTP Method | Endpoint              | Function                                                                                              |
-|-------------|-----------------------|-------------------------------------------------------------------------------------------------------|
-| GET         | `/experience/{playerId}` | Restituisce l'esperienza accumulata da un giocatore dato il suo `playerId`.                           |
-| POST        | `/experience/`        | Inizializza (a 0) l'esperienza di un nuovo giocatore appena registrato.                               |
-| PUT         | `/experience/{playerId}` | Incrementa l'esperienza del giocatore identificato da `playerId` del valore passato nel request body. |
+| HTTP Method | Endpoint                 | Function                                                                              |
+| ----------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| GET         | `/experience/{playerId}` | Returns the experience points accumulated by the player identified by `playerId`.     |
+| POST        | `/experience/`           | Initializes the experience points (set to 0) for a newly registered player.           |
+| PUT         | `/experience/{playerId}` | Increases the player's experience points by the amount specified in the request body. |
 
 ---
 
 ## Games data model and Rest endpoints
-
-Le partite vengono gestite tramite le seguenti entità:
-- **Game**: descrive una partita in corso o conclusa per un certo giocatore;
-- **Round**: descrive un round all'interno della partita;
-- **Turn**: descrive un turno all'interno di un round di una partita;
+Games are managed using the following entities:
+- **Game**: describes an ongoing or completed game for a specific player;
+- **Round**: represents a round within a game;
+- **Turn**: represents a turn within a round.
 
 ![game.png](documentation/game.png)
 
-### Partite - `/games`
+### Games - `/games`
 
-| HTTP Method | Endpoint          | Function                                                     |
-|-------------|-------------------|--------------------------------------------------------------|
-| GET         | `/games/{id}`     | Restituisce le informazioni di una partita dato il suo `id`. |
-| GET         | `/games/player/{pid}` | Restituisce tutte le partite associate al giocatore `pid`.   |
-| GET         | `/games/`         | Restituisce tutte le partite salvate nel sistema.            |
-| POST        | `/games/`         | Crea una nuova partita.                                      |
-| PUT         | `/games/{id}`     | Aggiorna lo stato della partita `id` in corse.               |
-| DELETE      | `/games/{id}`     | Rimuove la partita `id`.                                     |
+| HTTP Method | Endpoint              | Function                                                          |
+| ----------- | --------------------- | ----------------------------------------------------------------- |
+| GET         | `/games/{id}`         | Returns information about a specific game by its `id`.            |
+| GET         | `/games/player/{pid}` | Returns all games associated with the player identified by `pid`. |
+| GET         | `/games/`             | Returns all games stored in the system.                           |
+| POST        | `/games/`             | Creates a new game.                                               |
+| PUT         | `/games/{id}`         | Updates the state of an ongoing game identified by `id`.          |
+| DELETE      | `/games/{id}`         | Deletes the game identified by `id`.                              |
 
-### Round di gioco di una partita - `/rounds`
+### Game Rounds - `/rounds`
 
-| HTTP Method | Endpoint          | Function                                    |
-|-------------|-------------------|---------------------------------------------|
-| GET         | `/rounds/{id}`    | Restituisce le informazione del round `id`. |
-| GET         | `/rounds/`        | Restituisce tutti i round salvati.          |
-| POST        | `/rounds/`        | Crea un nuovo round.                        |
-| PUT         | `/rounds/{id}`    | Aggiorna un round esistente.                |
-| DELETE      | `/rounds/{id}`    | Rimuove un round esistente.                 |
+| HTTP Method | Endpoint       | Function                                       |
+| ----------- | -------------- | ---------------------------------------------- |
+| GET         | `/rounds/{id}` | Returns information about the round with `id`. |
+| GET         | `/rounds/`     | Returns all saved rounds.                      |
+| POST        | `/rounds/`     | Creates a new round.                           |
+| PUT         | `/rounds/{id}` | Updates an existing round.                     |
+| DELETE      | `/rounds/{id}` | Deletes an existing round.                     |
 
-### Turni all'interno dei Round - `/turns`
+### Turns within Rounds - `/turns`
 
-| HTTP Method | Endpoint              | Function                                                  |
-|-------------|-----------------------|-----------------------------------------------------------|
-| GET         | `/turns/{id}`         | Restituisce un turno dato il suo `id`                     |
-| GET         | `/turns/`             | Restituisce tutti i turni associati al Round specificato. |
-| POST        | `/turns/`             | Crea un nuovo turno associandolo ad un Round.             |
-| PUT         | `/turns/{id}`         | Aggiorna lo stato di un turno dato il suo `id`.           |
-| DELETE      | `/turns/{id}`         | Rimuove un turno dato il suo `id`.                        |
-| GET         | `/turns/{id}/files`   | Deprecato.                                                |
-| PUT         | `/turns/{id}/files`   | Deprecato.                                                |
+| HTTP Method | Endpoint            | Function                                               |
+| ----------- | ------------------- | ------------------------------------------------------ |
+| GET         | `/turns/{id}`       | Returns a turn by its `id`.                            |
+| GET         | `/turns/`           | Returns all turns associated with the specified round. |
+| POST        | `/turns/`           | Creates a new turn and associates it with a round.     |
+| PUT         | `/turns/{id}`       | Updates the state of a turn identified by its `id`.    |
+| DELETE      | `/turns/{id}`       | Deletes a turn identified by its `id`.                 |
+| GET         | `/turns/{id}/files` | Deprecated.                                            |
+| PUT         | `/turns/{id}/files` | Deprecated.                                            |
 
 ---
 

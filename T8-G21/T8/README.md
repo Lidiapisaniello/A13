@@ -1,5 +1,4 @@
 # T8 Service - MVN Compiler and EvoSuite Metrics
-
 The T8 service handles the compilation of provided Java code and the calculation of the metrics of EvoSuite.
 It can be invoked by:
 - T1, to calculate the missing EvoSuite metrics of a robot uploaded by the administrator;
