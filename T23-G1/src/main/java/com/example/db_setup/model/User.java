@@ -35,19 +35,13 @@ import lombok.Data;
 @Table (name = "Students", schema = "studentsrepo")
 @Data
 @Entity
-@AllArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     public Integer ID;
-    public String password;
 
-    //MODIFICA
-    public boolean isRegisteredWithFacebook = false;
-    //FINE MODIFICA
-    //MODIFICA 18/06/2024
-    public boolean isRegisteredWithGoogle = false;
+    public String password;
 
     @Enumerated (EnumType.STRING)
     public Studies studies;
@@ -61,11 +55,19 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile userProfile;
 
-
     @Column(name = "reset_token")
     private String resetToken;
 
-    public User(){
+    public User(String name, String surname, String email, String password, Studies studies) {
+        this();
+        this.password = password;
+        this.studies = studies;
+        this.userProfile.setName(name);
+        this.userProfile.setSurname(surname);
+        this.userProfile.setEmail(email);
+    }
+
+    public User() {
         this.userProfile=new UserProfile();
         this.userProfile.setUser(this);
     }

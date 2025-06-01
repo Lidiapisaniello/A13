@@ -84,8 +84,8 @@
 							</li>
 						</div>
 					</ul>
-					-->
 				</div>
+				-->
 
 				<!-- Profilo -->
 				<!--
@@ -127,7 +127,7 @@
 						</a>
 					</li>
 					<li>
-						<a class="dropdown-item" href="/logout">
+						<a class="dropdown-item" href="#" id="logout_button">
 							<i class="bi bi-box-arrow-left"></i> Logout
 						</a>
 					</li>
@@ -135,4 +135,28 @@
 			</div>
 		</div>
 	</div>
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const logout_button = document.getElementById("logout_button");
+			console.log(logout_button)
+			if (logout_button) {
+				logout_button.addEventListener("click", async (event) => {
+					event.preventDefault();
+					try {
+						const response = await $.ajax({
+							url: "/auth/logout",
+							type: "POST",
+							credentials: "include"
+						});
+						console.log("Logout effettuato:", response);
+						window.location.href = "/login";
+					} catch (error) {
+						console.error("Si è verificato un errore:", error);
+					}
+				});
+			}
+		});
+	</script>
 </nav>
+
+

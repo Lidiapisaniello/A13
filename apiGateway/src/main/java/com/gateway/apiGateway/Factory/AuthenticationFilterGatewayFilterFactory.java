@@ -50,7 +50,7 @@ public class AuthenticationFilterGatewayFilterFactory extends AbstractGatewayFil
          * Valori di default 
          */
         private String cachePrefix = "AuthCache";
-        private String authServiceUrl = "http://t23-controller:8082/validateToken"; 
+        private String authServiceUrl = "http://t23-controller:8082/auth/validateToken";
         private long BUFFER_TIME_SECONDS = 600;  // Durata rimanente minima del token per essere cachato 
         private long CACHE_TTL_THRESHOLD = 60;   // Soglia da levare al tempo rimanente del token per avere un ttl 
 

@@ -15,7 +15,7 @@
  *   limitations under the License.
  */
 
-package com.example.db_setup.Service;
+package com.example.db_setup.services;
 
 import java.time.LocalDateTime;
 import java.util.List;

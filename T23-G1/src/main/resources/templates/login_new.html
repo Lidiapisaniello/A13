@@ -27,15 +27,17 @@
       </div>
       <div class="login-box">
         <h1 th:text="#{login.form.title}"></h1>
-        <form th:action="@{/login}" method="post">
+        <form id="login-form">
           <label for="email">Email:</label>
           <input type="text" id="email" name="email" th:placeholder="#{email.placeholder}" autocomplete="on">
 
           <label for="password">Password:</label>
           <input type="password" id="password" name="password" placeholder="Password" autocomplete="off">
-          <!--Primo bottone ('Accedi')-->
-          <input type="submit" th:value="#{button.login}" class="submit-button">
-          <a th:text="#{login.form.forgot}" class="login-help-link link" target="_self" data-uia="login-help-link" href="/password_reset"></a>
+
+          <input type="submit" th:value="#{button.login}" class="submit-button" id="login_submit_button">
+
+          <a th:text="#{login.form.forgot}" class="login-help-link link" target="_self"
+             data-uia="login-help-link" href="/password_reset"></a>
         </form>
         <!--data-use-continue-as="true": Abilita la funzionalità "Continua come {name}" -->
         <!--data-auto-logout-link="true" : Se abilitato, il pulsante diventerà il pulsante 'Esci' quando l'utente ha effettuato l'accesso-->
@@ -46,4 +48,34 @@
       </div>
     </div>
     <div th:insert="layouts/footer :: footer"></div>
+
+    <script>
+      document.getElementById("login-form").addEventListener("submit", async function (e) {
+        e.preventDefault(); // blocco il submit classico
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            window.location.href = "/main";
+          } else {
+            const error = await response.json();
+            alert(error.message || 'Login failed');
+          }
+        } catch (err) {
+          console.error('Errore di rete o server:', err);
+          alert("Si è verificato un errore. Riprova.");
+        }
+      });
+    </script>
   </body>

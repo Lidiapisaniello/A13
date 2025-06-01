@@ -4,18 +4,11 @@
 
 package com.example.db_setup;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
-import com.example.db_setup.Service.OAuthUserGoogleService;
-
-
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+//@Configuration
+//@EnableWebSecurity
+public class SecurityConfig {
+    /*extends WebSecurityConfigurerAdapter {
     @Autowired
     private OAuthUserGoogleService oAuthUserGoogleService;
 
@@ -46,4 +39,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http.csrf().disable();
             http.logout().disable();
             }
+
+     */
 }

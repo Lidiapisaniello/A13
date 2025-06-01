@@ -18,6 +18,7 @@
 package com.example.db_setup;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,7 +31,7 @@ import com.example.db_setup.model.UserProfile;
 @Repository
 public interface UserRepository extends JpaRepository<User,Integer> {
 
-    User findByUserProfileEmail(String email);
+    Optional<User> findByUserProfileEmail(String email);
 
     @Query("SELECT u FROM UserProfile u WHERE u.email LIKE %:searchTerm%")
     List<User> findByUserProfileEmailLike(@Param("searchTerm") String searchTerm);
@@ -39,10 +40,6 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     User findByResetToken(String resetToken);
     User findByID(Integer ID);
     //MODIFICA
-    User findByisRegisteredWithFacebook(boolean isRegisteredWithFacebook);
-    //FINE MODIFICA
-    //Modifica 18/06/2024
-    User findByisRegisteredWithGoogle(boolean isRegisteredWithGoogle);
     List<User> findAll();
     @Query("SELECT u FROM User u WHERE u.userProfile = :userProfile")
     User findByUserProfile(@Param("userProfile") UserProfile userProfile);
@@ -52,5 +49,4 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     //Modifica 12/12/2024
     List<User> findByUserProfileSurnameAndUserProfileName(String surname,String name); //SELECT * FROM User WHERE surname = ? AND name = ?
     List<User> findByUserProfileSurname(String surname);
-
 }

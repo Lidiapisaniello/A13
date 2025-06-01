@@ -1,4 +1,4 @@
-package com.example.db_setup.Service;
+package com.example.db_setup.services;
 
 import com.example.db_setup.util.ServiceURL;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ import java.io.IOException;
 @Service
 public class RegistrationService {
 
-    private ServiceURL serviceURL;
+    private final ServiceURL serviceURL;
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
 
 

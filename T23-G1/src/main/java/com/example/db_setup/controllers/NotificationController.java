@@ -14,7 +14,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.example.db_setup.Controllers;
+package com.example.db_setup.controllers;
 
 import java.util.List;
 
@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.db_setup.Service.NotificationService;
-import com.example.db_setup.Service.UserService;
+import com.example.db_setup.services.NotificationService;
+import com.example.db_setup.services.UserService;
 import com.example.db_setup.model.Notification;
 import com.example.db_setup.model.User;
 import com.example.db_setup.model.UserProfile;

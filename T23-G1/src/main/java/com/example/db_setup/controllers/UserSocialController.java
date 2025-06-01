@@ -1,4 +1,4 @@
-package com.example.db_setup.Controllers;
+package com.example.db_setup.controllers;
 
 import java.util.List;
 
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.db_setup.Service.UserNotFoundException;
-import com.example.db_setup.Service.UserService;
-import com.example.db_setup.Service.UserSocialService;
+import com.example.db_setup.services.UserNotFoundException;
+import com.example.db_setup.services.UserService;
+import com.example.db_setup.services.UserSocialService;
 import com.example.db_setup.model.User;
 import com.example.db_setup.model.UserProfile;
 

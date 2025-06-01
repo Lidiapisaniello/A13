@@ -15,10 +15,9 @@
  *   limitations under the License.
  */
 
-package com.example.db_setup.Controllers;
+package com.example.db_setup.controllers;
 
-import com.example.db_setup.Service.RegistrationService;
-import com.example.db_setup.model.*;
+import com.example.db_setup.services.RegistrationService;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -28,10 +27,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
@@ -58,23 +53,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.example.db_setup.EmailService;
 import com.example.db_setup.MyPasswordEncoder;
-import com.example.db_setup.MyResponseClass;
 import com.example.db_setup.UserRepository;
 import com.example.db_setup.Authentication.AuthenticatedUser;
 import com.example.db_setup.Authentication.AuthenticatedUserRepository;
-import com.example.db_setup.Service.OAuthUserGoogleService;
-import com.example.db_setup.Service.UserService;
+import com.example.db_setup.services.UserService;
 import com.example.db_setup.model.Studies;
 import com.example.db_setup.model.User;
 //MODIFICA (Deserializzazione risposta JSON)
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @RestController
 public class Controller {
@@ -185,8 +175,8 @@ public class Controller {
 
         // EMAIL
         if ((email.contains("@")) && (email.contains("."))) {
-            User user = userRepository.findByUserProfileEmail(email);
-            if (user != null) {
+            Optional<User> user = userRepository.findByUserProfileEmail(email);
+            if (user.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente con questa email già registrato");
             }
             n.setEmail(email);
@@ -217,7 +207,7 @@ public class Controller {
         userRepository.save(n);
         Integer ID = n.getID();
 
-        // Richiedo l'inizializzazione deli punti esperienza per il nuovo utente. Se la richiesta fallisce, elimino
+        // Richiedo l'inizializzazione dei punti esperienza per il nuovo utente. Se la richiesta fallisce, elimino
         // l'utente e restituisco un messaggio di errore
         if (!registrationService.initializeExperiencePoints(ID)) {
             userRepository.delete(n);
@@ -255,13 +245,12 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Already logged in");
         }
 
-        User user = userRepository.findByUserProfileEmail(email);
-        
-        if (user == null) {
+        Optional<User> userOpt = userRepository.findByUserProfileEmail(email);
+        if (! userOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email not found");
-        } else if (user.isRegisteredWithFacebook) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User already registered with facebook, please log in with facebook");
         }
+
+        User user = userOpt.get();
 
         System.out.println("Utente registrato, email trovata nel database (login)");
         boolean passwordMatches = myPasswordEncoder.matches(password, user.password);
@@ -352,11 +341,13 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Already logged in");
         }
 
-        User user = userRepository.findByUserProfileEmail(email);
+        Optional<User> userOpt = userRepository.findByUserProfileEmail(email);
 
-        if (user == null) {
+        if (!userOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not found");
         }
+
+        User user = userOpt.get();
 
         String resetToken = generateToken(user);
         user.setResetToken(resetToken);
@@ -381,12 +372,13 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Already logged in");
         }
 
-        User user = userRepository.findByUserProfileEmail(email);
+        Optional<User> userOpt = userRepository.findByUserProfileEmail(email);
 
-        if (user == null) {
+        if (! userOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email not found");
         }
 
+        User user = userOpt.get();
         if (!resetToken.equals(user.getResetToken())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid reset token");
         }
@@ -430,33 +422,6 @@ public class Controller {
         return ResponseEntity.ok(false);
     }
 
-    @GetMapping("/register")
-    public ModelAndView showRegistrationForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-        return new ModelAndView("register_new");
-    }
-
-    //MODIFICA (03/02/2024) : Feedback registrazione avvenuta con successo + redirect alla pagina di /login
-    @GetMapping("/login_success")
-    public ModelAndView showLoginSuccesForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-        return new ModelAndView("login_success");
-    }
-
-    @GetMapping("/menu")
-    public ModelAndView showMenuForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        System.out.println("GET (/menu)");
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/login");
-        return new ModelAndView("menu_new");
-    }
-
-    @GetMapping("/login")
-    public ModelAndView showLoginForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-
-        return new ModelAndView("login_new");
-    }
-
     @GetMapping("/students_list")
     public List<User> getAllStudents() {
         return userRepository.findAll();
@@ -468,23 +433,7 @@ public class Controller {
         return userRepository.findByID(Integer.parseInt(ID));
     }
 
-    @GetMapping("/password_reset")
-    public ModelAndView showResetForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-        return new ModelAndView("password_reset_new");
-    }
 
-    @GetMapping("/password_change")
-    public ModelAndView showChangeForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-        return new ModelAndView("password_change");
-    }
-
-    @GetMapping("/mail_register")
-    public ModelAndView showMailForm(HttpServletRequest request, @CookieValue(name = "jwt", required = false) String jwt) {
-        if(isJwtValid(jwt)) return new ModelAndView("redirect:/main");
-        return new ModelAndView("mail_register");
-    }
 
     @GetMapping("/checkSession")
     public ResponseEntity<String> checkSession(HttpServletRequest request) {
@@ -496,16 +445,7 @@ public class Controller {
     }
 }
 
-    @PostMapping("/changeLanguage")
-    public String changeLanguage(HttpServletRequest request, @RequestParam("lang") String lang, RedirectAttributes redirectAttributes) {
-    LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-    if (localeResolver != null) {
-        localeResolver.setLocale(request, null, Locale.forLanguageTag(lang));
-    }
-    // Redirect back to the referring page, or to a default page
-    String referer = request.getHeader("Referer");
-    return "redirect:" + (referer != null ? referer : "/");
-}
+
 
  
 

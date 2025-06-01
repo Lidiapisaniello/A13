@@ -14,15 +14,11 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.example.db_setup.Service;
+package com.example.db_setup.services;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -34,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.db_setup.Authentication.AuthenticatedUser;
 import com.example.db_setup.Authentication.AuthenticatedUserRepository;
-import com.example.db_setup.OAuthUserGoogle;
 import com.example.db_setup.UserFollowRepository;
 import com.example.db_setup.UserProfileRepository;
 import com.example.db_setup.UserRepository;
@@ -65,9 +60,18 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+
+
+
+
+
+
+
+
+
     // Recupera dal DB l'utente con l'email specificata
     public User getUserByEmail(String email) {
-        return userRepository.findByUserProfileEmail(email);
+        return userRepository.findByUserProfileEmail(email).orElse(null);
     }
 
     public User getUserByID(Integer ID) {
@@ -80,11 +84,12 @@ public class UserService {
 
     // Modifica 06/12/2024: Aggiunta end-point per restituire solo i campi non sensibili dello USER
     public ResponseEntity<?> getStudentByEmail(String email) {
-        User user = userRepository.findByUserProfileEmail(email);
-        if (user == null) {
+        Optional<User> userOpt = userRepository.findByUserProfileEmail(email);
+        if (!userOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato per email: " + email);
         }
 
+        User user = userOpt.get();
         // Creazione della mappa JSON con i campi desiderati
         Map<String, Object> response = new HashMap<>();
         response.put("id", user.getID());
@@ -94,34 +99,19 @@ public class UserService {
         return ResponseEntity.ok(response);
     }
 
-    // Crea un nuovo utente con i dettagli forniti da OAuthUserGoogle, recuperati dall'accesso OAuth2
-    public User createUserFromOAuth(OAuthUserGoogle oauthUser) {
-        User newUser = new User();
-        newUser.setEmail(oauthUser.getEmail());
-        newUser.setName(oauthUser.getName());
-        //Istanzio il profilo
-        newUser.setUserProfile(userProfile);
-        newUser.getUserProfile().setUser(newUser);
 
-        newUser.setRegisteredWithGoogle(true);
-        String[] nameParts = oauthUser.getName().split(" ");
-        if (nameParts.length > 1) {
-            newUser.setSurname(nameParts[nameParts.length - 1]);
-        }
-        return userRepository.save(newUser);
-    }
 
     public UserProfile findProfileByEmail(String email) {
         // Recupera l'utente con l'email specificata
-        User user = userRepository.findByUserProfileEmail(email);
+        Optional<User> userOpt = userRepository.findByUserProfileEmail(email);
 
         //Controlla se l'utente esiste
-        if (user == null) {
+        if (!userOpt.isPresent()) {
             throw new IllegalArgumentException("User with email " + email + " not found");
         }
 
         // Restituisce il profilo dell'utente
-        return user.getUserProfile();
+        return userOpt.get().getUserProfile();
     }
 
     // Genera un token JWT per l'utente specificato e lo salva nel DB
