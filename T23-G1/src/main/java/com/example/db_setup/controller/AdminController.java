@@ -2,7 +2,7 @@ package com.example.db_setup.controller;
 
 import com.example.db_setup.model.Admin;
 import com.example.db_setup.model.dto.gamification.AdminSummaryDTO;
-import com.example.db_setup.model.repositories.AdminRepository;
+import com.example.db_setup.model.repository.AdminRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

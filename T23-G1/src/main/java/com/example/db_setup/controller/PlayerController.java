@@ -1,7 +1,7 @@
 package com.example.db_setup.controller;
 
 import com.example.db_setup.model.Player;
-import com.example.db_setup.model.repositories.PlayerRepository;
+import com.example.db_setup.model.repository.PlayerRepository;
 import com.example.db_setup.service.PlayerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

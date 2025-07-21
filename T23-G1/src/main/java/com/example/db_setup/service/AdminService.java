@@ -1,7 +1,7 @@
 package com.example.db_setup.service;
 
 import com.example.db_setup.model.Admin;
-import com.example.db_setup.model.repositories.AdminRepository;
+import com.example.db_setup.model.repository.AdminRepository;
 import org.springframework.stereotype.Service;
 
 @Service

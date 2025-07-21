@@ -23,15 +23,15 @@ import java.util.stream.Collectors;
 
 import com.example.db_setup.model.Player;
 import com.example.db_setup.model.Studies;
-import com.example.db_setup.service.exceptions.UserNotFoundException;
+import com.example.db_setup.service.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.example.db_setup.model.repositories.UserProfileRepository;
-import com.example.db_setup.model.repositories.PlayerRepository;
+import com.example.db_setup.model.repository.UserProfileRepository;
+import com.example.db_setup.model.repository.PlayerRepository;
 import com.example.db_setup.model.UserProfile;
 
 import io.jsonwebtoken.Jwts;

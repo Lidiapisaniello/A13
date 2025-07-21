@@ -1,14 +1,14 @@
 package com.example.db_setup.service;
 
 import com.example.db_setup.model.*;
-import com.example.db_setup.model.repositories.AdminRepository;
-import com.example.db_setup.model.repositories.PasswordResetTokenRepository;
-import com.example.db_setup.model.repositories.PlayerRepository;
-import com.example.db_setup.model.repositories.RefreshTokenRepository;
+import com.example.db_setup.model.repository.AdminRepository;
+import com.example.db_setup.model.repository.PasswordResetTokenRepository;
+import com.example.db_setup.model.repository.PlayerRepository;
+import com.example.db_setup.model.repository.RefreshTokenRepository;
 import com.example.db_setup.security.jwt.JwtValidationResult;
 import com.example.db_setup.security.jwt.JwtProvider;
-import com.example.db_setup.security.services.UserDetailsImpl;
-import com.example.db_setup.service.exceptions.*;
+import com.example.db_setup.security.service.UserDetailsImpl;
+import com.example.db_setup.service.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

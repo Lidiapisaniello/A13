@@ -1,7 +1,7 @@
 package com.example.db_setup.service;
 
 import com.example.db_setup.model.*;
-import com.example.db_setup.model.repositories.PasswordResetTokenRepository;
+import com.example.db_setup.model.repository.PasswordResetTokenRepository;
 import com.example.db_setup.security.AuthenticationPropertiesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

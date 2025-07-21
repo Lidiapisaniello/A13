@@ -3,7 +3,7 @@ package com.example.db_setup.service;
 import com.example.db_setup.model.Admin;
 import com.example.db_setup.model.Player;
 import com.example.db_setup.model.RefreshToken;
-import com.example.db_setup.model.repositories.RefreshTokenRepository;
+import com.example.db_setup.model.repository.RefreshTokenRepository;
 import com.example.db_setup.security.AuthenticationPropertiesConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;

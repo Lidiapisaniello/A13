@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.db_setup.service.exceptions.UserNotFoundException;
+import com.example.db_setup.service.exception.UserNotFoundException;
 import com.example.db_setup.service.PlayerService;
 import com.example.db_setup.service.UserSocialService;
 import com.example.db_setup.model.UserProfile;

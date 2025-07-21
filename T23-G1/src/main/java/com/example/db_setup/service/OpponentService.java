@@ -1,8 +1,8 @@
 package com.example.db_setup.service;
 
 import com.example.db_setup.model.Opponent;
-import com.example.db_setup.model.repositories.OpponentRepository;
-import com.example.db_setup.service.exceptions.OpponentNotFoundException;
+import com.example.db_setup.model.repository.OpponentRepository;
+import com.example.db_setup.service.exception.OpponentNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import testrobotchallenge.commons.models.opponent.GameMode;

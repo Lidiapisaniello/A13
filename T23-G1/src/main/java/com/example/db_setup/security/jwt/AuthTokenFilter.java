@@ -2,8 +2,8 @@ package com.example.db_setup.security.jwt;
 
 import testrobotchallenge.commons.models.user.Role;
 import com.example.db_setup.security.AuthenticationPropertiesConfig;
-import com.example.db_setup.security.services.AdminDetailsServiceImpl;
-import com.example.db_setup.security.services.PlayerDetailsServiceImpl;
+import com.example.db_setup.security.service.AdminDetailsServiceImpl;
+import com.example.db_setup.security.service.PlayerDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

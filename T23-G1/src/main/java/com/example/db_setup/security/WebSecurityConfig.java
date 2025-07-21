@@ -2,8 +2,8 @@ package com.example.db_setup.security;
 
 import com.example.db_setup.security.jwt.AuthEntryPointJwt;
 import com.example.db_setup.security.jwt.AuthTokenFilter;
-import com.example.db_setup.security.services.PlayerDetailsServiceImpl;
-import com.example.db_setup.security.services.AdminDetailsServiceImpl;
+import com.example.db_setup.security.service.PlayerDetailsServiceImpl;
+import com.example.db_setup.security.service.AdminDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
