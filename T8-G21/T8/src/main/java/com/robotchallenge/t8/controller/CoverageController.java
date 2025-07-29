@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import testrobotchallenge.commons.models.dto.score.basic.EvosuiteScoreDTO;
 import testrobotchallenge.commons.models.dto.score.EvosuiteCoverageDTO;
 
 import java.util.concurrent.*;
@@ -50,7 +49,7 @@ public class CoverageController {
     ResponseEntity<?> calculateStudentEvosuiteCoverage(@RequestBody StudentCoverageRequestDTO request) {
         logger.info("[CoverageController] [POST /coverage/player] Ricevuta richiesta");
 
-        Callable<String> compilationTimedTask = () -> coverageService.calculatePLayerCoverage(request);
+        Callable<String> compilationTimedTask = () -> coverageService.calculatePlayerCoverage(request);
 
         Future<String> future;
         try {

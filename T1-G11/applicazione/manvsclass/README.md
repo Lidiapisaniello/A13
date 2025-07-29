@@ -1,7 +1,5 @@
 # T1 Service - Administrator Service
 The T1 service handles all features related to the "Administrator" role. The current version of T1 provides:
-- Registration and login functionalities;
-- Ability to recover/change the account password via email service;
 - Ability to add and remove test classes and related robots (opponents) that can be challenged by players;
 - Ability to view, in list form, all registered administrators and players.
 

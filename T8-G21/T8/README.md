@@ -6,10 +6,10 @@ It can be invoked by:
 
 ## Available REST Endpoints
 
-| HTTP Method | Endpoint       | Function                                                                           |
-| ----------- |----------------|------------------------------------------------------------------------------------|
-| POST        | `/coverage/randoop` | Calculates the missing EvoSuite metrics for a robot uploaded by the administrator. |
-| POST        | `/api/VolumeT0` | Calculate the EvoSuite metrics for the code written by the player during a match.    |
+| HTTP Method | Endpoint             | Function                                                                               |
+| ----------- |----------------------|----------------------------------------------------------------------------------------|
+| POST        | `/coverage/opponent` | Calculates the missing EvoSuite metrics for an opponent uploaded by the administrator. |
+| POST        | `/coverage/player`   | Calculate the EvoSuite metrics for the code written by the player during a match.      |
 
 ## Executor and Task Queue
 

@@ -59,7 +59,7 @@ public class CoverageService {
         return result;
     }
 
-    public String calculatePLayerCoverage(StudentCoverageRequestDTO request) throws RuntimeException {
+    public String calculatePlayerCoverage(StudentCoverageRequestDTO request) throws RuntimeException {
         String classUTName = request.getClassUTName();
         String classUTCode = request.getClassUTCode();
         String testClassCode = request.getTestClassCode();
