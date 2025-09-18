@@ -1,6 +1,0 @@
-projectKey=T1-cli
-serverUrl=http://localhost:9000
-serverVersion=25.9.0.112764
-dashboardUrl=http://localhost:9000/dashboard?id=T1-cli
-ceTaskId=8bbe469f-4979-4104-a110-242a27c39fb3
-ceTaskUrl=http://localhost:9000/api/ce/task?id=8bbe469f-4979-4104-a110-242a27c39fb3
