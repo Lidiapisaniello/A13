@@ -31,7 +31,6 @@ import java.util.Locale;
 public class LocaleConfig implements WebMvcConfigurer {
 
     // Usare i cookie per memorizzare il locale
-    @SuppressWarnings("deprecation")
     @Bean
     public LocaleResolver localeResolver() {
         CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();

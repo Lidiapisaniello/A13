@@ -1,7 +1,5 @@
 package com.robotchallenge.t8.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import testrobotchallenge.commons.models.dto.score.basic.CoverageDTO;
 import testrobotchallenge.commons.models.dto.score.basic.EvosuiteScoreDTO;
 import testrobotchallenge.commons.models.dto.score.EvosuiteCoverageDTO;
@@ -9,7 +7,11 @@ import testrobotchallenge.commons.util.ExtractScore;
 
 public class BuildResponse {
 
-    private static final Logger logger = LoggerFactory.getLogger(BuildResponse.class);
+    // Costruttore privato aggiunto per rimuovere l'issue "Utility classes should not have public constructors"
+    // identificata da SonaQube IDE
+    private BuildResponse() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static EvosuiteScoreDTO buildDTO(String result) {
         int[][] score = ExtractScore.fromEvosuite(result);

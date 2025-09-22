@@ -7,6 +7,10 @@ services:
     restart: always
     expose:
       - 8081
+    environment:
+      MONGODB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGODB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
     depends_on:
       - mongo_db
     volumes:

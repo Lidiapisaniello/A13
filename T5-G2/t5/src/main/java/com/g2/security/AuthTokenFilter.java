@@ -1,6 +1,6 @@
 package com.g2.security;
 
-import com.g2.Interfaces.ServiceManager;
+import com.g2.interfaces.ServiceManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -24,7 +24,7 @@ import static testrobotchallenge.commons.models.user.Role.PLAYER;
 
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private static final Logger customLogger = LoggerFactory.getLogger(AuthTokenFilter.class);
     private final ServiceManager serviceManager;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -36,7 +36,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        logger.info("[AuthTokenFilter] Authenticating request {} {}", request.getMethod(), request.getRequestURI());
+        customLogger.info("[AuthTokenFilter] Authenticating request {} {}", request.getMethod(), request.getRequestURI());
 
         Cookie jwtCookie = WebUtils.getCookie(request, "jwt");
         Cookie refreshCookie = WebUtils.getCookie(request, "jwt-refresh");
@@ -47,11 +47,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         try {
             if (jwt == null) {
                 if (refreshCookie != null) {
-                    logger.info("JWT missing. Attempting to refresh using refresh token...");
+                    customLogger.info("JWT missing. Attempting to refresh using refresh token...");
                     tryRefreshAndContinue(refreshToken, response, chain, request);
                     return;
                 } else {
-                    logger.info("JWT and refresh token missing. Redirecting to login.");
+                    customLogger.info("JWT and refresh token missing. Redirecting to login.");
                     redirectToLogin(response, "unauthorized");
                     return;
                 }
@@ -59,14 +59,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             JwtValidationResponseDTO validation = (JwtValidationResponseDTO) serviceManager.handleRequest("T23", "GetAuthenticated", jwt);
             if (!validation.isValid() || !validation.getRole().equals(PLAYER)) {
-                logger.info("[AuthTokenFilter] Invalid token or insufficient permissions.");
+                customLogger.info("[AuthTokenFilter] Invalid token or insufficient permissions.");
                 redirectToLogin(response, "unauthorized");
                 return;
             }
 
-            logger.info("[AuthTokenFilter] Validated token for role PLAYER");
+            customLogger.info("[AuthTokenFilter] Validated token for role PLAYER");
             JwtRequestContext.setJwtToken("%s=%s".formatted(jwtCookie.getName(), jwt));
-            logger.debug("[AuthTokenFilter] JWT saved in thread context");
+            customLogger.debug("[AuthTokenFilter] JWT saved in thread context");
 
             chain.doFilter(request, response);
 
@@ -78,8 +78,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private void tryRefreshAndContinue(String refreshToken, HttpServletResponse response, FilterChain chain, HttpServletRequest request)
             throws IOException {
 
+        String cookies = callRefreshJwtToken(refreshToken);
+        if (cookies == null) {
+            customLogger.warn("Refresh token failed: JWT is null");
+            redirectToLogin(response, "expired");
+            return;
+        }
+
         try {
-            Map<String, String> cookieAttrs = parseCookieAttributes(callRefreshJwtToken(refreshToken));
+            Map<String, String> cookieAttrs = parseCookieAttributes(cookies);
             String newJwt = cookieAttrs.get("jwt");
             int maxAge = Integer.parseInt(cookieAttrs.getOrDefault("max-age", "3600"));
             String path = cookieAttrs.getOrDefault("path", "/");
@@ -93,11 +100,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             response.setHeader(HttpHeaders.SET_COOKIE, newJwtCookie.toString());
             JwtRequestContext.setJwtToken(newJwtCookie.toString());
 
-            logger.info("JWT refreshed and saved in context. Proceeding with filter chain.");
+            customLogger.info("JWT refreshed and saved in context. Proceeding with filter chain.");
             chain.doFilter(request, response);
 
         } catch (Exception ex) {
-            logger.warn("Refresh token failed: {}", ex.getMessage());
+            customLogger.warn("Refresh token failed: {}", ex.getMessage());
             redirectToLogin(response, "expired");
         }
     }
@@ -130,7 +137,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             }
         }
 
-        throw new RuntimeException("Invalid refresh token");
+        return null;
     }
 
     private Map<String, String> parseCookieAttributes(String setCookieHeader) {

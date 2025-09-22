@@ -30,19 +30,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private final AdminDetailsServiceImpl adminDetailsService;
     private final AuthenticationPropertiesConfig authProperties;
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
-    private final AdminDetailsServiceImpl adminDetailsServiceImpl;
+    private static final Logger customLogger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
             Cookie cookie = WebUtils.getCookie(request, authProperties.getJwtCookieName());
-            //Cookie cookie = WebUtils.getCookie(request, "jwt");
-            logger.info("jwt cookie found: {}", cookie);
+            customLogger.info("jwt cookie found: {}", cookie);
             String jwt = cookie != null ? cookie.getValue() : null;
 
-            logger.info("[AuthTokenFilter] Filtering request with jwt {} on request {}", jwt, request);
+            customLogger.info("[AuthTokenFilter] Filtering request with jwt {} on request {}", jwt, request);
             logRequestInfo(request);
             if (jwt != null && jwtProvider.validateJwtToken(jwt).isValid()) {
                 String email = jwtProvider.getUserEmailFromJwtToken(jwt);
@@ -56,12 +54,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                 null,
                                 userDetails.getAuthorities());
 
-                logger.info("[AuthTokenFilter] Jwt is valid, setting authentication context");
+                customLogger.info("[AuthTokenFilter] Jwt is valid, setting authentication context");
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
+            customLogger.error("Cannot set user authentication: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -83,7 +81,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     .append(request.getHeader(headerName)).append("\n");
         }
 
-        logger.info(sb.toString());
+        customLogger.info("{}", sb);
     }
 
 }

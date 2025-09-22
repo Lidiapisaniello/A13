@@ -3,7 +3,6 @@ package com.example.db_setup.interceptor;
 import testrobotchallenge.commons.models.user.Role;
 import com.example.db_setup.security.jwt.JwtProvider;
 import com.example.db_setup.service.AuthService;
-import lombok.RequiredArgsConstructor;
 import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RequiredArgsConstructor
 public class AuthenticatedUserInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticatedUserInterceptor.class);
@@ -26,19 +24,25 @@ public class AuthenticatedUserInterceptor implements HandlerInterceptor {
     private final JwtProvider jwtProvider;
     private final AuthService authService;
 
-    private static final List<String> playerUrls = new ArrayList<String>(){{
-        add("/login");
-        add("/register");
-        add("/change_password");
-        add("/reset_password");
-    }};
+    private List<String> playerUrls;
+    private List<String> adminUrls;
 
-    private static final List<String> adminUrls = new ArrayList<String>(){{
-        add("/admin/login");
-        add("/admin/register");
-        add("/admin/change_password");
-        add("/admin/reset_password");
-    }};
+    public AuthenticatedUserInterceptor(JwtProvider jwtProvider, AuthService authService) {
+        this.jwtProvider = jwtProvider;
+        this.authService = authService;
+
+        playerUrls = new ArrayList<>();
+        playerUrls.add("/login");
+        playerUrls.add("/register");
+        playerUrls.add("/change_password");
+        playerUrls.add("/reset_password");
+
+        adminUrls = new ArrayList<>();
+        adminUrls.add("/admin/login");
+        adminUrls.add("/admin/register");
+        adminUrls.add("/admin/change_password");
+        adminUrls.add("/admin/reset_password");
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {

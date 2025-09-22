@@ -11,6 +11,12 @@ import java.util.zip.ZipInputStream;
 
 public class FileUtil {
 
+    // Costruttore privato aggiunto per rimuovere l'issue "Utility classes should not have public constructors"
+    // identificata da SonaQube IDE
+    private FileUtil() {
+        throw new IllegalStateException("Classe utility per la gestione di file e file system");
+    }
+
     public static void copyDirectoryRecursively(Path sourcePath, Path destinationPath) throws IOException {
         if (!Files.exists(sourcePath) || !Files.isDirectory(sourcePath)) {
             throw new IllegalArgumentException(String.format("Il percorso %s sorgente non esiste o non è una directory.", sourcePath));
@@ -69,32 +75,33 @@ public class FileUtil {
 
     public static void unzip(String fileZip, File destDir) throws IOException {
         byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip));
-        ZipEntry zipEntry = zis.getNextEntry();
-        while (zipEntry != null) {
-            File newFile = newFile(destDir, zipEntry);
-            if (zipEntry.isDirectory()) {
-                if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                    throw new IOException("Failed to create directory " + newFile);
-                }
-            } else {
-                // Aggiustamento per archivi creati con Windows
-                File parent = newFile.getParentFile();
-                if (!parent.isDirectory() && !parent.mkdirs()) {
-                    throw new IOException("Failed to create directory " + parent);
-                }
 
-                // Scrittura del contenuto del file
-                FileOutputStream fos = new FileOutputStream(newFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip))) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            while (zipEntry != null) {
+                File newFile = newFile(destDir, zipEntry);
+                if (zipEntry.isDirectory()) {
+                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
+                } else {
+                    // Aggiustamento per archivi creati con Windows
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IOException("Failed to create directory " + parent);
+                    }
+
+                    // Scrittura del contenuto del file
+                    try (FileOutputStream fos = new FileOutputStream(newFile);) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
                 }
-                fos.close();
+                zipEntry = zis.getNextEntry();
             }
-            zipEntry = zis.getNextEntry();
+            zis.closeEntry();
         }
-        zis.closeEntry();
-        zis.close();
     }
 }

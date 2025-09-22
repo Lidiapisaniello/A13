@@ -1,7 +1,5 @@
 package com.example.db_setup.controller;
 
-import com.example.db_setup.model.Admin;
-import com.example.db_setup.model.Player;
 import testrobotchallenge.commons.models.dto.auth.JwtValidationResponseDTO;
 import testrobotchallenge.commons.models.user.Role;
 import com.example.db_setup.model.dto.auth.*;
@@ -40,7 +38,7 @@ public class AuthController {
             @ApiResponse(responseCode = "409", description = "Email already in use")
     })
     public ResponseEntity<Object> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
-        Player newPlayer = authService.registerPlayer(userRegistrationDTO.getName(), userRegistrationDTO.getSurname(),
+        authService.registerPlayer(userRegistrationDTO.getName(), userRegistrationDTO.getSurname(),
                 userRegistrationDTO.getEmail(), userRegistrationDTO.getPassword(), userRegistrationDTO.getPasswordCheck(),
                 userRegistrationDTO.getStudies());
 
@@ -49,7 +47,7 @@ public class AuthController {
 
     @PostMapping("/admin/register")
     public ResponseEntity<Object> registerAdmin(@Valid @RequestBody AdminRegistrationDTO adminRegistrationDTO) {
-        Admin newAdmin = authService.registerAdmin(adminRegistrationDTO.getName(), adminRegistrationDTO.getSurname(),
+        authService.registerAdmin(adminRegistrationDTO.getName(), adminRegistrationDTO.getSurname(),
                 adminRegistrationDTO.getEmail(), adminRegistrationDTO.getPassword(),
                 adminRegistrationDTO.getPasswordCheck());
 

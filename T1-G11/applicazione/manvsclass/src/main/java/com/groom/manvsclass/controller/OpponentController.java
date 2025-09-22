@@ -5,6 +5,8 @@ import com.groom.manvsclass.model.Opponent;
 import com.groom.manvsclass.model.dto.OpponentSummaryDTO;
 import com.groom.manvsclass.service.OpponentService;
 import com.groom.manvsclass.util.filesystem.upload.FileUploadResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +29,7 @@ import java.util.List;
 @RequestMapping("/opponents")
 public class OpponentController {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(OpponentController.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(OpponentController.class);
     private final OpponentService opponentService;
 
     public OpponentController(OpponentService opponentService) {
@@ -47,7 +49,6 @@ public class OpponentController {
 
 
     // OPPONENTS ENDPOINT
-
     @GetMapping("")
     public ResponseEntity<List<Opponent>> getAllOpponents() {
         return ResponseEntity.ok(opponentService.getAllOpponents());
@@ -57,7 +58,7 @@ public class OpponentController {
     public ResponseEntity<List<String>> getAllClassesAsSummary() {
         logger.info("[GET /classes/summary] Request received");
         List<ClassUT> classes = opponentService.getAllClassUTs();
-        logger.info("[GET /classes/summary] Classes found: " + classes);
+        logger.info("[GET /classes/summary] Classes found: {}", classes);
         List<String> classesAsSummary = new ArrayList<>();
         for (ClassUT c : classes) {
             classesAsSummary.add(c.getName());
@@ -70,7 +71,7 @@ public class OpponentController {
     public ResponseEntity<List<OpponentSummaryDTO>> getAllOpponentsAsSummary() {
         logger.info("[GET /summary] Request received");
         List<Opponent> opponents = opponentService.getAllOpponents();
-        logger.info("[GET /summary] Opponents found: " + opponents);
+        logger.info("[GET /summary] Opponents found: {}", opponents);
         List<OpponentSummaryDTO> response = new ArrayList<>();
         for (Opponent opponent : opponents) {
             response.add(new OpponentSummaryDTO(opponent.getClassUT(),

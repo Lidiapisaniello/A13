@@ -32,20 +32,6 @@ public class CoverageController {
         this.coverageService = coverageService;
     }
 
-    /*
-    @PostMapping(value = "/coverage/opponent", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EvosuiteCoverageDTO> calculateRobotEvosuiteCoverage(@RequestBody RobotCoverageRequestDTO request) {
-        logger.info("[CoverageController] [POST /score/opponent] Ricevuta richiesta con body: {}", request);
-        String result = coverageService.calculateRobotCoverage(request);
-
-        EvosuiteCoverageDTO responseBody = BuildResponse.buildExtendedDTO(result);
-
-        logger.info("[CoverageController] [POST /score/opponent] Risultato: {}", responseBody);
-        logger.info("[CoverageController] [POST /score/opponent] OK 200");
-        return ResponseEntity.status(HttpStatus.OK).header("Content-Type", "application/json").body(responseBody);
-    }
-     */
-
     @PostMapping(value = "/coverage/opponent", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EvosuiteCoverageDTO> calculateRobotEvosuiteCoverage(@RequestPart("request") OpponentCoverageRequestDTO request, @RequestPart("project") MultipartFile project) throws IOException {
         logger.info("[CoverageController] [POST /score/opponent] Ricevuta richiesta con body {} e MultiPartFile {}", request, project.getOriginalFilename());
@@ -59,7 +45,7 @@ public class CoverageController {
     }
 
     @PostMapping(value = "/coverage/player", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> calculateStudentEvosuiteCoverage(@RequestBody StudentCoverageRequestDTO request) {
+    ResponseEntity<Object> calculateStudentEvosuiteCoverage(@RequestBody StudentCoverageRequestDTO request) {
         logger.info("[CoverageController] [POST /coverage/player] Ricevuta richiesta");
 
         Callable<String> compilationTimedTask = () -> coverageService.calculatePlayerCoverage(request);

@@ -104,6 +104,7 @@ public class CustomExecutorConfiguration {
                 throw new TimeoutException("Timeout durante l'esecuzione del task");
             } finally {
                 timeoutExecutor.shutdownNow();
+                timeoutExecutor.close();
             }
         }
 
@@ -116,6 +117,10 @@ public class CustomExecutorConfiguration {
     private static final Object lock = new Object();
 
     public static class ExpiringTaskCleaner {
+        private ExpiringTaskCleaner() {
+            throw new IllegalStateException("Cleaner class");
+        }
+
         public static void startCleanerThread(BlockingQueue<Runnable> queue, int maxWaitMillis, int intervalMillis) {
             logger.warning("[ExpiringTaskCleaner] Avvio cleaner");
 
@@ -129,36 +134,13 @@ public class CustomExecutorConfiguration {
                             Iterator<Runnable> iterator = queue.iterator();
                             StringBuilder sb = new StringBuilder("[ExpiringTaskCleaner] Stato coda:\n");
 
-                            int removed = 0;
-
-                            while (iterator.hasNext()) {
-                                Runnable r = iterator.next();
-                                if (r instanceof TimedRunnable timed) {
-                                    long wait = now - timed.getEnqueueTime();
-                                    long remaining = maxWaitMillis - wait;
-
-                                    boolean isExpired = wait > maxWaitMillis;
-                                    String status = isExpired ? "RIMOSSA" : "IN_CODA";
-
-                                    sb.append(String.format(" - Task: %s | Attesa: %d ms | Tempo residuo: %d ms | Stato: %s\n",
-                                            r.getClass().getSimpleName(), wait, remaining, status));
-
-                                    if (isExpired) {
-                                        iterator.remove();
-                                        removed++;
-                                        if (r instanceof TimedTask<?> tt) {
-                                            tt.expire();
-                                            logger.warning("[ExpiringTaskCleaner] Task scaduto rimosso dalla coda");
-                                        }
-                                    }
-                                }
-                            }
+                            int removed = checkQueue(iterator, now, maxWaitMillis, sb);
 
                             int total = queue.size();
-                            sb.append(String.format("[ExpiringTaskCleaner] Totale: %d | Rimosse: %d | Attive: %d\n",
+                            sb.append(String.format("[ExpiringTaskCleaner] Totale: %d | Rimosse: %d | Attive: %d%n",
                                     total, removed, total - removed));
 
-                            logger.warning(sb.toString());
+                            logger.warning(sb::toString); // il semplice logger.warning(sb.toString()) restituiva una issue con SonarQube IDE
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -169,6 +151,35 @@ public class CustomExecutorConfiguration {
 
             cleanerThread.setDaemon(true);
             cleanerThread.start();
+        }
+
+        private static int checkQueue(Iterator<Runnable> iterator, long now, long maxWaitMillis, StringBuilder sb) {
+            int removed = 0;
+
+            while (iterator.hasNext()) {
+                Runnable r = iterator.next();
+                if (r instanceof TimedRunnable timed) {
+                    long wait = now - timed.getEnqueueTime();
+                    long remaining = maxWaitMillis - wait;
+
+                    boolean isExpired = wait > maxWaitMillis;
+                    String status = isExpired ? "RIMOSSA" : "IN_CODA";
+
+                    sb.append(String.format(" - Task: %s | Attesa: %d ms | Tempo residuo: %d ms | Stato: %s%n",
+                            r.getClass().getSimpleName(), wait, remaining, status));
+
+                    if (isExpired) {
+                        iterator.remove();
+                        removed++;
+                        if (r instanceof TimedTask<?> tt) {
+                            tt.expire();
+                            logger.warning("[ExpiringTaskCleaner] Task scaduto rimosso dalla coda");
+                        }
+                    }
+                }
+            }
+
+            return removed;
         }
     }
 
@@ -187,7 +198,7 @@ public class CustomExecutorConfiguration {
             if (r instanceof TimedRunnable timed) {
                 long waitTime = System.currentTimeMillis() - timed.getEnqueueTime();
                 if (waitTime > maxWaitTimeMillis) {
-                    logger.warning("Task rifiutato in offer(): già scaduto (" + waitTime + " ms)");
+                    logger.warning(() -> "Task rifiutato in offer(): già scaduto (" + waitTime + " ms)"); // Stampato tramite Supplier per rimuovere l'issue di SonarQube IDE
                     return false;
                 }
             }
@@ -202,7 +213,7 @@ public class CustomExecutorConfiguration {
                     if (r instanceof TimedRunnable timed) {
                         long waitTime = System.currentTimeMillis() - timed.getEnqueueTime();
                         if (waitTime > maxWaitTimeMillis) {
-                            logger.warning("Task scaduto rimosso in poll() (" + waitTime + " ms)");
+                            logger.warning(() -> "Task scaduto rimosso in poll() (" + waitTime + " ms)");
                             if (r instanceof TimedTask<?> tt) tt.expire();
                             continue;
                         }
@@ -234,7 +245,8 @@ public class CustomExecutorConfiguration {
                 reason = "altro motivo";
             }
 
-            logger.warning("Task rifiutato: " + reason);
+            String finalReason = reason;
+            logger.warning(() -> ("Task rifiutato: " + finalReason));
             throw new RejectedExecutionException("Task rifiutato: " + reason);
         }
 

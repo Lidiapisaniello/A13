@@ -39,7 +39,7 @@ public class UserSocialController {
     @GetMapping("/user_by_email")
     @ResponseBody
     public List<Player> getUserByEmail(@RequestParam("email") String email) {
-        List<Player> players = playerService.GetUserListByEmail(email);
+        List<Player> players = playerService.getUserListByEmail(email);
         if (players.isEmpty()) {
             return null;
         }

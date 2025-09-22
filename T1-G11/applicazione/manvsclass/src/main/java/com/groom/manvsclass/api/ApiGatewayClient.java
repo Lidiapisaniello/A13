@@ -8,7 +8,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,24 +18,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import testrobotchallenge.commons.models.dto.score.EvosuiteCoverageDTO;
 import testrobotchallenge.commons.models.dto.score.JacocoCoverageDTO;
 import testrobotchallenge.commons.models.opponent.GameMode;
 import testrobotchallenge.commons.models.opponent.OpponentDifficulty;
 import testrobotchallenge.commons.models.opponent.OpponentType;
 import testrobotchallenge.commons.models.dto.auth.JwtValidationResponseDTO;
-
-
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * ApiGatewayClient contiene tutte le chiamate API di T1 verso gli altri microservizi del sistema.
@@ -79,10 +71,7 @@ public class ApiGatewayClient {
         if (response == null || response.getBody() == null)
             return null;
 
-        JwtValidationResponseDTO responseBody = response.getBody();
-
-        logger.info("responseBody: {}", responseBody);
-        return responseBody;
+        return response.getBody();
     }
 
     /**
@@ -137,8 +126,6 @@ public class ApiGatewayClient {
     }
 
     public EvosuiteCoverageDTO callGenerateMissingEvoSuiteCoverage(String classUTName, String classUTPackageName, File zip) {
-        // FileSystemResource fileResource = new FileSystemResource(zip);
-
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("request", new RequestEvosuiteCoverageDTO(classUTName, classUTPackageName));
         builder.part("project", new FileSystemResource(zip));
@@ -181,13 +168,13 @@ public class ApiGatewayClient {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
             // 2. Prepara il corpo JSON
-            System.out.println("Preparazione del corpo JSON...");
+            logger.info("Preparazione del corpo JSON...");
             JSONArray studentiArray = new JSONArray(studentiIds); // Crea un array JSON direttamente
             StringEntity entity = new StringEntity(studentiArray.toString(), StandardCharsets.UTF_8); // Corpo JSON come array
-            System.out.println("Corpo JSON preparato: " + studentiArray.toString());
+            logger.info("Corpo JSON preparato: {}", studentiArray);
 
             // 3. Configura la richiesta HTTP POST
-            System.out.println("Configurazione della richiesta HTTP POST...");
+            logger.info("Configurazione della richiesta HTTP POST...");
 
             HttpPost httpPost = new HttpPost(userServiceUrl + "/student/studentsByIds");
 
@@ -196,7 +183,7 @@ public class ApiGatewayClient {
             httpPost.setEntity(entity);
 
             // 4. Esegui la richiesta
-            System.out.println("Esecuzione della richiesta...");
+            logger.info("Esecuzione della richiesta...");
 
             return httpClient.execute(httpPost);
         }

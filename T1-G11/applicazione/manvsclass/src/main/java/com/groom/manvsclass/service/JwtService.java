@@ -17,16 +17,6 @@ import com.groom.manvsclass.model.Admin;
 public class JwtService {
 
     public boolean isJwtValid(String jwt) {
-		try {
-			Claims c = Jwts.parser().setSigningKey("mySecretKeyAdmin").parseClaimsJws(jwt).getBody();
-
-			if((new Date()).before(c.getExpiration())) {
-				return true;
-			}
-		} catch(Exception e) {
-			System.err.println(e);
-		}
-
 		return false;
 	}
 

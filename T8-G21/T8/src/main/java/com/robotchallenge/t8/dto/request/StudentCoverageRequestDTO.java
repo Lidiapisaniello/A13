@@ -2,12 +2,14 @@ package com.robotchallenge.t8.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class StudentCoverageRequestDTO {
     @JsonProperty("testClassName")
     String testClassName;
@@ -24,5 +26,4 @@ public class StudentCoverageRequestDTO {
     @JsonProperty("classUTPackage")
     private String classUTPackage;
 
-    public StudentCoverageRequestDTO() {}
 }

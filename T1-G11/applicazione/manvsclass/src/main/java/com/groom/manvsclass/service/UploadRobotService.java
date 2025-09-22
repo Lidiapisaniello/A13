@@ -8,6 +8,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,7 +45,7 @@ public class UploadRobotService {
     private static final String JACOCO_COVERAGE_FILE = "coveragetot.xml";
     private static final String EVOSUITE_COVERAGE_FILE = "statistics.csv";
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(UploadRobotService.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(UploadRobotService.class);
 
     //--------------------------------------------------
 
@@ -64,27 +66,27 @@ public class UploadRobotService {
         FileOperationUtil.extractZipIn(operationTmpFolder);
 
         Path unmodifiedSrcCodePath = Paths.get(String.format("%s/%s/%s", VOLUME_T0_BASE_PATH, UNMODIFIED_SRC, classUTName));
-        logger.info("Saving unmodified src in " + unmodifiedSrcCodePath);
+        logger.info("Saving unmodified src in {}", unmodifiedSrcCodePath);
         FileOperationUtil.saveFileInFileSystem(classUTFileName, unmodifiedSrcCodePath, classUTFile);
 
         File robotGroupFolder = Objects.requireNonNull(operationTmpFolder.toFile().listFiles())[0];
-        logger.info("Robot tests folder " + robotGroupFolder);
+        logger.info("Robot tests folder {}", robotGroupFolder);
         for (File robotFolder : Objects.requireNonNull(robotGroupFolder.listFiles())) {
             if (!robotFolder.isDirectory()) {
-                logger.info("Ignoring file " + robotFolder + " because it is not a directory");
+                logger.info("Ignoring file {} because it is not a directory", robotFolder);
                 continue;
             }
 
             String robotType = robotFolder.getName();
             if (!robotType.endsWith("Test")) {
-                logger.info("Ignoring directory " + robotFolder + " because it does not follow the naming convention");
+                logger.info("Ignoring directory {} because it does not follow the naming convention", robotFolder);
                 continue;
             }
             robotType = robotType.substring(0, robotType.length() - 4).toLowerCase();
             robotType = Character.toUpperCase(robotType.charAt(0)) + robotType.substring(1);
 
-            logger.info("Robot folder " + robotFolder);
-            logger.info("Saving robot type " + robotType);
+            logger.info("Robot folder {}", robotFolder);
+            logger.info("Saving robot type {}", robotType);
 
             uploadNewOpponents(classUTFileName, classUTName, classUTFile, robotFolder.toPath(), robotType, Paths.get(VOLUME_T0_BASE_PATH));
         }

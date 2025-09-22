@@ -32,10 +32,14 @@ services:
     expose:
       - 8082
     depends_on:
-      - db
+      db:
+        condition: service_healthy # parte solo se il db è attivo
     environment:
       DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}  # Usa il nome del DB definito nel .env
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_KEY_SECRET: ${JWT_KEY_SECRET}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
     networks:
       - global-network
   

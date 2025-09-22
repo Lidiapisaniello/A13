@@ -1,6 +1,6 @@
 package com.g2.security;
 
-import com.g2.Interfaces.ServiceManager;
+import com.g2.interfaces.ServiceManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import jakarta.servlet.Filter;

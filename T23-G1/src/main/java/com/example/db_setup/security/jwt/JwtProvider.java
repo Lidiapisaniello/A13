@@ -30,17 +30,14 @@ public class JwtProvider {
                 .signWith(SignatureAlgorithm.HS256, keySecret)
                 .compact();
 
-        ResponseCookie cookie = ResponseCookie.from(authProperties.getJwtCookieName(), jwt)
+        return ResponseCookie.from(authProperties.getJwtCookieName(), jwt)
                 .path("/")
                 .maxAge(authProperties.getJwtCookieExpirationMs() / 1000 + 7200)
                 .build();
-
-        return cookie;
     }
 
     public ResponseCookie getCleanJwtCookie() {
-        ResponseCookie cookie = ResponseCookie.from(authProperties.getJwtCookieName(), "").path("/").maxAge(0).build();
-        return cookie;
+        return ResponseCookie.from(authProperties.getJwtCookieName(), "").path("/").maxAge(0).build();
     }
 
     public String getUserEmailFromJwtToken(String authToken) {

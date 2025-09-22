@@ -22,7 +22,7 @@ public class RestExchangeTemplateHelper {
 
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(RestExchangeTemplateHelper.class);
-    
+
     public RestExchangeTemplateHelper(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }

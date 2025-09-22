@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,11 +27,18 @@ public class CoverageService {
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageService.class);
 
+    private static final String EVOSUITE_FOLDER = "evosuite";
+    private static final String EVOSUITE_JAR = EVOSUITE_FOLDER + File.separator + "evosuite-1.0.6.jar";
+    private static final String EVOSUITE_RUNTIME_JAR = EVOSUITE_FOLDER + File.separator + "evosuite-standalone-runtime-1.0.6.jar";
+    private static final String EVOSUITE_POM = EVOSUITE_FOLDER + File.separator + "pom2.xml";
+
+
     public String calculateRobotCoverage(OpponentCoverageRequestDTO request, MultipartFile projectZip) throws IOException {
         // Definisco le cartelle su cui lavorare
         String cwd = String.valueOf(Paths.get(".").toAbsolutePath().normalize());
         String projectDir = cwd + File.separator + projectZip.getName() + "-" + generateTimestamp();
-        Files.createDirectories(Paths.get(projectDir));
+        Path projectDirPath = Paths.get(projectDir);
+        Files.createDirectories(projectDirPath);
         logger.info("[calculateRobotCoverage] Project folder: {}", projectDir);
 
         // Salvo lo zip contente il codice da testare e lo unzippo
@@ -41,18 +47,17 @@ public class CoverageService {
 
         // Copio evosuite e pom
         try {
-            Files.copy(Paths.get(cwd, "evosuite", "evosuite-1.0.6.jar"), Paths.get(projectDir, "evosuite-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(Paths.get(cwd, "evosuite", "evosuite-standalone-runtime-1.0.6.jar"), Paths.get(projectDir, "evosuite-standalone-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(Paths.get(cwd, "evosuite", "pom2.xml"), Paths.get(projectDir, "pom.xml"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(cwd, EVOSUITE_JAR), Paths.get(projectDir, EVOSUITE_JAR), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(cwd, EVOSUITE_RUNTIME_JAR), Paths.get(projectDir, EVOSUITE_RUNTIME_JAR), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(cwd, EVOSUITE_POM), Paths.get(projectDir, "pom.xml"), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException | NullPointerException e) {
-            logger.error("[calculateRobotCoverage] Errore durante la copia di evosuite/pom.xml: ", e);
             throw new RuntimeException("[calculateRobotCoverage] Errore durante la copia di evosuite/pom.xml: " + e);
         }
 
         String result = calculateEvosuiteCoverage(projectDir, request.getClassUTPackage(), request.getClassUTName());
 
         try {
-            FileUtil.deleteDirectoryRecursively(Path.of(projectDir));
+            FileUtil.deleteDirectoryRecursively(projectDirPath);
         } catch (IOException e) {
             logger.error("[calculateRobotCoverage] Errore durante il cleanup: ", e);
             throw new RuntimeException("[calculateRobotCoverage] Errore durante il cleanup: " + e);
@@ -61,7 +66,7 @@ public class CoverageService {
         return result;
     }
 
-    public String calculatePlayerCoverage(StudentCoverageRequestDTO request) throws RuntimeException {
+    public String calculatePlayerCoverage(StudentCoverageRequestDTO request) {
         String classUTName = request.getClassUTName();
         String classUTCode = request.getClassUTCode();
         String testClassCode = request.getTestClassCode();
@@ -73,16 +78,16 @@ public class CoverageService {
         String baseCwd = String.format("%s/%s", currentCWD, "EvoSuite_Coverage_" + generateTimestamp());
         String cwdSrc = String.format("%s/src/main/java", baseCwd);
         String cwdTest = String.format("%s/src/test/java", baseCwd);
-        Path baseCwd_Path = Path.of(baseCwd);
+        Path baseCwdPath = Path.of(baseCwd);
         try {
-            Files.createDirectories(baseCwd_Path);
+            Files.createDirectories(baseCwdPath);
             Files.createDirectories(Path.of(cwdSrc));
             Files.createDirectories(Path.of(cwdTest));
             Files.write(Path.of(cwdSrc, classUTName + ".java"), classUTCode.getBytes(), StandardOpenOption.CREATE);
             Files.write(Path.of(cwdTest, testClassName + ".java"), testClassCode.getBytes(), StandardOpenOption.CREATE);
-            Files.copy(Paths.get(currentCWD, "evosuite", "evosuite-1.0.6.jar"), Paths.get(baseCwd, "evosuite-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(Paths.get(currentCWD, "evosuite", "evosuite-standalone-runtime-1.0.6.jar"), Paths.get(baseCwd, "evosuite-standalone-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(Paths.get(currentCWD, "evosuite", "pom2.xml"), Paths.get(baseCwd, "pom.xml"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(currentCWD, EVOSUITE_JAR), Paths.get(baseCwd, "evosuite-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(currentCWD, EVOSUITE_RUNTIME_JAR), Paths.get(baseCwd, "evosuite-standalone-1.0.6.jar"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(currentCWD, EVOSUITE_POM), Paths.get(baseCwd, "pom.xml"), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.error("[calculateStudentCoverage] Errore durante la copia nel file system locale del progetto utente (src|test|evosuite|pom.xml): ", e);
             throw new RuntimeException("[calculateStudentCoverage] Errore durante la copia nel file system locale del progetto utente (src|test|evosuite|pom.xml): " + e);
@@ -91,7 +96,7 @@ public class CoverageService {
         String result = calculateEvosuiteCoverage(baseCwd, request.getClassUTPackage(), request.getClassUTName());
 
         try {
-            FileUtil.deleteDirectoryRecursively(baseCwd_Path);
+            FileUtil.deleteDirectoryRecursively(baseCwdPath);
             return result;
         } catch (IOException e) {
             logger.error("[calculateStudentCoverage] Errore durante la fase di cleanup: ", e);
@@ -124,7 +129,6 @@ public class CoverageService {
             return coverage.collect(Collectors.joining("\n"));
         } catch (IOException e) {
             logger.error("[calculateEvosuiteCoverage] Errore durante la lettura di statistics.csv: ", e);
-            //throw new RuntimeException("[calculateEvosuiteCoverage] Errore durante la lettura di statistics.csv: " + e);
             return null;
         }
     }
@@ -185,7 +189,7 @@ public class CoverageService {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("[streamGobbler] Errore: {}", e.getMessage());
         }
     }
 
