@@ -16,6 +16,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Interceptor delle richieste HTTP che verifica se l'utente è già autenticato e ne redirige in caso la richiesta.
+ *
+ * <p>
+ * Funzionalità principali:
+ * <ul>
+ *   <li>Controlla se un utente è già autenticato tramite il cookie JWT;</li>
+ *   <li>Se l'utente è autenticato, lo reindirizza automaticamente alla pagina principale
+ *       appropriata (/main per PLAYER, /dashboard per ADMIN) quando prova ad accedere
+ *       alle pagine di login o registrazione;</li>
+ *   <li>Permette l'accesso alle pagine di login/registrazione se l'utente non è autenticato
+ *       o se i parametri di query 'unauthorized' o 'expired' sono presenti;</li>
+ *   <li>Determina il ruolo dell'utente (PLAYER o ADMIN) tramite il JWT.</li>
+ * </ul>
+ * </p>
+ */
 public class AuthenticatedUserInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticatedUserInterceptor.class);
@@ -24,8 +40,8 @@ public class AuthenticatedUserInterceptor implements HandlerInterceptor {
     private final JwtProvider jwtProvider;
     private final AuthService authService;
 
-    private List<String> playerUrls;
-    private List<String> adminUrls;
+    private final List<String> playerUrls;
+    private final List<String> adminUrls;
 
     public AuthenticatedUserInterceptor(JwtProvider jwtProvider, AuthService authService) {
         this.jwtProvider = jwtProvider;
@@ -44,6 +60,16 @@ public class AuthenticatedUserInterceptor implements HandlerInterceptor {
         adminUrls.add("/admin/reset_password");
     }
 
+
+    /**
+     * Metodo invocato prima dell'esecuzione di un handler. Gestisce il redirect
+     * automatico per utenti già autenticati che tentano di accedere alle pagine di login/registrazione.
+     *
+     * @param request   la richiesta HTTP
+     * @param response  la risposta HTTP
+     * @param handler   handler della richiesta
+     * @return true se la richiesta può procedere normalmente, false se viene effettuato un redirect
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         Cookie[] requestCookies = request.getCookies();
@@ -54,6 +80,7 @@ public class AuthenticatedUserInterceptor implements HandlerInterceptor {
                 .filter(cookie -> cookie.getName().equals("jwt"))
                 .findFirst()
                 .orElse(null);
+
 
         if (!playerUrls.contains(urlPathHelper.getLookupPathForRequest(request)) && !adminUrls.contains(urlPathHelper.getLookupPathForRequest(request)))
             return true;
@@ -100,10 +127,20 @@ public class AuthenticatedUserInterceptor implements HandlerInterceptor {
         }
     }
 
+    /**
+     * Verifica se l'utente è autenticato controllando la validità del cookie JWT.
+     * @param authCookie cookie contenente il token JWT
+     * @return true se il token è valido, false altrimenti
+     */
     private boolean isAuthenticated(Cookie authCookie) {
         return authCookie != null &&  authService.validateToken(authCookie.getValue()).isValid();
     }
 
+    /**
+     * Estrae il ruolo dell'utente dal JWT.
+     * @param authCookie cookie contenente il token JWT
+     * @return ruolo dell'utente
+     */
     private Role extractUserRole(Cookie authCookie) {
         return jwtProvider.getUserRoleFromJwtToken(authCookie.getValue());
     }

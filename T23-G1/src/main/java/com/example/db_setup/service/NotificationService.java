@@ -30,6 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.db_setup.model.repository.NotificationRepository;
 import com.example.db_setup.model.Notification;
 
+/**
+ * Classe attualmente non in uso. L'intera funzionalità delle notifiche è stata disabilitata perchè non completamente funzionante.
+ */
 @Service
 public class NotificationService {
 

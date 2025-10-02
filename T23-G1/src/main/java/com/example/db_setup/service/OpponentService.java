@@ -12,6 +12,17 @@ import testrobotchallenge.commons.models.opponent.OpponentType;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servizio che gestisce la logica di business legata agli {@link Opponent}.
+ * Fornisce operazioni per:
+ * <ul>
+ *     <li>Recuperare un avversario specifico dato un insieme di parametri (modalità di gioco, classe UT, tipo, difficoltà).</li>
+ *     <li>Aggiungere un nuovo avversario o riattivarne uno esistente.</li>
+ *     <li>Disattivare tutti gli avversari associati a una determinata classe UT.</li>
+ * </ul>
+ *
+ * La classe è necessaria alla gestione degli achievement del giocatore.
+ */
 @Service
 public class OpponentService {
 
@@ -21,6 +32,16 @@ public class OpponentService {
         this.opponentRepository = opponentRepository;
     }
 
+    /**
+     * Recupera un avversario in base ai parametri forniti.
+     *
+     * @param gameMode      modalità di gioco ({@link GameMode})
+     * @param classUT       nome della classe sotto test
+     * @param type          tipo di avversario ({@link OpponentType})
+     * @param difficulty    difficoltà dell’avversario ({@link OpponentDifficulty})
+     * @return l'oggetto {@link Opponent} trovato
+     * @throws OpponentNotFoundException se non esiste un avversario con le caratteristiche specificate
+     */
     public Opponent getOpponent(GameMode gameMode, String classUT, OpponentType type, OpponentDifficulty difficulty) {
         Optional<Opponent> opponent = opponentRepository.findOpponentByGameModeAndClassUTAndTypeAndDifficulty(gameMode, classUT, type, difficulty);
         if (opponent.isEmpty())

@@ -8,6 +8,13 @@ import testrobotchallenge.commons.models.opponent.OpponentType;
 
 import javax.persistence.*;
 
+/**
+ * Entità che rappresenta un avversario registrato nel sistema. Utilizzato per il tracking dei progressi del giocatore.
+ * <p>
+ * Ogni avversario è identificato in modo univoco dalla combinazione
+ * di modalità di gioco, classe sotto test, tipo e difficoltà.
+ * </p>
+ */
 @Table(
         name = "opponents",
         uniqueConstraints = @UniqueConstraint(
@@ -18,20 +25,54 @@ import javax.persistence.*;
 @Data
 @NoArgsConstructor
 public class Opponent {
+    /**
+     * Identificatore univoco dell’avversario.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * Modalità di gioco associata all’avversario (PartitaSingola, Allenamento, ecc.).
+     */
     @Enumerated(EnumType.STRING)
     private GameMode gameMode;
+
+    /**
+     * Nome della classe Java sotto test a cui è legato l’avversario.
+     */
     private String classUT;
+
+    /**
+     * Tool di generazione dell’avversario (es. Evosuite, Test utente, ecc.).
+     */
     @Enumerated(EnumType.STRING)
     private OpponentType type;
+
+    /**
+     * Livello di difficoltà dell’avversario.
+     */
     @Enumerated(EnumType.STRING)
     private OpponentDifficulty difficulty;
 
-    private boolean active;
+    /**
+     * Indica se l’avversario è attivo e disponibile per essere sfidato. Se un avversario viene eliminato dall'amministratore,
+     * questo sarà disattivato e non rimosso, per mantenere coerenza nel tracking delle statistiche del giocatore.
+     * <p>
+     * Di default, l’avversario viene creato come attivo.
+     * </p>
+     */
+    private boolean active = true;
 
+    /**
+     * Costruttore che crea un nuovo avversario specificando
+     * modalità di gioco, classe sotto test, tipologia e difficoltà.
+     *
+     * @param gameMode      la modalità di gioco
+     * @param classUT       la classe Java sotto test
+     * @param type          la tipologia di avversario
+     * @param difficulty    la difficoltà dell’avversario
+     */
     public Opponent(GameMode gameMode, String classUT, OpponentType type, OpponentDifficulty difficulty) {
         this.gameMode = gameMode;
         this.classUT = classUT;
