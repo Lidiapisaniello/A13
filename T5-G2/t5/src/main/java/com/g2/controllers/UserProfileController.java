@@ -15,6 +15,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -38,6 +39,9 @@ public class UserProfileController {
     private final ServiceManager serviceManager;
     private GameConfigData gameConfigData = null;
 
+    @Value("${config.gamification.file}")
+    private String gamificationConFile;
+
     private static final Logger logger = LoggerFactory.getLogger(UserProfileController.class);
 
     @Autowired
@@ -49,10 +53,11 @@ public class UserProfileController {
     public void init() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            File file = new File("game_config.json");
+            System.out.println("Working Directory = " + System.getProperty("user.dir"));
+            File file = new File("%s/%s".formatted(System.getProperty("user.dir"), gamificationConFile.replace("/", File.separator)));
             this.gameConfigData = objectMapper.readValue(file, GameConfigData.class);
         } catch (IOException e) {
-            logger.info("[PostConstruct init] Error in loading game_config.json, using default values.");
+            logger.info("[PostConstruct init] Error in loading game_config.json, using default values: {}", e.getMessage());
             this.gameConfigData = new GameConfigData(10, 5, 1);
         }
     }
