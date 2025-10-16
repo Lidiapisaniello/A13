@@ -12,6 +12,9 @@ import org.json.JSONObject;
 
 import com.g2.model.ScalataGiocata;
 
+/**
+ * Classe legata alla modalità di gioco Scalata, che attualmente è disabilitata in quanto necessita di essere riscritta completamente.
+ */
 public class ScalataDataWriter {
 
     private final HttpClient httpClient = HttpClientBuilder.create().build();

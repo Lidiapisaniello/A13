@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.g2.game.GameModes.GameLogic;
+import com.g2.game.gameMode.GameLogic;
 import lombok.Setter;
 import testrobotchallenge.commons.models.opponent.GameMode;
 

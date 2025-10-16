@@ -4,8 +4,8 @@ FROM openjdk:17-jdk
 # Copia il tuo JAR nel container
 COPY ./target/t5-0.0.1-SNAPSHOT.jar /app/
 
-# Copia il file di configurazione della gamification
-COPY ./gamification_configuration/* /app/gamification_configuration/
+# Copia i file di configurazione
+COPY configuration/* /app/configuration/
 
 # Imposta la directory di lavoro all'interno del container
 WORKDIR /app

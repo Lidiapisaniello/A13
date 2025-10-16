@@ -20,8 +20,8 @@ package com.g2.session;
 import java.util.List;
 import java.util.Map;
 
-import com.g2.game.GameFactory.params.GameParams;
-import com.g2.game.GameFactory.params.GameParamsFactory;
+import com.g2.game.gameFactory.params.GameParams;
+import com.g2.game.gameFactory.params.GameParamsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,13 +36,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.g2.game.GameDTO.GameLogicDTO.GameLogicDTO;
-import com.g2.game.GameFactory.GameRegistry;
-import com.g2.game.GameModes.GameLogic;
-import com.g2.session.Exceptions.GameModeAlreadyExist;
-import com.g2.session.Exceptions.GameModeDontExist;
-import com.g2.session.Exceptions.SessionAlredyExist;
-import com.g2.session.Exceptions.SessionDontExist;
+import com.g2.game.gameDTO.CreateSessionDTO.SessionDTO;
+import com.g2.game.gameFactory.GameRegistry;
+import com.g2.game.gameMode.GameLogic;
+import com.g2.session.exception.GameModeAlreadyExistException;
+import com.g2.session.exception.GameModeDontExistException;
+import com.g2.session.exception.SessionAlredyExist;
+import com.g2.session.exception.SessionDoesntExistException;
 import testrobotchallenge.commons.models.opponent.GameMode;
 
 @CrossOrigin
@@ -82,7 +82,7 @@ public class SessionController {
         try {
             Sessione sessione = sessionService.getSession(playerId);
             return ResponseEntity.ok(sessione);
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error", "Sessione non trovata")
             );
@@ -128,7 +128,7 @@ public class SessionController {
             sessionService.updateSession(playerId, updatedSession);
             Sessione sessione = sessionService.getSession(playerId);
             return ResponseEntity.ok(sessione);
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
@@ -148,7 +148,7 @@ public class SessionController {
         try {
             sessionService.deleteSession(playerId);
             return ResponseEntity.ok("Eliminazione avvenuta");
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
@@ -171,11 +171,11 @@ public class SessionController {
         try {
             GameLogic game = sessionService.getGameMode(playerId, mode);
             return ResponseEntity.ok(game);
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
-        } catch (GameModeDontExist e) {
+        } catch (GameModeDontExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Game Dont Exist")
             );
@@ -192,7 +192,7 @@ public class SessionController {
      * gameObject (in formato JSON) da associare.
      */
     @PostMapping("/gamemode/{playerId}")    
-    public ResponseEntity<?> createGameMode(@RequestBody GameLogicDTO gameLogicDTO) {
+    public ResponseEntity<?> createGameMode(@RequestBody SessionDTO sessionDTO) {
         try {
             /*
             GameLogic gameObject = gameRegistry.createGame(gameLogicDTO.getMode(), 
@@ -203,15 +203,15 @@ public class SessionController {
                                                            gameLogicDTO.getDifficulty());
 
              */
-            GameParams gameParams = GameParamsFactory.createGameParams(gameLogicDTO);
+            GameParams gameParams = GameParamsFactory.generateCreateParams(sessionDTO);
             GameLogic gameObject = gameRegistry.createGame(null, gameParams);
-            sessionService.SetGameMode(gameLogicDTO.getPlayerId(), gameObject);
+            sessionService.setGameMode(sessionDTO.getPlayerId(), gameObject);
             return ResponseEntity.ok("Modalità Creata");
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
-        } catch (GameModeAlreadyExist e) {
+        } catch (GameModeAlreadyExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Game Alredy Exist")
             );
@@ -227,7 +227,7 @@ public class SessionController {
      * esistente nella sessione del player.
      */
     @PutMapping("/gamemode/{playerId}")
-    public ResponseEntity<?> updateGameMode(@RequestBody GameLogicDTO gameLogicDTO) {
+    public ResponseEntity<?> updateGameMode(@RequestBody SessionDTO sessionDTO) {
         try {
             /*
             GameLogic gameObject = gameRegistry.createGame(gameLogicDTO.getMode(), 
@@ -238,15 +238,15 @@ public class SessionController {
                                                            gameLogicDTO.getDifficulty());
 
             */
-            GameParams gameParams = GameParamsFactory.createGameParams(gameLogicDTO);
+            GameParams gameParams = GameParamsFactory.generateCreateParams(sessionDTO);
             GameLogic gameObject = gameRegistry.createGame(null, gameParams);
-            sessionService.updateGameMode(gameLogicDTO.getPlayerId(), gameObject);
+            sessionService.updateGameMode(sessionDTO.getPlayerId(), gameObject);
             return ResponseEntity.ok("Modalità Creata");
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
-        } catch (GameModeDontExist e) {
+        } catch (GameModeDontExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Game Dont Exist")
             );
@@ -266,11 +266,11 @@ public class SessionController {
         try {
             sessionService.removeGameMode(playerId, mode);
             return ResponseEntity.ok("Modalità Eliminata");
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Session Dont Exist")
             );
-        } catch (GameModeDontExist e) {
+        } catch (GameModeDontExistException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("error","Game Dont Exist")
             );

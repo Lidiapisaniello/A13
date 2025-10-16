@@ -18,67 +18,38 @@ package com.g2.controllers;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import com.g2.components.GenericObjectComponent;
 import com.g2.security.JwtRequestContext;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.LocaleResolver;
 
 import com.g2.components.PageBuilder;
 import com.g2.components.ServiceObjectComponent;
 import com.g2.components.VariableValidationLogicComponent;
 import com.g2.interfaces.ServiceManager;
-import com.g2.session.Exceptions.SessionAlredyExist;
-import com.g2.session.Exceptions.SessionDontExist;
+import com.g2.session.exception.SessionAlredyExist;
+import com.g2.session.exception.SessionDoesntExistException;
 import com.g2.session.SessionService;
 import com.g2.session.Sessione;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import testrobotchallenge.commons.models.opponent.GameMode;
 
 @CrossOrigin
 @Controller
+@AllArgsConstructor
 public class GuiController {
     private final ServiceManager serviceManager;
-    private final LocaleResolver localeResolver;
     private final SessionService sessionService;
     
     private static final Logger logger = LoggerFactory.getLogger(GuiController.class);
-
-    @Autowired
-    public GuiController(ServiceManager serviceManager, LocaleResolver localeResolver, SessionService sessionService) {
-        this.serviceManager = serviceManager;
-        this.localeResolver = localeResolver;
-        this.sessionService = sessionService;
-    }
-
-    // Gestione della lingua
-    @PostMapping("/changeLanguage")
-    public ResponseEntity<Void> changeLanguage(@RequestParam("lang") String lang,
-            HttpServletRequest request,
-            HttpServletResponse response) {
-        Cookie cookie = new Cookie("lang", lang);
-        cookie.setMaxAge(3600); // Imposta la durata del cookie a 1 ora
-        cookie.setPath("/"); // Imposta il percorso per il cookie
-        response.addCookie(cookie); // Aggiungi il cookie alla risposta
-        Locale locale = Locale.forLanguageTag(lang);
-        localeResolver.setLocale(request, response, locale);
-        // Restituisce una risposta vuota con codice di stato 200 OK
-        return ResponseEntity.ok().build();
-    }
 
     @GetMapping("/main")
     public String showMain(Model model, @CookieValue(name = "jwt", required = false) String jwt) {
@@ -133,10 +104,10 @@ public class GuiController {
         try {
             Sessione sessione = sessionService.getSession(editor.getUserId());
             logger.info("loading sessione");
-            logger.info("sessione classUT: {}", sessione.getGame(mode).getClasseUT());
+            logger.info("sessione classUT: {}", sessione.getGame(mode).getClassUTName());
             logger.info("sessione testingClassCode: {}", sessione.getGame(mode).getTestingClassCode());
             editor.setObjectComponents(new GenericObjectComponent("previousGameObject", sessione.getGame(mode)));
-        } catch (SessionDontExist e) {
+        } catch (SessionDoesntExistException e) {
             return "redirect:/main";
         }
         

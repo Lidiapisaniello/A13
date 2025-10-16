@@ -16,261 +16,223 @@
  */
 package com.g2.game;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.g2.game.GameDTO.EndGameDTO.EndGameResponseDTO;
-import com.g2.game.GameDTO.RunGameDTO.RunGameRequestDTO;
-import com.g2.game.GameFactory.params.GameParams;
-import com.g2.game.GameFactory.params.GameParamsFactory;
+import com.g2.game.gameDTO.EndGameDTO.EndGameResponseDTO;
+import com.g2.game.gameDTO.RunGameDTO.RunGameRequestDTO;
+import com.g2.game.gameDTO.RunGameDTO.RunGameResponseDTO;
+import com.g2.game.gameDTO.StartGameDTO.StartGameRequestDTO;
+import com.g2.game.gameDTO.StartGameDTO.StartGameResponseDTO;
+import com.g2.game.service.GameManager;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
-import com.g2.game.GameDTO.RunGameDTO.RunGameResponseDTO;
-import com.g2.game.GameDTO.StartGameDTO.StartGameRequestDTO;
-import com.g2.game.GameDTO.StartGameDTO.StartGameResponseDTO;
-import com.g2.game.GameModes.GameLogic;
-import com.g2.game.Service.GameServiceManager;
-import com.g2.session.Exceptions.GameModeAlreadyExist;
-import com.g2.session.Exceptions.GameModeDontExist;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
+import testrobotchallenge.commons.models.dto.api.ApiErrorBackend;
 import testrobotchallenge.commons.models.opponent.GameMode;
+
+import java.util.Map;
 
 //Qui introduco tutte le chiamate REST per la logica di gioco/editor
 @CrossOrigin
 @RestController
 public class GameController {
-    /*
-     * Interfaccia per gestire gli endpoint
-     */
-    private final GameServiceManager gameServiceManager;
-    /*
-     * Logger
-     */
+
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
+    private final GameManager gameManager;
 
     @Autowired
-    public GameController(GameServiceManager gameServiceManager) {
-        this.gameServiceManager = gameServiceManager;
+    public GameController(GameManager gameManager) {
+        this.gameManager = gameManager;
     }
 
-    /*
-     *  Chiamata che controllo se la partita quindi esisteva già o meno
-     *  se non esiste instanzia un nuovo gioco 
-     */
+
+    @Operation(
+            summary = "Start a new game",
+            description = """
+                Verify that a game with the same game mode doesn't exist already, them creates and starts a new game
+                for the given player and configuration parameters."""
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Game successfully created and started",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = StartGameResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "A game with the same game mode for the same player already exists and is still opened",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorBackend.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "The request is invalid or is incomplete",
+                    content = @Content(schema = @Schema(implementation = Map.class))
+            )
+    })
     @PostMapping("/StartGame")
     public ResponseEntity<StartGameResponseDTO> startGame(
-            @RequestBody(required = false) StartGameRequestDTO request,
-            @CookieValue(name = "jwt", required = false) String jwt) {
-
-        logger.info("[START_GAME] Richiesta ricevuta per avviare il gioco");
-
-        if (jwt == null || jwt.isEmpty()) {
-            logger.error("[START_GAME] Nessun JWT trovato nella richiesta.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new StartGameResponseDTO(-1, "JWT missing"));
-        }
-
-        if (request == null) {
-            logger.error("[START_GAME] Il body della richiesta è NULL!");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StartGameResponseDTO(-1, "Request body is missing"));
-        }
+            @Parameter(description = "Request containing the player ID, opponent information, game mode, and additional game details.",
+                    required = true)
+            @Valid @RequestBody StartGameRequestDTO requestDTO
+    ) {
+        logger.info("[START_GAME] Richiesta ricevuta per avviare un nuovo gioco");
 
         // Log dei parametri inviati
-        logger.info("[START_GAME] Dati ricevuti: playerId={}, typeRobot={}, difficulty={}, mode={}, underTestClassName={}",
-                request.getPlayerId(), request.getTypeRobot(), request.getDifficulty(),
-                request.getMode(), request.getUnderTestClassName());
+        logger.info("[START_GAME] Dati ricevuti: {}", requestDTO);
 
-        try {
-            GameParams gameParams = GameParamsFactory.createGameParams(request);
-            GameLogic game = gameServiceManager.CreateGameLogic(gameParams);
-
-            logger.info("[START_GAME] Partita creata con successo. GameID={}, mode={}", game.getGameID(), game.getGameMode());
-            return ResponseEntity.ok(
-                    new StartGameResponseDTO(game.getGameID(),
-                            "created")
-            );
-        } catch (GameModeAlreadyExist e) {
-            logger.error("[GAMECONTROLLER][StartGame] {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new StartGameResponseDTO(-1, "GameAlreadyExistsException"));
-        }
-        /*
-        catch (Exception e) {
-            logger.error("[GAMECONTROLLER][StartGame] Unexpected error: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StartGameResponseDTO(-1, "Internal Server Error"));
-        }
-
-         */
-    }
-
-    /*
-     * Handler eccezione campi non validi 
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        /*
-         * Ottengo gli errori per ogni binding di un json e popolo la mappa così posso poi inviarla 
-         */
-        ex.getBindingResult().getFieldErrors().forEach(error
-                -> errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
-    /*
-     * Handler eccezione runtime
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-
-        // Recupera il messaggio dell'errore
-        errorResponse.put("error", ex.getMessage());
-
-        // Recupera la riga più importante dello stacktrace
-        StackTraceElement relevantStackTrace = ex.getStackTrace()[0];
-        errorResponse.put("cause", relevantStackTrace.toString());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
-
-    @ExceptionHandler(RestClientException.class)
-    public ResponseEntity<Map<String, String>> handleRestClientException(RestClientException ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-
-        errorResponse.put("error", ex.getMessage());
-
-        StackTraceElement relevantStackTrace = ex.getStackTrace()[0];
-        errorResponse.put("cause", relevantStackTrace.toString());
-
-        int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
-
-        if (ex.getCause() instanceof HttpStatusCodeException cause) {
-            httpStatusCode = cause.getStatusCode().value();
-        }
-
-        return ResponseEntity.status(httpStatusCode).body(errorResponse);
+        StartGameResponseDTO response = gameManager.handleStartNewGame(requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
-    /*
-     *  Chiamata principale del game engine, l'utente ogni volta può comunicare la sua richiesta di
-     *  calcolare la coverage/compilazione, il campo isGameEnd è da utilizzato per indicare se è anche un submit e
-     *  quindi vuole terminare la partita ed ottenere i risultati del robot
-     */
-    @PostMapping(value = "/run", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RunGameResponseDTO> Runner(@RequestBody RunGameRequestDTO request) {
-        try {
-            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
-            Long playerId = request.getPlayerId();
-            GameMode mode = request.getMode();
-            RunGameResponseDTO response = gameServiceManager.PlayGame(playerId, mode, updateGameParams, "T7");
-            logger.info("[POST /run] Response={}", response);
-            return ResponseEntity.ok().body(response);
-        } catch (GameModeDontExist e) {
-            /*
-             * Il player non ha impostato una partita prima di arrivare all'editor
-             */
-            logger.error("[GAMECONTROLLER][run] " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    @Operation(
+            summary = "Start, execute and close a turn",
+            description = """
+            Main entry point of the game engine.
+            This endpoint executes a single turn within an ongoing game.
+            The player’s test code is compiled and evaluated, the session state is updated, and achievements are checked and unlocked if applicable.
+            The endpoint returns the evaluation results to the player.
+            """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = """
+                            The request is successfully processed. Returns the evaluation (aka the turn result) to the player.
+                            ATTENTION: A failure in the player's test compilation or evaluation (e.g., the test doesn't compile
+                            for code errors) is still considered a successful handling of the request.
+                            """,
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = RunGameResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "The game mode does not exist. The player attempted to play without starting a game first.",
+                    content = @Content(schema = @Schema(implementation = ApiErrorBackend.class))
+            )
+    })
+    @PostMapping(value = "/run", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RunGameResponseDTO> runGame(
+            @Parameter(
+                    description = "Request containing game information and player's test code.",
+                    required = true
+            )
+            @Valid @RequestBody RunGameRequestDTO requestDTO) {
+        RunGameResponseDTO response = gameManager.handlePlayTurn(requestDTO, false);
+
+        return ResponseEntity.ok().body(response);
     }
 
-    /*
-     *  Chiamata che gestisce l'abbandono della partita in corso da parte dell'utente (es: chiusura browser/scheda, ...),
-     *  salva i dati generici e specifici della partita disponibili in quel momento.
-     *
-     *  Dati generici: testingClassCode (codice di test scritto dall'utente)
-     *  Dati specifici:
-     *      - PartitaSingola: remainingTime (tempo rimanente alla conclusione della partita)
-     */
+
+    @Operation(
+            summary = "Leave or pause the current game session",
+            description = """
+        Handles the user's decision to leave an ongoing game (e.g., closing the browser or tab).
+        The endpoint saves the currently available common and specific game data.
+
+        Common data for all game modes:
+        - `testingClassCode`: the test code available in that moment in the player editor
+
+        Specific data for single-player games:
+        - `remainingTime`: the time left before the match ends.
+        """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Game state successfully saved or paused."
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "The game mode does not exist. The player attempted to pause a game without an active game session.",
+                    content = @Content(schema = @Schema(implementation = ApiErrorBackend.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "The game mode does not exist. The player attempted to pause a game without an active game session.",
+                    content = @Content(schema = @Schema(implementation = ApiErrorBackend.class))
+            )
+    })
     @PostMapping(value = "/leave", consumes = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<RunGameResponseDTO> UpdateSession(@RequestBody String rawRequest) {
-        try {
-            logger.info("/leave request: {}", rawRequest);
-            ObjectMapper objectMapper = new ObjectMapper();
-            RunGameRequestDTO request = objectMapper.readValue(rawRequest, RunGameRequestDTO.class);
+    public ResponseEntity<RunGameResponseDTO> pauseGame(@RequestBody String rawRequest) {
+        logger.info("/leave request: {}", rawRequest);
 
-            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
-            Long playerId = request.getPlayerId();
-            GameMode mode = request.getMode();
-            logger.info("[POST /leave] Ricevuta richiesta salvataggio sessione per playerId={}", playerId);
-            gameServiceManager.LeaveGame(playerId, mode, updateGameParams);
-            return ResponseEntity.ok().body(null);
-        } catch (GameModeDontExist e) {
-            /*
-             * Il player non ha impostato una partita prima di arrivare all'editor
-             */
-            logger.error("[GAMECONTROLLER][leave] " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        gameManager.handlePauseGame(rawRequest);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value="/EndGame", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EndGameResponseDTO> EndGame(@RequestBody RunGameRequestDTO request) {
-        try {
-            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
-            Long playerId = request.getPlayerId();
-            GameMode mode = request.getMode();
 
-            if (!request.getTestingClassCode().isEmpty())
-                gameServiceManager.PlayGame(playerId, mode, updateGameParams, "All");
-
-            logger.info("[POST /EndGame] Ricevuta richiesta terminazione partita per playerId={}", playerId);
-            EndGameResponseDTO response = gameServiceManager.EndGame(playerId, mode, false);
-            logger.info("[POST /EndGame] Invio risposta per playerId={}", playerId);
-            return ResponseEntity.ok().body(response);
-        } catch (GameModeDontExist e) {
-            /*
-             * Il player non ha impostato una partita prima di arrivare all'editor
-             */
-            logger.error("[GAMECONTROLLER][EndGame] " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    @Operation(
+            summary = "End the game",
+            description = """
+        Handles the termination of an ongoing game.
+        The endpoint finalizes the game, evaluates the player's last turn, updates the session state,
+        checks for unlocked achievements, and returns the final results.
+        """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Game successfully ended. Returns the final game results.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EndGameResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "The game mode does not exist. The player attempted to end a game without starting one.",
+                    content = @Content(schema = @Schema(implementation = ApiErrorBackend.class))
+            )
+    })
+    @PostMapping(value = "/EndGame", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EndGameResponseDTO> endGame(
+            @Parameter(
+                    description = "Request containing player ID, opponent info, game mode, and current game state.",
+                    required = true
+            )
+            @Valid @RequestBody RunGameRequestDTO request
+    ) {
+        logger.info("[POST /EndGame] Ricevuta richiesta terminazione partita per playerId={}", request.getPlayerId());
+        EndGameResponseDTO response = gameManager.handleEndGame(request);
+        logger.info("[POST /EndGame] Invio risposta per playerId={}", request.getPlayerId());
+        return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping(value="/CompileEvosuite", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RunGameResponseDTO> CompileEvosuiteBeforeEnding(@RequestBody RunGameRequestDTO request) {
-        try {
-            GameParams updateGameParams = GameParamsFactory.updateGameParams(request);
-            Long playerId = request.getPlayerId();
-            GameMode mode = request.getMode();
-            RunGameResponseDTO response = gameServiceManager.PlayGame(playerId, mode, updateGameParams, "T8");
-            return ResponseEntity.ok().body(response);
-        } catch (GameModeDontExist e) {
-            /*
-             * Il player non ha impostato una partita prima di arrivare all'editor
-             */
-            logger.error("[GAMECONTROLLER][run] " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
 
+    @Operation(
+            summary = "Surrender an ongoing game",
+            description = """
+        Allows the player to surrender the current game session.
+        The game is finalized as surrendered and closed accordingly.
+        """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Game successfully surrendered and closed.",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "The game mode does not exist. The player attempted to surrender a game that was not started.",
+                    content = @Content(schema = @Schema(implementation = ApiErrorBackend.class))
+            )
+    })
     @DeleteMapping(value = "/SurrenderGame/{playerId}")
-    public ResponseEntity<EndGameResponseDTO> SurrenderGame(@PathVariable Long playerId, @RequestParam GameMode mode) {
-        try {
-            EndGameResponseDTO response = gameServiceManager.EndGame(playerId, mode, true);
-            logger.error("[DELETE /SurrenderGame] Invio risposta per playerId={}: {} ", playerId, response);
-            return ResponseEntity.ok().body(response);
-        } catch (GameModeDontExist e) {
-            /*
-             * Il player non ha impostato una partita prima di arrivare all'editor
-             */
-            logger.error("[GAMECONTROLLER][AbandonGame] " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    public ResponseEntity<EndGameResponseDTO> surrendGame(
+            @Parameter(description = "ID of the player surrendering the game", required = true)
+            @PathVariable Long playerId,
+            @Parameter(description = "Game mode of the ongoing game", required = true)
+            @RequestParam GameMode mode
+    ) {
+        gameManager.handleSurrendGame(playerId, mode);
+        logger.info("[DELETE /SurrenderGame] Invio risposta per playerId={}", playerId);
+        return ResponseEntity.ok().build();
     }
 }

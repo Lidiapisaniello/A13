@@ -31,11 +31,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.g2.game.GameModes.GameLogic;
-import com.g2.session.Exceptions.GameModeAlreadyExist;
-import com.g2.session.Exceptions.GameModeDontExist;
-import com.g2.session.Exceptions.SessionAlredyExist;
-import com.g2.session.Exceptions.SessionDontExist;
+import com.g2.game.gameMode.GameLogic;
+import com.g2.session.exception.GameModeAlreadyExistException;
+import com.g2.session.exception.GameModeDontExistException;
+import com.g2.session.exception.SessionAlredyExist;
+import com.g2.session.exception.SessionDoesntExistException;
 
 import io.lettuce.core.RedisCommandTimeoutException;
 import io.lettuce.core.RedisConnectionException;
@@ -124,13 +124,13 @@ public class SessionService {
             Sessione sessione = redisTemplate.opsForValue().get(sessionKey);
             if (sessione == null) {
                 logger.error("getSession - Sessione non trovata per sessionKey: {}", sessionKey);
-                throw new SessionDontExist("Sessione non trovata per la sessionKey: " + sessionKey);
+                throw new SessionDoesntExistException("Sessione non trovata per la sessionKey: " + sessionKey);
             }
             logger.info("getSession - Sessione recuperata con successo per sessionKey: {}", sessionKey);
             return sessione;
         } catch(Exception e){
             handleNetworkError("createSession", e);
-            throw new SessionDontExist("Errore durante il recupero della sessione: " + e.getMessage());
+            throw new SessionDoesntExistException("Errore durante il recupero della sessione per il giocatore %s: %s".formatted(playerId, e.getMessage()));
         }
     }
 
@@ -165,7 +165,7 @@ public class SessionService {
     public boolean deleteSession(Long playerId) {
         boolean SessionExist = doesSessionExistForPlayer(playerId);
         if(!SessionExist){
-            throw new SessionDontExist("Sessione non esiste per il playerId: " + playerId);
+            throw new SessionDoesntExistException("Sessione non esiste per il playerId: " + playerId);
         }
         String sessionKey = buildCompositeKey(playerId);
         logger.info("deleteSession - Eliminazione della sessione per sessionKey: {}", sessionKey);
@@ -204,25 +204,27 @@ public class SessionService {
         return (keys == null || keys.isEmpty()) ? Collections.emptyList() : redisTemplate.opsForValue().multiGet(keys);
     }
 
-    public GameLogic getGameMode(Long playerId, GameMode mode){
+    public GameLogic getGameMode(Long playerId, GameMode gameMode){
         Sessione sessione = getSession(playerId);
-        if(sessione.hasModalita(mode)){
-            return sessione.getGame(mode);
+        if(sessione.hasModalita(gameMode)){
+            return sessione.getGame(gameMode);
         }else{
-            throw new GameModeDontExist("Non esiste modalità " + mode);   
+            throw new GameModeDontExistException("Non esiste alcuna partita avviata per la modalità %s per il player %d".
+                    formatted(gameMode, playerId));
         }
     }
 
-    public boolean SetGameMode(Long playerId, GameLogic game) {
-        return SetGameMode(playerId, game, Optional.empty());
+    public boolean setGameMode(Long playerId, GameLogic game) {
+        return setGameMode(playerId, game, Optional.empty());
     }
 
-    public boolean SetGameMode(Long playerId, GameLogic game, Optional<Long> ttlSeconds) {
+    public boolean setGameMode(Long playerId, GameLogic game, Optional<Long> ttlSeconds) {
         logger.info("SetGameMode - Aggiunta del game mode: {} per il player: {}", game.getGameMode(), playerId);
         Sessione session = getSession(playerId);        
         if(session.hasModalita(game.getGameMode())){
             //Già esiste
-            throw new GameModeAlreadyExist("Esiste modalità " + game.getGameMode());
+            throw new GameModeAlreadyExistException("Esiste già una partita avviata per la modalità %s per il player %d".
+                    formatted(game.getGameMode(), playerId));
         }else{
             session.addModalita(game.getGameMode(), game);
             return updateSession(playerId, session, ttlSeconds);
@@ -235,9 +237,15 @@ public class SessionService {
 
     public boolean removeGameMode(Long playerId, GameMode mode, Optional<Long> ttlSeconds) {
         logger.info("removeGameMode - Rimozione del game mode: {} per il player: {}", mode, playerId);
-        Sessione session = getSession(playerId);
-        session.removeModalita(mode);
-        return updateSession(playerId, session, ttlSeconds);
+
+        try {
+            Sessione session = getSession(playerId);
+            session.removeModalita(mode);
+            return updateSession(playerId, session, ttlSeconds);
+        } catch (Exception e) {
+            logger.error("[destroyGame] Errore eliminando la sessione del game mode {} : {}", mode, e.getMessage());
+            return false;
+        }
     }
 
     public boolean updateGameMode(Long playerId, GameLogic game) {
@@ -251,7 +259,7 @@ public class SessionService {
             session.addModalita(game.getGameMode(), game);
             return updateSession(playerId, session, ttlSeconds);
         }else{
-            throw new GameModeDontExist("Non esiste modalità" + game.getGameMode());
+            throw new GameModeDontExistException("Non esiste modalità" + game.getGameMode());
         }
     }
 }

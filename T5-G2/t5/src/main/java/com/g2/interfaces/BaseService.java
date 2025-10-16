@@ -19,7 +19,6 @@ package com.g2.interfaces;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -247,10 +246,6 @@ public abstract class BaseService implements ServiceInterface {
             HttpHeaders headers = buildHeaders(finalCustomHeaders, MediaType.APPLICATION_JSON);
             HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
             ResponseEntity<R> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, responseType);
-
-            logger.info("Request URL: {}", url);
-            logger.info("Request Headers: {}", headers);
-            logger.info("Request Body: {}", jsonBody);
 
             return response.getBody();
         });

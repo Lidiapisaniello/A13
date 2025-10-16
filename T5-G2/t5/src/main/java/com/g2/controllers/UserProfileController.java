@@ -53,7 +53,6 @@ public class UserProfileController {
     public void init() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
             File file = new File("%s/%s".formatted(System.getProperty("user.dir"), gamificationConFile.replace("/", File.separator)));
             this.gameConfigData = objectMapper.readValue(file, GameConfigData.class);
         } catch (IOException e) {

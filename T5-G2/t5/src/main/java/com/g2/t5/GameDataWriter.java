@@ -36,6 +36,9 @@ import org.json.JSONObject;
 
 import com.g2.model.Game;
 
+/**
+ * Codice legacy
+ */
 public class GameDataWriter {
 
     private final HttpClient httpClient = HttpClientBuilder.create().build();

@@ -184,9 +184,9 @@ public class T23Service extends BaseService {
 
         JSONObject requestBody = new JSONObject();
         requestBody.put("classUT", classUT);
-        requestBody.put("gameMode", gameMode);
-        requestBody.put("type", type);
-        requestBody.put("difficulty", difficulty);
+        requestBody.put("gameMode", gameMode.name());
+        requestBody.put("type", type.name());
+        requestBody.put("difficulty", difficulty.name());
         return callRestPost(endpoint, requestBody, null, null, GameProgressDTO.class);
     }
 
