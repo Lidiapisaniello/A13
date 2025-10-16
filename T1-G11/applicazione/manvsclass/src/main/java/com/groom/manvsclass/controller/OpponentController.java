@@ -11,7 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import testrobotchallenge.commons.mappers.ScoreDTOMapper;
+import testrobotchallenge.commons.mappers.EvosuiteScoreMapper;
+import testrobotchallenge.commons.mappers.JacocoScoreMapper;
 import testrobotchallenge.commons.models.dto.score.basic.EvosuiteScoreDTO;
 import testrobotchallenge.commons.models.dto.score.basic.JacocoScoreDTO;
 import testrobotchallenge.commons.models.opponent.OpponentDifficulty;
@@ -93,7 +94,7 @@ public class OpponentController {
                                                                      @PathVariable("opponentDifficulty") OpponentDifficulty difficulty) {
         EvosuiteScore score = opponentService.getOpponentEvosuiteScore(classUT, type, difficulty);
 
-        return ResponseEntity.ok(ScoreDTOMapper.toEvosuiteScoreDTO(score));
+        return ResponseEntity.ok(EvosuiteScoreMapper.toEvosuiteScoreDTO(score));
     }
 
     @GetMapping("/{classUT}/{opponentType}/{opponentDifficulty}/score/jacoco")
@@ -101,7 +102,7 @@ public class OpponentController {
                                                                  @PathVariable("opponentType") OpponentType type,
                                                                  @PathVariable("opponentDifficulty") OpponentDifficulty difficulty) {
         JacocoScore score = opponentService.getOpponentJacocoScore(classUT, type, difficulty);
-        return ResponseEntity.ok(ScoreDTOMapper.toJacocoScoreDTO(score));
+        return ResponseEntity.ok(JacocoScoreMapper.toJacocoScoreDTO(score));
     }
 
     @GetMapping("/{classUT}/{opponentType}/{opponentDifficulty}/coverage")

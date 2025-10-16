@@ -10,7 +10,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import testrobotchallenge.commons.models.dto.score.EvosuiteCoverageDTO;
@@ -34,7 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class UploadRobotService {
+public class UploadOpponentService {
     public static final String VOLUME_T0_BASE_PATH = "/VolumeT0/FolderTree/ClassUT/";
     public static final String UNMODIFIED_SRC = "unmodified_src";
     public static final String BASE_SRC_PATH = "src/main/java";
@@ -45,14 +44,14 @@ public class UploadRobotService {
     private static final String JACOCO_COVERAGE_FILE = "coveragetot.xml";
     private static final String EVOSUITE_COVERAGE_FILE = "statistics.csv";
 
-    private final Logger logger = LoggerFactory.getLogger(UploadRobotService.class);
+    private final Logger logger = LoggerFactory.getLogger(UploadOpponentService.class);
 
     //--------------------------------------------------
 
     private final ApiGatewayClient apiGatewayClient;
 	private final OpponentRepository opponentRepository;
 
-	public UploadRobotService(ApiGatewayClient apiGatewayClient, OpponentRepository opponentRepository) {
+	public UploadOpponentService(ApiGatewayClient apiGatewayClient, OpponentRepository opponentRepository) {
         this.apiGatewayClient = apiGatewayClient;
 		this.opponentRepository = opponentRepository;
 	}

@@ -51,7 +51,7 @@ public class OpponentService {
     private final ClassRepository classRepository;
     private final MongoTemplate mongoTemplate;
     private final SearchRepositoryImpl searchRepository;
-    private final UploadRobotService uploadRobotService;
+    private final UploadOpponentService uploadOpponentService;
     @Autowired
     private final OpponentRepository opponentRepository;
 
@@ -64,12 +64,12 @@ public class OpponentService {
                            ClassRepository classRepository,
                            MongoTemplate mongoTemplate,
                            SearchRepositoryImpl searchRepository,
-                           UploadRobotService uploadRobotService, OpponentRepository opponentRepository, ApiGatewayClient apiGatewayClient) {
+                           UploadOpponentService uploadOpponentService, OpponentRepository opponentRepository, ApiGatewayClient apiGatewayClient) {
         this.operationRepository = operationRepository;
         this.classRepository = classRepository;
         this.mongoTemplate = mongoTemplate;
         this.searchRepository = searchRepository;
-        this.uploadRobotService = uploadRobotService;
+        this.uploadOpponentService = uploadOpponentService;
         this.opponentRepository = opponentRepository;
         this.apiGatewayClient = apiGatewayClient;
     }
@@ -113,7 +113,7 @@ public class OpponentService {
 
         // Salvataggio del file della classe e robot associati
         FileUploadUtil.saveCLassFile(classUTFileName, classe.getName(), classUTFile);
-        uploadRobotService.saveOpponentsFromZip(classUTFileName, classe.getName(), classUTFile, robotTestsZip);
+        uploadOpponentService.saveOpponentsFromZip(classUTFileName, classe.getName(), classUTFile, robotTestsZip);
 
         // Popola la risposta
         response.setFileName(classUTFileName);
@@ -122,8 +122,8 @@ public class OpponentService {
 
         // Imposta i metadati della classe
         classe.setUri(String.format("%s/%s/%s/%s",
-                UploadRobotService.VOLUME_T0_BASE_PATH,
-                UploadRobotService.UNMODIFIED_SRC,
+                UploadOpponentService.VOLUME_T0_BASE_PATH,
+                UploadOpponentService.UNMODIFIED_SRC,
                 classe.getName(),
                 classUTFileName));
 
@@ -217,8 +217,8 @@ public class OpponentService {
     }
 
     public void eliminaFile(String fileName) {
-        File directory = new File(String.format("%s/%s", UploadRobotService.VOLUME_T0_BASE_PATH, fileName));
-        File directoryUnmodifiedSrc = new File(String.format("%s/%s/%s", UploadRobotService.VOLUME_T0_BASE_PATH, UploadRobotService.UNMODIFIED_SRC,fileName));
+        File directory = new File(String.format("%s/%s", UploadOpponentService.VOLUME_T0_BASE_PATH, fileName));
+        File directoryUnmodifiedSrc = new File(String.format("%s/%s/%s", UploadOpponentService.VOLUME_T0_BASE_PATH, UploadOpponentService.UNMODIFIED_SRC,fileName));
 
         System.out.println("name: " + fileName);
         if (directory.exists() && directory.isDirectory()) {
