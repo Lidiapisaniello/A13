@@ -41,7 +41,7 @@ public class UploadOpponentService {
     public static final String BASE_TEST_PATH = "src/test/java";
     public static final String BASE_COVERAGE_PATH = "coverage";
 
-    private static final String BASE_CODE_PATH = "testrobotchallenge/commons";
+    private static final String BASE_CODE_PATH = "project";
     private static final String JACOCO_COVERAGE_FILE = "coveragetot.xml";
     private static final String EVOSUITE_COVERAGE_FILE = "statistics.csv";
 
