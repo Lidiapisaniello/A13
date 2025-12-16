@@ -1,23 +1,21 @@
 /*
- *   Copyright (c) 2025 Stefano Marano https://github.com/StefanoMarano80017
- *   All rights reserved.
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *   http://www.apache.org/licenses/LICENSE-2.0
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+ * Copyright (c) 2025 Stefano Marano https://github.com/StefanoMarano80017
+ * All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-//Estrai utente da token jwt
+// funzione per ottenere l'ID utente dal JWT
 function getAuthUserId(jwt) {
     try {
-        // Estrai il payload del JWT (la seconda parte separata da ".")
         const base64Url = jwt.split('.')[1];
-        // Decodifica Base64 (gestisce correttamente il padding mancante)
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const jsonPayload = decodeURIComponent(
             atob(base64)
@@ -25,9 +23,7 @@ function getAuthUserId(jwt) {
                 .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
                 .join('')
         );
-        // Converte la stringa JSON in oggetto
         const payload = JSON.parse(jsonPayload);
-        // Estrai userId e convertilo in numero
         return parseInt(payload.userId, 10);
     } catch (error) {
         console.error('Errore durante la decodifica del JWT:', error);
@@ -35,9 +31,8 @@ function getAuthUserId(jwt) {
     }
 }
 
-
 document.addEventListener("DOMContentLoaded", function () {
-    // Gestione dei tab dei trofei
+    // Gestione dei tab dei trofei (Log)
     const trophyTabs = document.querySelectorAll('#trophyTabs button[data-bs-toggle="tab"]');
     trophyTabs.forEach(tab => {
         tab.addEventListener('shown.bs.tab', function (event) {
@@ -47,41 +42,69 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+    //gestione bottone follow/unfollow
     const followButton = document.getElementById('followButton');
+    
     if (followButton) {
         followButton.addEventListener('click', async function() {
-            const FriendUserId = this.getAttribute('data-user-id'); 
-            const userId = parseInt(parseJwt(getCookie("jwt")).userId);
-            console.log('Clicked! UserId:', FriendUserId);
-            // Creazione del Form Data per la richiesta
+            // Disabilita il bottone per evitare doppi click
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.textContent = "...";
+
+            // Recupera gli ID necessari
+            const friendUserId = this.getAttribute('data-friend-id');
+
+            const myIdSpan = document.getElementById('userProfileID');
+            const myId = myIdSpan ? myIdSpan.textContent : "0";
+
+            console.log('Toggle Follow -> MyID:', myId, ' FriendID:', friendUserId);
+
+            // creazione del form data
             const formData = new URLSearchParams();
-            formData.append("targetUserId", FriendUserId);
-            formData.append("authUserId", userId);
+            formData.append("followerId", myId);
+            formData.append("followingId", friendUserId);
+
             try {
-                const response = await fetch(`/add-follow`, {
+                // Chiamata all'endpoint del Controller T5
+                const response = await fetch("/profile/toggle_follow", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: formData.toString()
                 });
+
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                // Cambia il bottone in base al suo stato corrente
-                if (this.textContent === 'Follow') {
-                    this.textContent = 'Unfollow';
+                
+                // true se ora si segue, false altrimenti
+                const isFollowing = await response.json();
+
+                // Riabilita bottone
+                this.disabled = false;
+
+                // Aggiorna lo stile in base al nuovo stato
+                if (isFollowing === true) {
+                    this.textContent = $("#unfollowText").text();
                     this.classList.remove('btn-primary');
                     this.classList.add('btn-danger');
                 } else {
-                    this.textContent = 'Follow';
+                    this.textContent = $("#followText").text();
                     this.classList.remove('btn-danger');
                     this.classList.add('btn-primary');
                 }
+
             } catch (error) {
                 console.error('Errore nella richiesta:', error);
+                this.textContent = originalText;
+                this.disabled = false;
+                alert("Si è verificato un errore durante l'operazione.");
             }
         });
     }
-    // Funzione per la ricerca amici in tempo reale
+
+    // Funzione per gestire la ricerca nei tab degli amici
     function setupTabSearch() {
         const searchInputs = document.querySelectorAll('.tab-search');
         searchInputs.forEach(searchInput => {
@@ -89,29 +112,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 const searchTerm = this.value.toLowerCase();
                 const targetTab = this.getAttribute('data-search-target');
                 const container = document.querySelector(`#${targetTab}-content .friends-list`);
+                if (!container) return; // Evita errori se non siamo nella pagina giusta
+                
                 const friendItems = container.querySelectorAll('.friend-item');
                 friendItems.forEach(item => {
-                    const name = item.querySelector('h5').textContent.toLowerCase();
-                    const email = item.querySelector('p').textContent.toLowerCase();
-                    if (name.includes(searchTerm) || email.includes(searchTerm)) {
-                        item.classList.remove('hidden');
-                        highlightText(item, searchTerm);
-                    } else {
-                        item.classList.add('hidden');
+                    const nameEl = item.querySelector('h5');
+                    const emailEl = item.querySelector('p');
+                    
+                    if(nameEl && emailEl) {
+                        const name = nameEl.textContent.toLowerCase();
+                        const email = emailEl.textContent.toLowerCase();
+                        if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                            item.classList.remove('hidden');
+                            highlightText(item, searchTerm);
+                        } else {
+                            item.classList.add('hidden');
+                        }
                     }
                 });
             });
         });
     }
+
     // Funzione per evidenziare il testo cercato
     function highlightText(item, searchTerm) {
-        if (searchTerm === '') {
-            item.querySelector('h5').innerHTML = item.querySelector('h5').textContent;
-            item.querySelector('p').innerHTML = item.querySelector('p').textContent;
-            return;
-        }
         const nameElement = item.querySelector('h5');
         const emailElement = item.querySelector('p');
+        
+        if (!nameElement || !emailElement) return;
+
+        if (searchTerm === '') {
+            nameElement.innerHTML = nameElement.textContent;
+            emailElement.innerHTML = emailElement.textContent;
+            return;
+        }
+        
         const highlightMatch = (text, term) => {
             const regex = new RegExp(`(${term})`, 'gi');
             return text.replace(regex, '<span class="highlight">$1</span>');
@@ -120,22 +155,19 @@ document.addEventListener('DOMContentLoaded', function() {
         emailElement.innerHTML = highlightMatch(emailElement.textContent, searchTerm);
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        // Aggiungi stile per il testo evidenziato
-        const style = document.createElement('style');
-        style.textContent = `
-            .highlight {
-                background-color: rgba(0, 123, 255, 0.2);
-                padding: 0 2px;
-                border-radius: 3px;
-            }
-            .hidden {
-                display: none;
-            }
-        `;
-        document.head.appendChild(style);
-        // Inizializza la ricerca
-        setupTabSearch();
-    });
-
+    const style = document.createElement('style');
+    style.textContent = `
+        .highlight {
+            background-color: rgba(0, 123, 255, 0.2);
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+        .hidden {
+            display: none;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Avvia listener ricerca
+    setupTabSearch();
 });

@@ -113,6 +113,7 @@ public abstract class BaseService implements ServiceInterface {
 
     // Metodo per chiamate GET che restituiscono un singolo oggetto
     protected <R> R callRestGET(String endpoint, Map<String, String> queryParams, Class<R> responseType) {
+        logger.info("Eseguo callRestGET per singolo oggetto su endpoint: " + endpoint + " con params: " + queryParams);
         return executeRestCall("callRestGET " + endpoint, () -> {
             String url = buildUri(endpoint, queryParams);
             HttpHeaders headers = HttpHeadersFactory.createHeaders(buildAuth(), null);
@@ -124,6 +125,7 @@ public abstract class BaseService implements ServiceInterface {
 
     // Metodo per chiamate GET che restituiscono una lista di oggetti
     protected <R> List<R> callRestGET(String endpoint, Map<String, String> queryParams, ParameterizedTypeReference<List<R>> responseType) {
+        logger.info("Eseguo callRestGET per lista di oggetti su endpoint: " + endpoint + " con params: " + queryParams);
         return executeRestCall("callRestGET " + endpoint, () -> {
             String url = buildUri(endpoint, queryParams);
             HttpHeaders headers = HttpHeadersFactory.createHeaders(buildAuth(), null);
@@ -143,6 +145,7 @@ public abstract class BaseService implements ServiceInterface {
     protected <R> R callRestPost(String endpoint, MultiValueMap<String, String> formData,
                                  Map<String, String> queryParams, Map<String, String> customHeaders,
                                  Class<R> responseType) {
+        logger.info("Eseguo callRestPost su endpoint: " + endpoint + " con params: " + queryParams);                            
         if (formData == null) {
             throw new IllegalArgumentException("formData non può essere nullo");
         }
@@ -164,6 +167,7 @@ public abstract class BaseService implements ServiceInterface {
     protected <R> R callRestPost(String endpoint, JSONObject jsonObject,
                                  Map<String, String> queryParams, Map<String, String> customHeaders,
                                  Class<R> responseType) {
+        logger.info("Eseguo callRestPost su endpoint: " + endpoint + " con params: " + queryParams);
         if (jsonObject == null) {
             throw new IllegalArgumentException("Il body JSON non può essere nullo");
         }

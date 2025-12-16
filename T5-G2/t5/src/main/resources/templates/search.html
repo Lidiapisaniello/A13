@@ -57,8 +57,8 @@
                 </div>
 
                 <!-- Allert -->
-                <div class="alert alert-primary" role="alert" id="init_alert" style="display: none;">
-                   Cerca utenti per email, nome e cognome oppure nickname!
+                <div class="alert alert-primary" role="alert" id="init_alert" style="display: none;" th:text="#{info_search}">
+                   
                 </div>
 
                 <!-- Loading -->
@@ -73,63 +73,81 @@
 
 <div th:replace="fragments/footer :: footer"></div>
 
+<span id="searchNotFound" style="display: none;" th:text="#{search_not_found}"></span>
+
+<span id="viexText" style="display: none;" th:text="#{view}"></span>
+
 <script>
   $(document).ready(function() {
     let currentPage = 0;
     let pageSize = 10;
+    let timeoutId;
 
     $("#init_alert").show();
 
-    // Funzione per eseguire la ricerca
+// Funzione di ricerca utente
     function searchUserProfiles(searchTerm, page, size) {
         $.ajax({
-            url: "/searchUserProfiles",
+            url: "/profile/search_api",
             type: "GET",
-            data: {
-                searchTerm: searchTerm,
-                page: page,
-                size: size
-            },
+            data: { searchTerm: searchTerm, page: page, size: size },
             dataType: "json",
             success: function(response) {
-                console.log("Risultati della ricerca:", response);
-                // Nascondi l'alert quando i risultati sono stati caricati
+                console.log("Risultati:", response);
                 $("#loadingAlert").hide();
+                
+                // Aggiorniamo la pagina corrente globale
+                currentPage = page; 
 
                 updateResults(response);
                 updatePagination(response);
             },
             error: function(xhr, status, error) {
-                console.error("Errore nella richiesta:", error);
-                // Nascondi l'alert quando i risultati sono stati caricati
+                console.error("Errore:", error);
                 $("#loadingAlert").hide();
             }
         });
     }
 
-    // Funzione per aggiornare i risultati
+    // Aggiorna i risultati della ricerca
     function updateResults(data) {
         let resultsContainer = $("#followers_block");
         resultsContainer.empty();
 
-        if (data.content.length === 0) {
-            resultsContainer.append("<p>Nessun risultato trovato.</p>");
+        const noResultsMsg = $("#searchNotFound").text();
+
+        if (!data || !data.content || data.content.length === 0) {
+            resultsContainer.append(`<p class='w-100 text-center text-white'>${noResultsMsg}</p>`);
             return;
         }
 
         data.content.forEach(user => {
+            // inserimento immagine default se null
+            let pic = user.profilePicturePath ? user.profilePicturePath : 'default.png';
+            let imgUrl = '/t5/images/profileImages/' + pic;
+
+            // Nome completo
+            let fullName = (user.name || '') + " " + (user.surname || '');
+            
+            // Link al profilo
+            let friendLink = '/friend/' + (user.userId || user.id || 0);
+
+            let view = $("#viexText").text();
+
             resultsContainer.append(
                 `<div class="col mb-4">
-                    <div class="card">
+                    <div class="card bg-dark border-secondary">
                         <div class="card-body p-4 d-flex align-items-center gap-3">
-                            <img src=${'/t5/images/profileImages/' + user.profilePicturePath}
-                            alt="twbs" width="32" height="32" 
-                            class="rounded-circle flex-shrink-0">
+                            <img src="${imgUrl}"
+                                 alt="Avatar" width="50" height="50" 
+                                 class="rounded-circle flex-shrink-0"
+                                 style="object-fit: cover;"
+                                 onerror="this.src='/t5/images/profileImages/default.png'">
                             <div class="text-start">
-                                <h5 class="fw-semibold mb-0">${user.name + " " + user.surname}</h5>
-                                <span class="fs-5 d-flex align-items-center">${user.email}</span>
+                                <h5 class="fw-semibold mb-0 text-white">${fullName}</h5>
+                                <span class="fs-6 d-flex align-items-center text-muted">@${user.nickname}</span>
                             </div>
-                            <a class="btn btn-primary py-1 px-2 ms-auto" href="/friend/${user.userId}">Link</a>                     
+                            <a class="btn btn-primary py-1 px-2 ms-auto" href="${friendLink}">${view} </a>                     
                         </div>
                     </div>
                 </div>`
@@ -137,63 +155,78 @@
         });
     }
 
-    // Funzione per aggiornare la paginazione
+// agg\iorna la paginazione
     function updatePagination(data) {
         let paginationContainer = $(".pagination");
         paginationContainer.empty();
 
-        // Aggiungi il pulsante "precedente"
+        // Se non ci sono pagine o ce n'è una sola, nascondi la paginazione
+        if (!data.totalPages || data.totalPages <= 1) return;
+
+        let totalPages = data.totalPages;
+        
+        // --- Precedente ---
+        let prevDisabled = currentPage === 0 ? 'disabled' : '';
         paginationContainer.append(
-            `<li class="page-item ${data.pageable.pageNumber === 0 ? 'disabled' : ''}">
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
+            `<li class="page-item ${prevDisabled}">
+                <a class="page-link bg-dark border-secondary text-white" href="#" data-page="${currentPage - 1}">&laquo;</a>
             </li>`
         );
 
-        // Aggiungi i numeri di pagina
-        let totalPages = data.totalPages;
-        for (let i = 0; i < totalPages; i++) {
+        // pagine numerate
+        let startPage = Math.max(0, currentPage - 2);
+        let endPage = Math.min(totalPages - 1, currentPage + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            let active = i === currentPage ? 'active' : '';
+            let bgClass = active ? 'bg-primary border-primary' : 'bg-dark border-secondary text-white';
+            
             paginationContainer.append(
-                `<li class="page-item ${i === data.pageable.pageNumber ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+                `<li class="page-item ${active}">
+                    <a class="page-link ${bgClass}" href="#" data-page="${i}">${i + 1}</a>
                 </li>`
             );
         }
 
-        // Aggiungi il pulsante "successivo"
+        // successivo
+        let nextDisabled = currentPage === totalPages - 1 ? 'disabled' : '';
         paginationContainer.append(
-            `<li class="page-item ${data.pageable.pageNumber === data.totalPages - 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
+            `<li class="page-item ${nextDisabled}">
+                <a class="page-link bg-dark border-secondary text-white" href="#" data-page="${currentPage + 1}">&raquo;</a>
             </li>`
         );
     }
 
-    // Gestione della ricerca quando l'utente digita
+    // imput di ricerca con ritardo
     $("#friend-search-input").on("input", function() {
         let searchTerm = $(this).val();
-        // Mostra l'alert di caricamento
-        $("#loadingAlert").show();
-        $("#init_alert").hide();
-        searchUserProfiles(searchTerm, currentPage, pageSize);
+        clearTimeout(timeoutId);
+        
+        if(searchTerm.length > 0){
+            $("#loadingAlert").show();
+            $("#init_alert").hide();
+            timeoutId = setTimeout(() => {
+                searchUserProfiles(searchTerm, 0, pageSize);
+            }, 500); 
+        } else {
+             $("#loadingAlert").hide();
+             $("#init_alert").show();
+             $("#followers_block").empty();
+        }
     });
 
-    // Gestione dei clic sui numeri di pagina
+    // Gestione click paginazione
     $(document).on("click", ".page-link", function(e) {
         e.preventDefault();
-
-        // Se il link ha l'attributo data-page, è un numero di pagina
         let page = $(this).data("page");
-        if (page !== undefined) {
+        if (page !== undefined && page >= 0) {
             currentPage = page;
             let searchTerm = $("#friend-search-input").val();
             searchUserProfiles(searchTerm, currentPage, pageSize);
         }
     });
 
-    });
+  });
 </script>
 
 </body>

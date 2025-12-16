@@ -5,36 +5,118 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+
     <link rel="stylesheet" href="/t5/css/profile-edit.css">
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
-    <!-- Header con il pulsante -->
-    <header class="header">
-        <a href="/profile" class="profile-link">
-            <button id="player-email" class="profile-button" th:text="${player.email}">Torna al profilo utente</button>
-        </a>
-    </header>
-    <!-- Dati utente nascosti -->
-    <div id="player-data"
-        th:data-current-bio="${player.userProfile.bio}"
-        th:data-current-image="${player.userProfile.profilePicturePath}"
-        hidden>
+<header class="header">
+    <a href="/profile" class="profile-link">
+        <button class="profile-button">Torna al profilo</button>
+    </a>
+</header>
+
+<!-- dati utente per lo script JS -->
+<div id="user-data"
+     th:attr="data-current-bio=${bio}, data-current-image=${propic}"
+     hidden>
+</div>
+
+<span id="user-email" th:text="${player.email}" hidden></span>
+
+<main class="content edit-container">
+
+    <div id="profile-pictures">
+        <img th:each="image : ${images}"
+             th:src="@{/t5/images/profileImages/{image}(image=${image})}"
+             th:class="${image == propic ? 'profile-picture selected' : 'profile-picture'}"
+             alt="Profile Picture" />
     </div>
-    <!-- Contenuto principale -->
-    <main class="content">
-        <!-- Sezione immagini profilo -->
-        <div id="profile-pictures">
-            <img th:each="image : ${images}"
-                th:src="@{/t5/images/profileImages/{image}(image=${image})}"
-                th:class="${image == propic ? 'profile-picture selected' : 'profile-picture'}"
-                alt="Profile Picture" />
-        </div>
-        <!-- Campo per la bio -->
-        <textarea id="bio-input" th:text="${bio}"></textarea>
-        <!-- Pulsante per salvare -->
-        <button id="save-button" th:text="#{editProfile.save}">Salva</button>
-    </main>
-    <div th:replace="fragments/footer :: footer"></div>
-    <script src="/t5/js/profile-edit.js"></script>
+
+    <textarea id="bio-input" th:text="${bio}"></textarea>
+
+    <!-- IMPORTANTISSIMO: type="button", non submit -->
+    
+<button id="save-button" type="button" th:text="#{editProfile.save}">Salva</button>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const profilePictures = document.querySelectorAll(".profile-picture");
+    const bioInput = document.getElementById("bio-input");
+    const saveButton = document.getElementById("save-button");
+    const userData = document.getElementById("user-data");
+    
+    // Recupero email utente
+    const userEmailElement = document.getElementById("user-email"); 
+    const userEmail = userEmailElement ? userEmailElement.textContent.trim() : "";
+
+    // Dati attuali
+    const currentBio = userData ? userData.dataset.currentBio : "";
+    const currentImage = userData ? userData.dataset.currentImage : "default.png";
+
+    let selectedImage = null;
+
+    profilePictures.forEach((img) => {
+        img.addEventListener("click", function () {
+            profilePictures.forEach((i) => i.classList.remove("selected"));
+            this.classList.add("selected");
+            selectedImage = this.getAttribute("src").split("/").pop().split("?")[0]; 
+        });
+    });
+
+    if (saveButton) {
+        saveButton.addEventListener("click", async function () {
+            console.log("Click Salva rilevato!"); // Log di debug
+            
+            const newBio = bioInput.value.trim();
+            const bioToSend = newBio !== "" ? newBio : currentBio;
+            const imageToSend = selectedImage || currentImage;
+
+            if (!userEmail) {
+                alert("Errore: Email utente non trovata. Ricarica la pagina.");
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append("bio", bioToSend);
+            formData.append("profilePicturePath", imageToSend);
+            formData.append("email", userEmail);
+
+            // Gestione CSRF
+            const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+            const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+            if (csrfTokenMeta && csrfHeaderMeta) {
+                headers[csrfHeaderMeta.getAttribute('content')] = csrfTokenMeta.getAttribute('content');
+            }
+
+            try {
+                    // endpoint di aggiornamento profilo
+                    const response = await fetch("/profile", {
+                        method: "POST", 
+                        headers: headers,
+                        body: formData.toString(),
+                    });
+
+                    if (response.ok) {
+                        alert("Profilo aggiornato con successo!");
+                        window.location.href = "/profile";
+                    } else {
+                        const errorText = await response.text();
+                        alert("Errore salvataggio: " + errorText);
+                    }
+                } catch (error) {
+                console.error("Errore di rete:", error);
+                alert("Errore di comunicazione con il server.");
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

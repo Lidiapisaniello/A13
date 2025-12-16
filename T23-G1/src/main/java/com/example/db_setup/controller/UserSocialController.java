@@ -5,14 +5,20 @@ import com.example.db_setup.model.UserProfile;
 import com.example.db_setup.service.PlayerService;
 import com.example.db_setup.service.UserSocialService;
 import com.example.db_setup.service.exception.UserNotFoundException;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/profile")
 public class UserSocialController {
@@ -22,114 +28,192 @@ public class UserSocialController {
     @Autowired
     private PlayerService playerService;
 
-    /*
-     *  Sezione ricerca utente
-     *
-     */
-    @GetMapping("/searchUserProfiles")
-    public Page<UserProfile> searchUserProfiles(
+
+    // Funzione di ricerca profilo
+ @GetMapping("/searchUserProfiles")
+    public ResponseEntity<Map<String, Object>> searchUserProfiles(
             @RequestParam String searchTerm,
             @RequestParam int page,
             @RequestParam int size) {
+        
+        // Log per debug
+        System.out.println("T23 SEARCH: Cercando '" + searchTerm + "'");
 
-        return userSocialService.searchUserProfiles(searchTerm, page, size);
+        Page<UserProfile> pageResult = userSocialService.searchUserProfiles(searchTerm, page, size);
+        
+        System.out.println("T23 SEARCH: Trovati " + pageResult.getTotalElements() + " risultati");
+        
+        // Costruzione manuale della risposta per evitare problemi di serializzazione
+        Map<String, Object> response = new HashMap<>();
+        
+        response.put("content", pageResult.getContent());      
+        response.put("totalPages", pageResult.getTotalPages());   
+        response.put("totalElements", pageResult.getTotalElements()); 
+        
+        return ResponseEntity.ok(response);
     }
 
+    // metodo per ottenere un utente tramite email
     @GetMapping("/user_by_email")
     @ResponseBody
-    public List<Player> getUserByEmail(@RequestParam("email") String email) {
-        List<Player> players = playerService.getUserListByEmail(email);
-        if (players.isEmpty()) {
-            return null;
+    public ResponseEntity<?> getUserByEmail(@RequestParam("email") String email) {
+        try {
+            // Recupera il profilo dal database
+            UserProfile profile = playerService.findProfileByEmail(email);
+            
+            if (profile == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato");
+            }
+            
+            // Costruiamo la risposta manualmente per T5
+            Map<String, Object> response = new HashMap<>();
+            
+            // Gestiamo il caso in cui getUserId() possa essere null
+            Long safeId = 0L;
+            try {
+
+                if (profile.getUserId() != null) {
+                     safeId = profile.getUserId();
+                }
+            } catch (Exception e) {
+                
+                safeId = (long) email.hashCode();
+            }
+            
+            response.put("id", safeId);
+            response.put("email", email);
+            response.put("userProfile", profile);
+        
+            // Campi extra per sicurezza
+            response.put("name", profile.getName());
+            response.put("surname", profile.getSurname());
+            response.put("nickname", profile.getNickname());
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore server T23: " + e.getMessage());
         }
-        return players; // 200 OK con i risultati
     }
 
-    //Modifica 04/12/2024 Giuleppe: Aggiunta rotta
+
+    // nuovo metodo per visualizzare l'utente tramite ID
+    @GetMapping("/user_by_id")
+    public ResponseEntity<?> getUserById(@RequestParam("id") Long id) {
+        try {
+            
+            com.example.db_setup.model.Player player = playerService.getUserByID(id);
+            
+            if (player == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato");
+            }
+            
+            // risposta identica a getUserByEmail
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", player.getID());
+            response.put("email", player.getEmail());
+            response.put("userProfile", player.getUserProfile());
+            
+            response.put("name", player.getName());
+            response.put("surname", player.getSurname());
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore: " + e.getMessage());
+        }
+    }
+
+
     @PostMapping("/getStudentiTeam")
     public ResponseEntity<?> getStudentiTeam(@RequestBody List<String> idsStudenti) {
         return playerService.getStudentiTeam(idsStudenti);
     }
 
-    /*
-     * Sezione following
-     */
+    // --- SOCIAL (Followers/Following) ---
     @GetMapping("/followers")
     public ResponseEntity<?> getFollowers(@RequestParam String userId) {
         try {
             return ResponseEntity.ok(userSocialService.getFollowers(userId));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Si è verificato un errore imprevisto.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore");
         }
     }
 
     @GetMapping("/following")
     public ResponseEntity<?> getFollowing(@RequestParam String userId) {
+        log.info("Ricevuta richiesta di getFollowing per userId: " + userId);
         try {
             return ResponseEntity.ok(userSocialService.getFollowing(userId));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Si è verificato un errore imprevisto.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore");
         }
     }
 
     @GetMapping("/isFollowing")
-    public ResponseEntity<?> isFollowing(
-            @RequestParam String followerId,
-            @RequestParam String followingId) {
+    public ResponseEntity<?> isFollowing(@RequestParam String followerId, @RequestParam String followingId) {
         try {
             boolean result = userSocialService.isFollowing(followerId, followingId);
             return ResponseEntity.ok(result);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Si è verificato un errore imprevisto.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore");
         }
     }
 
     @PostMapping("/toggle_follow")
-    public ResponseEntity<?> toggleFollow(
-            @RequestParam String followerId,
-            @RequestParam String followingId
-    ) {
+    public ResponseEntity<?> toggleFollow(@RequestParam String followerId, @RequestParam String followingId) {
+        log.info("Ricevuta richiesta di toggleFollow: followerId=" + followerId + ", followingId=" + followingId);
         try {
-            /*
-             *   False - Smesso di seguire
-             *   True  - Iniziato a seguire
-             */
             boolean FollowState = userSocialService.toggleFollow(followerId, followingId);
             return ResponseEntity.ok(FollowState);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Si è verificato un errore imprevisto.");
+            log.error("Errore durante il toggleFollow", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Errore");
         }
     }
 
-    /*
-     * Gestione Profilo
-     */
-    @PostMapping("/update_profile")
-    public ResponseEntity<Boolean> editProfile(@RequestParam("email") String email,
-                                               @RequestParam("bio") String bio,
-                                               @RequestParam("profilePicturePath") String profilePicturePath,
-                                               @RequestParam("nickname") String nickname) {
+    // Metodo per aggiornare il profilo utente
+    @PostMapping("/updateProfile")
+    public ResponseEntity<Boolean> editProfile(
+            @RequestParam("email") String email,
+            @RequestParam("bio") String bio,
+            @RequestParam("profilePicturePath") String profilePicturePath,
+            @RequestParam(value = "nickname", required = false) String nickname) {
+        
+        System.out.println("--- T23: Ricevuta richiesta di update per " + email + " ---");
+        System.out.println("Dati: Bio='" + bio + "', Nick='" + nickname + "', Img='" + profilePicturePath + "'");
 
-        UserProfile profile = playerService.findProfileByEmail(email);
-        if (profile == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Ritorna false in caso di errore
+        try {
+            // recupero del profilo esistente
+            UserProfile profile = playerService.findProfileByEmail(email);
+            
+            if (profile == null) {
+                System.out.println("ERRORE T23: Profilo non trovato per email " + email);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            }
+            
+            // aggionrnamento dei campi
+            profile.setBio(bio);
+            profile.setProfilePicturePath(profilePicturePath);
+            
+            if (nickname != null && !nickname.isEmpty()) {
+                profile.setNickname(nickname);
+            }
+            
+            // salvataggio del profilo aggiornato
+            System.out.println("T23: Tentativo salvataggio...");
+            playerService.saveProfile(profile);
+            System.out.println("T23: Salvataggio riuscito!");
+            
+            return ResponseEntity.ok(true);
+            
+        } catch (Exception e) {
+            // stampa dell'eccezione per debug
+            System.err.println("ECCEZIONE GRAVE IN T23 UPDATE:");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
-        profile.setBio(bio);
-        profile.setProfilePicturePath(profilePicturePath);
-        profile.setNickname(nickname);
-        playerService.saveProfile(profile);
-        return ResponseEntity.ok(true); // Ritorna true se l'operazione ha avuto successo
     }
-
-
 }

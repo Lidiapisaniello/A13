@@ -40,12 +40,14 @@ public class UserProfile {
     @JsonBackReference // Evita la ricorsione e Evita la serializzazione di questa parte della relazione
     private Set<UserFollow> followers = new HashSet<>();
     @Column(length = 30, nullable = false)
-    private String nickname = "default_nickname";
+    private String nickname;
 
     @PrePersist
     public void prePersist() {
         if (nickname == null || nickname.trim().isEmpty()) {
-            nickname = "default_nickname";
+            nickname = email != null && email.contains("@")
+                ? email.substring(0, email.indexOf("@"))
+                : "user" + System.currentTimeMillis();
         }
     }
 

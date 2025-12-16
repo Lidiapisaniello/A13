@@ -20,7 +20,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     fTPFile0.setGroup("");
     java.lang.String str7 = fTPFile0.toString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertNull(str7);
@@ -108,7 +108,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar1 = null;
     fTPFile0.setTimestamp(calendar1);
     long long3 = fTPFile0.getSize();
-    java.lang.String str4 = fTPFile0.getUser();
+    java.lang.String str4 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(long3 == (-1L));
@@ -135,7 +135,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("?---------    2                         10 null");
     fTPFile0.setType((int)(short)10);
     fTPFile0.setRawListing("?---------    0                          1 null");
-    java.lang.String str16 = fTPFile0.getUser();
+    java.lang.String str16 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -319,7 +319,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("");
     java.lang.String str7 = fTPFile0.getRawListing();
     fTPFile0.setRawListing("hi!");
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     java.lang.String str11 = fTPFile0.getLink();
     fTPFile0.setSize((long)(short)0);
     java.lang.String str14 = fTPFile0.toFormattedString();
@@ -477,7 +477,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     FTPFile fTPFile0 = new FTPFile();
     fTPFile0.setHardLinkCount((int)'a');
     java.util.Calendar calendar3 = fTPFile0.getTimestamp();
-    java.lang.String str4 = fTPFile0.getUser();
+    java.lang.String str4 = fTPFile0.();
     boolean b5 = fTPFile0.isValid();
     
     // Regression assertion (captures the current behavior of the code)
@@ -885,7 +885,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     java.lang.String str5 = fTPFile0.getRawListing();
     boolean b6 = fTPFile0.isDirectory();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b8 = fTPFile0.isDirectory();
     java.lang.String str9 = fTPFile0.getRawListing();
     
@@ -1051,7 +1051,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("");
     fTPFile0.setName("?---------    2                         -1 null");
     java.util.Calendar calendar7 = fTPFile0.getTimestamp();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     boolean b9 = fTPFile0.isSymbolicLink();
     
     // Regression assertion (captures the current behavior of the code)
@@ -1348,7 +1348,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setRawListing("?---------    0                         -1 hi!");
     long long14 = fTPFile0.getSize();
     fTPFile0.setHardLinkCount((int)(byte)100);
-    java.lang.String str17 = fTPFile0.getUser();
+    java.lang.String str17 = fTPFile0.();
     fTPFile0.setUser("----------    2                         -1 null");
     
     // Regression assertion (captures the current behavior of the code)
@@ -1703,7 +1703,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setName("hi!");
     fTPFile0.setName("?---------    2                         -1 null");
     boolean b9 = fTPFile0.isDirectory();
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     fTPFile0.setType((int)(byte)1);
     
     // Regression assertion (captures the current behavior of the code)
@@ -2207,7 +2207,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     FTPFile fTPFile0 = new FTPFile();
     fTPFile0.setLink("");
     long long3 = fTPFile0.getSize();
-    java.lang.String str4 = fTPFile0.getUser();
+    java.lang.String str4 = fTPFile0.();
     java.lang.String str6 = fTPFile0.toFormattedString("?-------w-    2                         10 ?---------   97          ?---------    2                          0 null       -1 null");
     
     // Regression assertion (captures the current behavior of the code)
@@ -2339,7 +2339,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("hi!");
     java.lang.String str10 = fTPFile0.getGroup();
     java.lang.String str11 = fTPFile0.getGroup();
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     fTPFile0.setSize((long)(byte)-1);
     
     // Regression assertion (captures the current behavior of the code)
@@ -2533,7 +2533,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setHardLinkCount((int)'a');
     fTPFile0.setRawListing("?---------    2 hi!                     -1 null");
     fTPFile0.setHardLinkCount((int)(short)-1);
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     java.lang.String str8 = fTPFile0.getGroup();
     java.lang.String str9 = fTPFile0.getLink();
     
@@ -2998,8 +2998,8 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
+    java.lang.String str9 = fTPFile0.();
     fTPFile0.setPermission(0, 2, false);
     java.lang.String str14 = fTPFile0.getGroup();
     
@@ -3419,7 +3419,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("");
     java.lang.String str7 = fTPFile0.getRawListing();
     fTPFile0.setRawListing("hi!");
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     java.lang.String str11 = fTPFile0.getLink();
     boolean b12 = fTPFile0.isFile();
     long long13 = fTPFile0.getSize();
@@ -3474,7 +3474,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("");
     fTPFile0.setName("?---------    2                         -1 null");
     java.util.Calendar calendar7 = fTPFile0.getTimestamp();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     boolean b9 = fTPFile0.isUnknown();
     fTPFile0.setName("?---------    2                         -1 ?---------    0                         -1 null");
     
@@ -3649,7 +3649,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str10 = fTPFile0.getName();
     boolean b11 = fTPFile0.isUnknown();
     java.lang.String str12 = fTPFile0.getGroup();
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b7 == false);
@@ -3685,7 +3685,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getHardLinkCount();
     boolean b4 = fTPFile0.isUnknown();
     fTPFile0.setUser("hi!");
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b8 = fTPFile0.isSymbolicLink();
     fTPFile0.setRawListing("?---------    2 hi!                     -1 null");
     java.util.Calendar calendar11 = fTPFile0.getTimestamp();
@@ -4384,7 +4384,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getHardLinkCount();
     boolean b4 = fTPFile0.isUnknown();
     fTPFile0.setType(0);
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b8 = fTPFile0.isSymbolicLink();
     
     // Regression assertion (captures the current behavior of the code)
@@ -4494,7 +4494,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str9 = fTPFile0.toFormattedString();
     fTPFile0.setPermission((int)(byte)0, (int)(short)1, false);
     fTPFile0.setGroup("?---------    0                         -1 hi!");
-    java.lang.String str16 = fTPFile0.getUser();
+    java.lang.String str16 = fTPFile0.();
     fTPFile0.setSize((long)(short)0);
     java.lang.String str19 = fTPFile0.toString();
     
@@ -4533,13 +4533,13 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.getLink();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setLink("?---------   97                         -1 null");
     fTPFile0.setHardLinkCount((int)'4');
     java.util.Calendar calendar13 = null;
     fTPFile0.setTimestamp(calendar13);
     fTPFile0.setSize((long)'#');
-    java.lang.String str17 = fTPFile0.getUser();
+    java.lang.String str17 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -4731,7 +4731,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("");
     java.lang.String str7 = fTPFile0.getRawListing();
     fTPFile0.setRawListing("hi!");
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     java.lang.String str11 = fTPFile0.getLink();
     fTPFile0.setSize((long)(short)0);
     java.lang.String str14 = fTPFile0.toFormattedString();
@@ -4810,7 +4810,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     java.lang.String str5 = fTPFile0.getRawListing();
     boolean b6 = fTPFile0.isDirectory();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     fTPFile0.setLink("?---------    0                          1 ?---------    0                         -1 null");
     java.lang.String str10 = fTPFile0.getGroup();
     
@@ -4884,7 +4884,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b6 = fTPFile0.isValid();
     fTPFile0.setHardLinkCount(100);
     fTPFile0.setName("hi!");
-    java.lang.String str11 = fTPFile0.getUser();
+    java.lang.String str11 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -4960,7 +4960,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str9 = fTPFile0.toString();
     fTPFile0.setName("?---------    0                          1 ?---------    0                         -1 null");
     java.lang.String str12 = fTPFile0.toString();
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     fTPFile0.setName("?---------    2 ?---------    0                         -1 null                -1 null");
     fTPFile0.setHardLinkCount(0);
     int i18 = fTPFile0.getHardLinkCount();
@@ -5348,7 +5348,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setRawListing("?---------    2                         -1 null");
     fTPFile0.setLink("?---------    0                         -1 null");
     int i18 = fTPFile0.getType();
-    java.lang.String str19 = fTPFile0.getUser();
+    java.lang.String str19 = fTPFile0.();
     java.lang.String str20 = fTPFile0.getLink();
     java.lang.String str21 = fTPFile0.getLink();
     fTPFile0.setName("?---------    2 hi!                     -1 ?---------    0                         -1 hi!");
@@ -5772,7 +5772,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setRawListing("?---------    0                         -1 hi!");
     long long14 = fTPFile0.getSize();
     fTPFile0.setHardLinkCount((int)(byte)100);
-    java.lang.String str17 = fTPFile0.getUser();
+    java.lang.String str17 = fTPFile0.();
     fTPFile0.setName("?---------    2                         -1 d---------    0                         -1 null");
     
     // Regression assertion (captures the current behavior of the code)
@@ -5875,7 +5875,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     long long3 = fTPFile0.getSize();
     fTPFile0.setSize((long)(byte)10);
     fTPFile0.setName("?---------    0                          1 ?---------    0                         -1 null");
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     boolean b9 = fTPFile0.isUnknown();
     
     // Regression assertion (captures the current behavior of the code)
@@ -6030,7 +6030,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar5 = null;
     fTPFile0.setTimestamp(calendar5);
     int i7 = fTPFile0.getType();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.lang.String str9 = fTPFile0.toString();
     boolean b10 = fTPFile0.isUnknown();
     fTPFile0.setGroup("");
@@ -6559,7 +6559,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setRawListing("?---------    0                         -1 hi!");
     fTPFile0.setRawListing("?---------    2                          0 null");
     fTPFile0.setHardLinkCount((int)(short)0);
-    java.lang.String str14 = fTPFile0.getUser();
+    java.lang.String str14 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -6842,7 +6842,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar8 = null;
     fTPFile0.setTimestamp(calendar8);
     boolean b10 = fTPFile0.isValid();
-    java.lang.String str11 = fTPFile0.getUser();
+    java.lang.String str11 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b7 == false);
@@ -7008,7 +7008,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b10 = fTPFile0.isDirectory();
     boolean b11 = fTPFile0.isDirectory();
     fTPFile0.setSize((long)(byte)-1);
-    java.lang.String str14 = fTPFile0.getUser();
+    java.lang.String str14 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -7042,8 +7042,8 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str5 = fTPFile0.getLink();
     int i6 = fTPFile0.getHardLinkCount();
     boolean b7 = fTPFile0.isFile();
-    java.lang.String str8 = fTPFile0.getUser();
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
+    java.lang.String str9 = fTPFile0.();
     java.lang.String str10 = fTPFile0.getRawListing();
     long long11 = fTPFile0.getSize();
     
@@ -7171,7 +7171,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("?---------   97                         -1 null");
     java.lang.String str12 = fTPFile0.getName();
     fTPFile0.setUser("?---------    2                         -1 null");
-    java.lang.String str15 = fTPFile0.getUser();
+    java.lang.String str15 = fTPFile0.();
     // The following exception was thrown during execution in test generation
     try {
     boolean b18 = fTPFile0.hasPermission((int)(short)100, 0);
@@ -7401,7 +7401,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setName("hi!");
     fTPFile0.setName("?---------    2                         -1 null");
     boolean b9 = fTPFile0.isDirectory();
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     boolean b11 = fTPFile0.isSymbolicLink();
     fTPFile0.setType((int)(byte)1);
     
@@ -7434,7 +7434,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.getLink();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setLink("?---------   97                         -1 null");
     java.util.Calendar calendar11 = null;
     fTPFile0.setTimestamp(calendar11);
@@ -7504,7 +7504,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str10 = fTPFile0.getLink();
     java.lang.String str11 = fTPFile0.getLink();
     java.lang.String str12 = fTPFile0.getGroup();
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -7813,7 +7813,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar5 = null;
     fTPFile0.setTimestamp(calendar5);
     int i7 = fTPFile0.getType();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.lang.String str9 = fTPFile0.toString();
     boolean b10 = fTPFile0.isUnknown();
     fTPFile0.setGroup("");
@@ -7928,7 +7928,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setHardLinkCount(100);
     java.lang.String str9 = fTPFile0.toFormattedString();
     fTPFile0.setPermission((int)(byte)0, (int)(short)1, false);
-    java.lang.String str14 = fTPFile0.getUser();
+    java.lang.String str14 = fTPFile0.();
     boolean b17 = fTPFile0.hasPermission(2, (int)(byte)1);
     long long18 = fTPFile0.getSize();
     
@@ -8275,7 +8275,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i8 = fTPFile0.getType();
     java.lang.String str9 = fTPFile0.toFormattedString();
     fTPFile0.setGroup("?---------    2 hi!                     -1 ?---------    0                         -1 hi!");
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     fTPFile0.setGroup("?---------    0                         -1 hi!");
     int i15 = fTPFile0.getType();
     fTPFile0.setHardLinkCount(97);
@@ -8353,7 +8353,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getHardLinkCount();
     boolean b4 = fTPFile0.isUnknown();
     boolean b5 = fTPFile0.isDirectory();
-    java.lang.String str6 = fTPFile0.getUser();
+    java.lang.String str6 = fTPFile0.();
     java.lang.String str7 = fTPFile0.getName();
     boolean b8 = fTPFile0.isUnknown();
     
@@ -8395,7 +8395,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b12 = fTPFile0.isFile();
     boolean b13 = fTPFile0.isFile();
     long long14 = fTPFile0.getSize();
-    java.lang.String str15 = fTPFile0.getUser();
+    java.lang.String str15 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -8542,7 +8542,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str9 = fTPFile0.toString();
     java.lang.String str10 = fTPFile0.toFormattedString();
     boolean b11 = fTPFile0.isUnknown();
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -8961,7 +8961,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getHardLinkCount();
     boolean b4 = fTPFile0.isUnknown();
     fTPFile0.setType(0);
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     fTPFile0.setLink("?---------   52 hi!                     -1 null");
     
     // Regression assertion (captures the current behavior of the code)
@@ -9028,7 +9028,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i8 = fTPFile0.getType();
     java.lang.String str9 = fTPFile0.toFormattedString();
     fTPFile0.setGroup("?---------    2 hi!                     -1 ?---------    0                         -1 hi!");
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     fTPFile0.setGroup("?---------    0                         -1 hi!");
     fTPFile0.setSize((long)1);
     java.lang.String str17 = fTPFile0.getGroup();
@@ -9115,7 +9115,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.getLink();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.util.Calendar calendar9 = fTPFile0.getTimestamp();
     
     // Regression assertion (captures the current behavior of the code)
@@ -9173,7 +9173,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar5 = null;
     fTPFile0.setTimestamp(calendar5);
     int i7 = fTPFile0.getType();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.lang.String str9 = fTPFile0.toString();
     java.lang.String str11 = fTPFile0.toFormattedString("?---------    2                         -1 null");
     // The following exception was thrown during execution in test generation
@@ -9275,7 +9275,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar5 = null;
     fTPFile0.setTimestamp(calendar5);
     int i7 = fTPFile0.getType();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.lang.String str9 = fTPFile0.toString();
     java.util.Calendar calendar10 = fTPFile0.getTimestamp();
     java.lang.String str11 = fTPFile0.getLink();
@@ -9358,9 +9358,9 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     FTPFile fTPFile0 = new FTPFile();
     fTPFile0.setHardLinkCount(2);
     int i3 = fTPFile0.getType();
-    java.lang.String str4 = fTPFile0.getUser();
+    java.lang.String str4 = fTPFile0.();
     fTPFile0.setLink("?---------  100                         -1 null");
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     fTPFile0.setSize((long)(short)100);
     java.lang.String str11 = fTPFile0.toFormattedString("?---------  100                         -1 null");
     fTPFile0.setGroup("hi!");
@@ -9486,7 +9486,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str5 = fTPFile0.getRawListing();
     boolean b6 = fTPFile0.isDirectory();
     fTPFile0.setRawListing("?---------  100                         -1 hi!");
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str9 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertNull(str5);
@@ -9716,7 +9716,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     boolean b5 = fTPFile0.isFile();
     boolean b6 = fTPFile0.isSymbolicLink();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     fTPFile0.setHardLinkCount((int)'a');
     long long10 = fTPFile0.getSize();
     boolean b11 = fTPFile0.isUnknown();
@@ -10154,7 +10154,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     java.lang.String str5 = fTPFile0.getRawListing();
     boolean b6 = fTPFile0.isDirectory();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b8 = fTPFile0.isDirectory();
     java.lang.String str9 = fTPFile0.getGroup();
     java.lang.String str11 = fTPFile0.toFormattedString("?---------    2 ?---------    0                         -1 null                -1 null");
@@ -10423,7 +10423,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str7 = fTPFile0.toFormattedString();
     boolean b8 = fTPFile0.isFile();
     boolean b9 = fTPFile0.isDirectory();
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -10681,8 +10681,8 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
+    java.lang.String str9 = fTPFile0.();
     long long10 = fTPFile0.getSize();
     
     // Regression assertion (captures the current behavior of the code)
@@ -10776,7 +10776,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("hi!");
     java.lang.String str10 = fTPFile0.getGroup();
     java.lang.String str11 = fTPFile0.getGroup();
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     boolean b13 = fTPFile0.isFile();
     
     // Regression assertion (captures the current behavior of the code)
@@ -10814,10 +10814,10 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setGroup("?---------    2                         10 null");
     fTPFile0.setRawListing("?---------    2                          0 null");
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     boolean b14 = fTPFile0.isUnknown();
     java.util.Calendar calendar15 = fTPFile0.getTimestamp();
     java.lang.String str16 = fTPFile0.getName();
@@ -11418,7 +11418,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b7 = fTPFile0.isValid();
     fTPFile0.setRawListing("?---------    0                         -1 hi!");
     fTPFile0.setRawListing("?---------    2                          0 null");
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -11453,7 +11453,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str4 = fTPFile0.getLink();
     java.lang.String str6 = fTPFile0.toFormattedString("?---------    2 ?---------    0                         -1 null                -1 null");
     fTPFile0.setSize(1L);
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str9 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(long3 == (-1L));
@@ -11734,7 +11734,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("?---------    2 ?---------    0                         -1 null                -1 null");
     fTPFile0.setName("?---------   52 hi!                     -1 null");
     fTPFile0.setType((int)(byte)100);
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue("'" + str13 + "' != '" + "?---------    2 ?---------    0                         -1 null                -1 null"+ "'", str13.equals("?---------    2 ?---------    0                         -1 null                -1 null"));
@@ -11872,8 +11872,8 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
+    java.lang.String str9 = fTPFile0.();
     int i10 = fTPFile0.getHardLinkCount();
     
     // Regression assertion (captures the current behavior of the code)
@@ -12172,7 +12172,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setHardLinkCount((int)'a');
     fTPFile0.setRawListing("?---------    2 hi!                     -1 null");
     fTPFile0.setHardLinkCount((int)(short)-1);
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     java.lang.String str8 = fTPFile0.getGroup();
     fTPFile0.setSize((long)'a');
     
@@ -12222,7 +12222,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     java.lang.String str5 = fTPFile0.getRawListing();
     java.lang.String str6 = fTPFile0.toFormattedString();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     java.util.Calendar calendar8 = fTPFile0.getTimestamp();
     boolean b9 = fTPFile0.isUnknown();
     
@@ -12516,7 +12516,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.getLink();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setLink("?---------   97                         -1 null");
     java.util.Calendar calendar11 = fTPFile0.getTimestamp();
     
@@ -12865,7 +12865,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar5 = null;
     fTPFile0.setTimestamp(calendar5);
     int i7 = fTPFile0.getType();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     java.lang.String str9 = fTPFile0.toString();
     boolean b10 = fTPFile0.isUnknown();
     fTPFile0.setGroup("");
@@ -13141,7 +13141,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getHardLinkCount();
     boolean b4 = fTPFile0.isUnknown();
     fTPFile0.setUser("hi!");
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b8 = fTPFile0.isSymbolicLink();
     fTPFile0.setRawListing("?---------    2 hi!                     -1 null");
     boolean b11 = fTPFile0.isUnknown();
@@ -13222,7 +13222,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("?---------   97                         -1 null");
     java.lang.String str12 = fTPFile0.getName();
     fTPFile0.setUser("?---------    2                         -1 null");
-    java.lang.String str15 = fTPFile0.getUser();
+    java.lang.String str15 = fTPFile0.();
     java.lang.String str16 = fTPFile0.getName();
     
     // Regression assertion (captures the current behavior of the code)
@@ -13316,7 +13316,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setGroup("?---------    2                         10 null");
     java.lang.String str11 = fTPFile0.getGroup();
     
@@ -13646,7 +13646,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("");
     fTPFile0.setRawListing("?---------   97          ?---------    2                          0 null       -1 null");
     fTPFile0.setRawListing("?---------    0 ?---------    2                         -1 null                 1 null");
-    java.lang.String str15 = fTPFile0.getUser();
+    java.lang.String str15 = fTPFile0.();
     boolean b16 = fTPFile0.isDirectory();
     
     // Regression assertion (captures the current behavior of the code)
@@ -13839,7 +13839,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("?---------  100                         -1 null");
     boolean b10 = fTPFile0.isValid();
     boolean b11 = fTPFile0.isUnknown();
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     fTPFile0.setHardLinkCount((int)'#');
     
     // Regression assertion (captures the current behavior of the code)
@@ -13942,7 +13942,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setGroup("?---------    2                         10 null");
     fTPFile0.setGroup("?---------   -1 ?---------  100                         -1 null                -1 null");
     
@@ -13979,7 +13979,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setType((int)'a');
     fTPFile0.setGroup("?---------   97                         -1 null");
     boolean b18 = fTPFile0.isSymbolicLink();
-    java.lang.String str19 = fTPFile0.getUser();
+    java.lang.String str19 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -14054,7 +14054,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b8 = fTPFile0.isSymbolicLink();
     java.lang.String str9 = fTPFile0.toString();
     java.util.Calendar calendar10 = fTPFile0.getTimestamp();
-    java.lang.String str11 = fTPFile0.getUser();
+    java.lang.String str11 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue("'" + str7 + "' != '" + "hi!"+ "'", str7.equals("hi!"));
@@ -14300,7 +14300,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setSize((long)1);
     fTPFile0.setGroup("");
     boolean b5 = fTPFile0.isFile();
-    java.lang.String str6 = fTPFile0.getUser();
+    java.lang.String str6 = fTPFile0.();
     fTPFile0.setType((int)' ');
     
     // Regression assertion (captures the current behavior of the code)
@@ -14721,7 +14721,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.util.Calendar calendar7 = fTPFile0.getTimestamp();
     fTPFile0.setUser("?---------    2                         10 null");
     boolean b10 = fTPFile0.isValid();
-    java.lang.String str11 = fTPFile0.getUser();
+    java.lang.String str11 = fTPFile0.();
     fTPFile0.setType(2);
     
     // Regression assertion (captures the current behavior of the code)
@@ -14750,7 +14750,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b8 = fTPFile0.isValid();
     java.lang.String str9 = fTPFile0.getRawListing();
     fTPFile0.setUser("----------    2 hi!                     -1 null");
-    java.lang.String str12 = fTPFile0.getUser();
+    java.lang.String str12 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertNull(calendar7);
@@ -14802,7 +14802,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b3 = fTPFile0.isValid();
     fTPFile0.setGroup("?---------    2                          0 null");
     boolean b6 = fTPFile0.isSymbolicLink();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -14916,7 +14916,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("");
     fTPFile0.setName("?---------    2                         -1 null");
     java.util.Calendar calendar7 = fTPFile0.getTimestamp();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     boolean b9 = fTPFile0.isUnknown();
     int i10 = fTPFile0.getHardLinkCount();
     
@@ -15129,9 +15129,9 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     FTPFile fTPFile0 = new FTPFile();
     fTPFile0.setHardLinkCount(2);
     int i3 = fTPFile0.getType();
-    java.lang.String str4 = fTPFile0.getUser();
+    java.lang.String str4 = fTPFile0.();
     fTPFile0.setLink("?---------  100                         -1 null");
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     fTPFile0.setSize((long)(short)100);
     java.lang.String str11 = fTPFile0.toFormattedString("?---------  100                         -1 null");
     fTPFile0.setGroup("hi!");
@@ -15305,7 +15305,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str3 = fTPFile0.getRawListing();
     java.lang.String str4 = fTPFile0.getLink();
     int i5 = fTPFile0.getType();
-    java.lang.String str6 = fTPFile0.getUser();
+    java.lang.String str6 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertNull(str3);
@@ -15333,12 +15333,12 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setGroup("?---------    2                         10 null");
     fTPFile0.setRawListing("?---------    2                          0 null");
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     boolean b14 = fTPFile0.isUnknown();
-    java.lang.String str15 = fTPFile0.getUser();
+    java.lang.String str15 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -15407,7 +15407,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str4 = fTPFile0.getName();
     boolean b5 = fTPFile0.isValid();
     java.util.Calendar calendar6 = fTPFile0.getTimestamp();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(b3 == true);
@@ -15438,7 +15438,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str5 = fTPFile0.getRawListing();
     java.lang.String str6 = fTPFile0.toFormattedString();
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
     fTPFile0.setType((int)(byte)0);
     int i11 = fTPFile0.getHardLinkCount();
     java.lang.String str12 = fTPFile0.getLink();
@@ -15825,7 +15825,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     java.lang.String str9 = fTPFile0.getGroup();
     java.lang.String str10 = fTPFile0.getName();
     fTPFile0.setUser("?---------    2                         10 null");
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     long long14 = fTPFile0.getSize();
     java.util.Calendar calendar15 = fTPFile0.getTimestamp();
     
@@ -15904,10 +15904,10 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setLink("");
     java.lang.String str7 = fTPFile0.getRawListing();
     fTPFile0.setRawListing("hi!");
-    java.lang.String str10 = fTPFile0.getUser();
+    java.lang.String str10 = fTPFile0.();
     java.lang.String str11 = fTPFile0.getLink();
     boolean b12 = fTPFile0.isFile();
-    java.lang.String str13 = fTPFile0.getUser();
+    java.lang.String str13 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 2);
@@ -16138,7 +16138,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     int i3 = fTPFile0.getType();
     int i4 = fTPFile0.getType();
     fTPFile0.setHardLinkCount(0);
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     
     // Regression assertion (captures the current behavior of the code)
     org.junit.Assert.assertTrue(i3 == 3);
@@ -16598,7 +16598,7 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     fTPFile0.setUser("hi!");
     java.lang.String str5 = fTPFile0.getRawListing();
     boolean b6 = fTPFile0.isDirectory();
-    java.lang.String str7 = fTPFile0.getUser();
+    java.lang.String str7 = fTPFile0.();
     boolean b10 = fTPFile0.hasPermission((int)(short)0, 0);
     fTPFile0.setName("?---------    0                          1 null");
     java.util.Calendar calendar13 = fTPFile0.getTimestamp();
@@ -16766,8 +16766,8 @@ public class RegressionTest1_it4_livello4_it6_livello5 {
     boolean b4 = fTPFile0.isFile();
     fTPFile0.setName("hi!");
     java.lang.String str7 = fTPFile0.toFormattedString();
-    java.lang.String str8 = fTPFile0.getUser();
-    java.lang.String str9 = fTPFile0.getUser();
+    java.lang.String str8 = fTPFile0.();
+    java.lang.String str9 = fTPFile0.();
     boolean b10 = fTPFile0.isUnknown();
     java.util.Calendar calendar11 = null;
     fTPFile0.setTimestamp(calendar11);

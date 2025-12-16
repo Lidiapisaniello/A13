@@ -1,566 +1,495 @@
+
 <!DOCTYPE html>
 <html lang="it" data-bs-theme="dark">
-	<head>
-		<div th:replace="fragments/header :: header"></div>
-		<title>Profile</title>
-	</head>
+<head>
+    <div th:replace="fragments/header :: header"></div>
+    <title>Profilo Utente</title>
+    <style>
+        /* Avatar Profilo Principale */
+        .profile-header-avatar {
+            width: 160px;
+            height: 160px;
+            object-fit: cover;
+            border: 6px solid #212529;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background-color: #212529;
+        }
+        
+/* Card Info Principale */
+        .profile-card {
+            background: linear-gradient(145deg, #1a1d20, #212529);
+            border: none;
+            border-radius: 15px;
+            
+            /* MODIFICA QUI: Invece di -80px, usiamo un margine positivo */
+            /* Questo spinge la card giù per lasciare spazio alla testa dell'avatar */
+            margin-top: 80px; 
+            
+            padding-top: 90px;
+            position: relative; /* Fondamentale per l'avatar absolute */
+            overflow: visible;  /* Permette all'avatar di uscire dai bordi */
+        }
 
-	<body>
-		<!-- NAVBAR -->
-		<div th:replace="fragments/navbar :: navbar"></div>
+        /* Selettore Vista */
+        .view-selector {
+            background-color: #0d6efd;
+            border: none;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            text-align-last: center; /* Centra il testo nel dropdown */
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .view-selector:hover, .view-selector:focus {
+            background-color: #0b5ed7;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+        }
+        option { background-color: #212529; color: white; }
 
-		<!-- PAGE -->
-		<div class="container mt-3">
-			<!-- Dati profilo -->
-			<div class="card text-center" th:if="${user != null}">
-				<div class="container">
-					<div class="row">
-						<!-- FOTO profilo nome cognome -->
-						<div class="col">
-							<div class="card my-3 p-0 ms-2" style="max-width: 540px">
-								<div class="row g-0">
-									<div class="col-md-4">
-										<img
-											th:src="${user.userProfile.profilePicturePath != null ? '/t5/images/profileImages/' + user.userProfile.profilePicturePath : '/t5/images/sample_propic.jpg'}"
-											class="img-fluid rounded-start"
-											alt="Profile Picture"
-										/>
-									</div>
-									<div class="col-md-8 text-start">
-										<div class="card-body">
-											<h5
-												class="card-title"
-												th:text="${user.userProfile.name} + ' ' + ${user.userProfile.surname}"
-											></h5>
-											<div>
-												<p class="card-text">
-													<small
-														class="text-body-secondary"
-														id="user-email"
-														th:text="${user.email}"
-													></small>
-												</p>
-												<p class="card-text">
-													<small
-														class="text-body-secondary"
-														id="user-nickname"
-														th:if="${user.nickname != null}"
-														th:text="${user.nickname}"
-													></small>
-												</p>
-											</div>
-											<!-- BIO -->
-											<p
-												class="card-text border-start border-danger border-4 ps-1"
-												th:text="${user.userProfile.bio}"
-											></p>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<!-- Stats -->
-						<div class="col">
-							<div class="container-fluid">
-								<!-- Statis -->
-								<div class="row">
-									<div
-										class="d-flex align-items-center justify-content-around m-4"
-									>
-										<div class="text-center">
-											<i class="fa fa-check fs-6 d-block mb-2"></i>
-											<h4 class="mb-0 fw-semibold lh-1">
-												<span id="followersCount"> </span>
-											</h4>
-											<p class="mb-0 fs-5">Followers</p>
-										</div>
-										<div class="text-center">
-											<i class="fa fa-check fs-6 d-block mb-2"></i>
-											<h4 class="mb-0 fw-semibold lh-1">
-												<span id="followingCount"> </span>
-											</h4>
-											<p class="mb-0 fs-5">Following</p>
-										</div>
-									</div>
-								</div>
-								<!-- Button-->
-								<div class="row">
-									<div
-										class="d-flex align-items-center m-4 justify-content-center"
-									>
-										<!-- Se profilo utente -->
-										<div th:if="${isFriendProfile == false}">
-											<a
-												class="btn btn-primary me-2"
-												href="/edit_profile"
-												role="button"
-											>
-												Edit <i class="bi bi-pencil-fill"></i>
-											</a>
-											<a
-												class="btn btn-primary me-2"
-												href="/Team"
-												role="button"
-											>
-												Teams <i class="bi bi-people-fill"></i>
-											</a>
-										</div>
-										<!-- Se pagina amico -->
-										<div th:if="${isFriendProfile == true}">
-											<button
-												id="followButton"
-												class="btn btn-primary"
-												type="button"
-											></button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<!-- Sezioni -->
-					<div class="row">
-						<div class="card-header border-top">
-							<!-- Tab selezione -->
-							<ul
-								class="nav justify-content-end mt-2"
-								id="pills-tab"
-								role="tablist"
-							>
-								<li class="nav-item" role="presentation">
-									<button
-										class="nav-link position-relative rounded-0 active d-flex align-items-center justify-content-center bg-transparent fs-5 py-6"
-										id="pills-games-tab"
-										data-bs-toggle="pill"
-										data-bs-target="#pills-games"
-										type="button"
-										role="tab"
-										aria-controls="pills-games"
-										aria-selected="true"
-									>
-										<i class="fa fa-user me-2 fs-4"></i>
-										<span class="d-none d-md-block">Games</span>
-									</button>
-								</li>
-								<li class="nav-item" role="presentation">
-									<button
-										class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-5 py-6"
-										id="pills-followers-tab"
-										data-bs-toggle="pill"
-										data-bs-target="#pills-followers"
-										type="button"
-										role="tab"
-										aria-controls="pills-followers"
-										aria-selected="false"
-									>
-										<i class="fa fa-heart me-2 fs-4"></i>
-										<span class="d-none d-md-block">Social</span>
-									</button>
-								</li>
-							</ul>
-						</div>
-						<div class="card-body">
-							<!-- Tab  -->
-							<div class="card-body">
-								<!-- Games -->
-								<div class="tab-content" id="pills-tabContent">
-									<div
-										class="tab-pane fade show active"
-										id="pills-games"
-										role="tabpanel"
-										aria-labelledby="pills-games-tab"
-										tabindex="0"
-									>
-										<!-- Sec Top -->
-										<div
-											class="d-sm-flex align-items-center justify-content-between mt-3 mb-4"
-										>
-											<!-- Cerca -->
-											<form class="position-relative">
-												<input
-													type="text"
-													class="form-control search-chat py-2 ps-5"
-													id="text-srh"
-													placeholder="Search Followers"
-												/>
-												<i
-													class="ti ti-search position-absolute top-50 start-0 translate-middle-y text-dark ms-3"
-												></i>
-											</form>
-										</div>
-										<!-- Sec Bottom -->
-										<div class="row text-center">
-											<!-- Match history -->
-											<div class="col mb-4">
-												<table class="table">
-													<thead>
-														<tr>
-															<th scope="col">#</th>
-															<th scope="col">Gamemode</th>
-															<th scope="col">Class</th>
-															<th scope="col">Robot</th>
-															<th scope="col">Score</th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr>
-															<th scope="row">1</th>
-															<td>Mark</td>
-															<td>Otto</td>
-															<td>@mdo</td>
-															<td>
-																WIN
-																<span class="badge text-bg-primary">4 pt</span>
-															</td>
-														</tr>
-														<tr>
-															<th scope="row">2</th>
-															<td>Jacob</td>
-															<td>Thornton</td>
-															<td>@fat</td>
-															<td>
-																WIN
-																<span class="badge text-bg-primary">4 pt</span>
-															</td>
-														</tr>
-														<tr>
-															<th scope="row">3</th>
-															<td colspan="2">Larry the Bird</td>
-															<td>@twitter</td>
-															<td>
-																WIN
-																<span class="badge text-bg-primary">4 pt</span>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								</div>
+        /* Card Statistiche */
+        .stat-box {
+            background-color: #2c3034;
+            border-radius: 12px;
+            transition: transform 0.2s;
+            border-left: 5px solid #0d6efd;
+        }
+        .stat-box:hover { transform: translateY(-5px); background-color: #343a40; }
+        
+        /* Immagini Stock nel Modale */
+        .stock-avatar {
+            width: 70px; height: 70px; 
+            object-fit: cover; border-radius: 50%; 
+            cursor: pointer; border: 3px solid transparent; 
+            transition: all 0.2s;
+        }
+        .stock-avatar:hover { transform: scale(1.1); }
+        .stock-avatar.selected { border-color: #0d6efd; transform: scale(1.15); box-shadow: 0 0 10px #0d6efd; }
+        
+        /* STILI CERCHIO LIVELLO (Presi da Achivement.html) */
+        .progress_container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto; /* Centrato */
+        }
+        .progress-svg {
+            transform: rotate(-90deg);
+        }
+        .progress_background {
+            fill: none;
+            stroke: #333;
+            stroke-width: 12;
+        }
+        .progress_fill {
+            fill: none;
+            stroke: #d10b4f; /* Colore originale del cerchio */
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 314; /* Circonferenza */
+            stroke-dashoffset: 314; /* Inizia vuoto */
+            transition: stroke-dashoffset 1.5s ease-in-out;
+        }
+        .progress_value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+    
+    </style>
+</head>
 
-								<!-- Social -->
-								<div class="tab-content" id="pills-tabContent">
-									<div
-										class="tab-pane fade"
-										id="pills-followers"
-										role="tabpanel"
-										aria-labelledby="pills-followers-tab"
-										tabindex="1"
-									>
-										<!-- Nav Top -->
-										<div
-											class="d-sm-flex align-items-center justify-content-between mt-3 mb-4"
-										>
-											<!-- Bottoni -->
-											<div class="d-flex align-items-center">
-												<input
-													type="radio"
-													class="btn-check"
-													name="options-follow"
-													id="option_Followers"
-													autocomplete="off"
-													checked
-												/>
-												<label class="btn fw-semibold" for="option_Followers">
-													Followers
-												</label>
-												<input
-													type="radio"
-													class="btn-check"
-													name="options-follow"
-													id="option_Following"
-													autocomplete="off"
-												/>
-												<label class="btn" for="option_Following">
-													Following
-												</label>
-												<a
-													class="btn btn-primary py-1 px-2 ms-auto"
-													href="/SearchFriend"
-												>
-													<i class="bi bi-person-add"></i> Aggiungi
-												</a>
-											</div>
-											<!-- Cerca -->
-											<form class="position-relative">
-												<input
-													type="text"
-													class="form-control search-chat py-2 ps-5"
-													id="text-srh_follow"
-													placeholder="Search Follow"
-												/>
-												<i
-													class="ti ti-search position-absolute top-50 start-0 translate-middle-y text-dark ms-3"
-												></i>
-											</form>
-										</div>
-										<!-- Sec Bottom -->
-										<div
-											class="row row-cols-2 text-center"
-											id="followers_block"
-										></div>
-										<div
-											class="row row-cols-2 text-center"
-											id="following_block"
-										></div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="card text-center" th:if="${user == null}">
-				profilo non trovato !
-			</div>
-		</div>
+<body class="bg-dark text-light">
+<div th:replace="fragments/navbar :: navbar"></div>
 
-		<div th:replace="fragments/footer :: footer"></div>
-		<!-- Id del profilo -->
-		<span class="d-none" id="userProfileID" th:text="${user.userProfile.id}">
-		</span>
-		<!-- Id di chi guarda il profilo -->
-		<span class="d-none" id="viewID" th:text="${viewID}"> </span>
+<!--<div style="height: 60px;"></div>-->
 
-		<!-- Script personalizzato per gestire la visibilità dei blocchi -->
-		<script th:inline="javascript">
-			// Contiene i robot disponibili in T4 data la classe scelta
-			let userExperience = /*[[${user_experience}]]*/ {};
-			console.log(userExperience);
-		</script>
+<div class="container pb-5">
 
-		<script>
-			$(document).ready(function () {
-				function setupVisibilityAndSearch(config) {
-					let $radio1 = $("#" + config.radio1);
-					let $radio2 = $("#" + config.radio2);
-					let $block1 = $("#" + config.block1);
-					let $block2 = $("#" + config.block2);
-					let $searchInput = $("#" + config.searchInput); // Campo di ricerca
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="alert alert-success alert-dismissible fade show shadow" role="alert" th:if="${successMsg != null}">
+                <i class="bi bi-check-circle-fill me-2"></i> <strong th:text="${successMsg}"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div class="alert alert-danger alert-dismissible fade show shadow" role="alert" th:if="${errorMsg != null}">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong th:text="${errorMsg}"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
 
-					// Funzione per aggiornare la visibilità e il placeholder
-					function aggiornaVisibilita() {
-						if ($radio1.is(":checked")) {
-							$block1.show();
-							$block2.hide();
-							$searchInput.attr("placeholder", config.placeholder1);
-						} else if ($radio2.is(":checked")) {
-							$block2.show();
-							$block1.hide();
-							$searchInput.attr("placeholder", config.placeholder2);
-						}
-					}
+                <div class="row justify-content-center" th:if="${userInfo != null}">
 
-					// Aggiunge listener per il cambio dei radio button
-					$radio1.on("change", aggiornaVisibilita);
-					$radio2.on("change", aggiornaVisibilita);
+                        <div class="col-lg-8">
 
-					// Imposta lo stato iniziale
-					aggiornaVisibilita();
+                            <div class="card profile-card shadow text-center position-relative">
 
-					// Funzione per la ricerca dinamica nel blocco visibile
-					$searchInput.on("keyup", function () {
-						let searchText = $(this).val().toLowerCase();
-						let $activeBlock = $block1.is(":visible") ? $block1 : $block2;
+                                <div class="position-absolute top-0 start-50 translate-middle">
 
-						$activeBlock.find(".col.mb-4").each(function () {
-							let name = $(this).find("h5").text().toLowerCase();
-							let email = $(this).find("span").text().toLowerCase();
-							// Mostra/nasconde gli elementi in base alla ricerca
-							$(this).toggle(
-								name.includes(searchText) || email.includes(searchText)
-							);
-						});
-					});
-				}
+                                    <img th:src="${userInfo.userProfile.profilePicturePath != null ? '/t5/images/profileImages/' + userInfo.userProfile.profilePicturePath : '/t5/images/default.png'}"
 
-				let configFollowers = {
-					radio1: "option_Followers",
-					radio2: "option_Following",
-					block1: "followers_block",
-					block2: "following_block",
-					searchInput: "text-srh_follow",
-					placeholder1: "Search Followers",
-					placeholder2: "Search Following",
-				};
+                                        class="rounded-circle profile-header-avatar" alt="Avatar">
 
-				// Inizializza la logica per ogni gruppo
-				setupVisibilityAndSearch(configFollowers);
-			});
-		</script>
+                                </div>
 
-		<!-- Following e followers -->
-		<script>
-			$(document).ready(function () {
-				var userId = $("#userProfileID").text();
+                <div class="card-body px-5 pb-4">
+                    <h2 class="fw-bold mb-0" th:text="${userInfo.userProfile.name} + ' ' + ${userInfo.userProfile.surname}">Nome</h2>
+                    
+                    <p class="text-primary mb-3 fw-semibold" 
+                       th:if="${userInfo.userProfile.nickname}"
+                       th:text="'@' + ${userInfo.userProfile.nickname}">
+                       @nickname
+                    </p>
 
-				// Funzione per ottenere i dati da un endpoint e aggiornare il blocco corrispondente
-				function fetchAndUpdateUserBlock(endpoint, blockId, countId) {
-					$.ajax({
-						url: endpoint,
-						type: "GET",
-						data: { userId: userId },
-						dataType: "json",
-						success: function (response) {
-							updateUserBlock(blockId, response, countId);
-						},
-						error: function (xhr) {
-							handleRequestError(xhr, blockId);
-						},
-					});
-				}
-
-				// Funzione per aggiornare il blocco con gli utenti ricevuti
-				function updateUserBlock(blockId, users, countId) {
-					let container = $(blockId);
-					container.empty(); // Pulisce il contenitore
-
-					// Calcola la dimensione della lista
-					let count = users.length;
-					// Aggiorna lo span con l'ID specificato per mostrare il numero di utenti
-					$(countId).text(count);
-
-					if (count === 0) {
-						container.append("<p>Nessun risultato trovato.</p>");
-						return;
-					}
-
-					users.forEach((user) => {
-						container.append(createUserCard(user));
-					});
-				}
-
-				// Funzione per creare il template HTML di una card utente
-				function createUserCard(user) {
-					return `
-            <div class="col mb-4">
-                <div class="card">
-                    <div class="card-body p-4 d-flex align-items-center gap-3">
-                        <img src="${
-													"/t5/images/profileImages/" + user.profilePicturePath
-												}" 
-                        alt="twbs" width="32" height="32" 
-                        class="rounded-circle flex-shrink-0">
-                        <div class="text-start">
-                            <h5 class="fw-semibold mb-0">${
-															user.name + " " + user.surname
-														}</h5>
-                            <span class="fs-5 d-flex align-items-center">${
-															user.email
-														}</span>
-							<span class="fs-5 d-flex align-items-center">${
-															user.nickname
-														}</span>
-                        </div>
-                        <a class="btn btn-primary py-1 px-2 ms-auto" href="/friend/${
-													user.userId
-												}">
-                          Vai al profilo 
-                        </a>                     
+                    <div class="bg-dark bg-opacity-50 p-3 rounded mb-4 d-inline-flex align-items-start justify-content-center" style="max-width: 600px;">
+                        
+                        <i class="bi bi-quote text-secondary me-2" 
+                        style="font-size: 0.9rem; transform: translateY(-3px);"></i>
+                        
+                        <span class="fst-italic text-light" 
+                            style="line-height: 1.4;"
+                            th:text="${userInfo.userProfile.bio ?: 'Nessuna biografia.'}"></span>
+                        
+                        <i class="bi bi-quote text-secondary ms-2" 
+                        style="font-size: 0.9rem; transform: scaleX(-1) translateY(-3px); display: inline-block;"></i>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning px-4 fw-bold rounded-pill" onclick="toggleEditMode()">
+                            <i class="bi bi-pencil-fill me-2" th:text="#{edit_profile}"></i>
+                        </button>
                     </div>
                 </div>
-            </div>`;
-				}
+            </div>
+        </div>
+    </div>
 
-				// Funzione per gestire gli errori delle chiamate AJAX
-				function handleRequestError(xhr, blockId) {
-					let errorMessage = "Errore sconosciuto.";
-					if (xhr.status === 400) {
-						errorMessage = "Errore: " + xhr.responseText;
-					} else if (xhr.status === 500) {
-						errorMessage = "Si è verificato un errore imprevisto.";
-					}
-					$(blockId).html(`<p style='color: red;'>${errorMessage}</p>`);
-				}
+    <div id="edit-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75" style="display: none; z-index: 1050; overflow-y: auto;">
+        <div class="d-flex justify-content-center align-items-center min-vh-100 py-5">
+            <div class="card bg-dark border-secondary shadow-lg text-light" style="width: 90%; max-width: 600px;">
+                <div class="card-header border-secondary bg-black d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 text-warning"><i class="bi bi-palette-fill me-2" th:text="#{edit}"></i></h4>
+                    <button type="button" class="btn-close btn-close-white" onclick="toggleEditMode()"></button>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/profile}" method="post">
+                        <input type="hidden" name="email" th:value="${userInfo.email}">
+                        <input type="hidden" id="selectedImageInput" name="selectedImage" th:value="${userInfo.userProfile.profilePicturePath}">
 
-				// Carica i follower e gli utenti seguiti all'avvio della pagina
-				fetchAndUpdateUserBlock(
-					"/followers",
-					"#followers_block",
-					"#followersCount"
-				);
-				fetchAndUpdateUserBlock(
-					"/following",
-					"#following_block",
-					"#followingCount"
-				);
-			});
-		</script>
+                        <h5 class="mb-3 text-secondary" th:text="#{choose_avatar}"></h5>
+                        <div class="d-flex flex-wrap justify-content-center gap-3 mb-4 p-3 bg-black rounded border border-secondary">
+                            <img th:each="imgName : ${stockImages}"
+                                 th:src="@{'/t5/images/profileImages/' + ${imgName}}"
+                                 class="stock-avatar"
+                                 th:classappend="${imgName == userInfo.userProfile.profilePicturePath} ? 'selected' : ''"
+                                 th:attr="data-filename=${imgName}"
+                                 onclick="selectAvatar(this)">
+                        </div>
 
-		<div th:if="${isFriendProfile == true}">
-			<script>
-				document.addEventListener("DOMContentLoaded", async function () {
-					const followButton = document.getElementById("followButton");
-					const followingID =document.getElementById("userProfileID").textContent;
-					const followerID = document.getElementById("viewID").textContent;
+                        <div class="mb-4">
+                            <label class="form-label text-secondary fw-bold" th:text="#{bio}"></label>
+                            <textarea class="form-control bg-dark text-light border-secondary" name="bio" rows="3" 
+                                      th:text="${userInfo.userProfile.bio}"></textarea>
+                        </div>
 
-					if (!followButton) return;
-					// Funzione per aggiornare lo stato del pulsante
-					async function updateFollowButton() {
-						try {
-							const response = await fetch(
-								`/isFollowing?followerId=${followerID}&followingId=${followingID}`
-							);
-							if (!response.ok)
-								throw new Error("Errore nel recupero dello stato di follow");
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold" th:text="#{save_mod}"></button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleEditMode()" th:text="#{undo}"></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-							const isFollowing = await response.json();
+    <div class="row justify-content-center mt-5" th:if="${userInfo != null}">
+        <div class="col-lg-10">
+            
+            <div class="mb-4 position-relative">
+                <select id="viewSelector" class="form-select form-select-lg view-selector rounded-pill shadow-sm" onchange="changeView(this.value)">
+                    <option value="stats" th:text="#{player_stats}"></option>
+                    <option value="history" th:text="#{history}"></option>
+                    <option value="achievements" th:text="#{achieve}"></option>
+                    <option value="social" th:text="#{social_and_friend}"></option>
+                </select>
+            </div>
 
-							if (isFollowing) {
-								followButton.classList.remove("btn-info");
-								followButton.classList.add("btn-danger");
-								followButton.textContent = "Unfollow";
-							} else {
-								followButton.classList.remove("btn-danger");
-								followButton.classList.add("btn-info");
-								followButton.textContent = "Follow";
-							}
-						} catch (error) {
-							console.error(
-								"Errore durante il caricamento dello stato di follow:",
-								error
-							);
-						}
-					}
+            <div class="bg-dark rounded-4 p-4 shadow border border-secondary border-opacity-25" style="min-height: 300px;">
+                
+                <div id="view-stats" class="view-section">
+                    <div th:if="${playerProgress == null}" class="text-center py-5 text-muted">
+                        <i class="bi bi-hourglass-split fs-1 d-block mb-3" th:text="#{loading_stats}"></i>
+                        <h4></h4>
+                        <p th:text="#{alert_stats}"></p>
+                    </div>
+                    
+                    <div th:if="${playerProgress != null}" class="row g-4 text-center">
+                        <div class="col-md-4">
+                            <div class="stat-box p-4 h-100">
+                                <h1 class="display-4 fw-bold text-primary mb-0" th:text="${playerProgress.experiencePoints}">0</h1>
+                                <p class="text-uppercase text-muted small fw-bold spacing-2" th:text="#{exp_points}"></p>
+                            </div>
+                        </div>
+                    <div class="col-md-4">
+                        <div class="stat-box p-4 h-100" style="border-left-color: #08a75d;">
+                            <h1 class="display-4 fw-bold text-success mb-0" th:text="${playerProgress.gameProgressesDTO != null ? playerProgress.gameProgressesDTO.size() : 0}">0</h1>
+                            <p class="text-uppercase text-muted small fw-bold spacing-2" th:text="#{tot_matches}"></p>
+                        </div>
+                    </div>
+                        <div class="col-md-4">
+                            <div class="stat-box p-4 h-100 border-warning" style="border-left-color: #ffc107;">
+                                <h1 class="display-4 fw-bold text-warning mb-0" th:text="${playerProgress.gameProgressesDTO != null ? playerProgress.gameProgressesDTO.?[isWon == true].size() : 0}">0</h1>
+                                <p class="text-uppercase text-muted small fw-bold spacing-2" th:text="#{wins}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-					// Chiamata per ottenere lo stato attuale del follow
-					await updateFollowButton();
+                <div id="view-history" class="view-section d-none">
+                    <h4 class="border-bottom border-secondary pb-2 mb-3" th:text="#{last_matches}"></h4>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle" th:if="${playerProgress != null}">
+                            <thead><tr><th th:text="#{last_matches}">Classe</th><th th:text="#{mod}"></th><th th:text="#{res}"></th></tr></thead>
+                            <tbody>
+                                <tr th:each="game : ${playerProgress.gameProgressesDTO}">
+                                    <td th:text="${game.classUT}">Class</td>
+                                    <td th:text="${game.gameMode}">Mode</td>
+                                    <td>
+                                        <span class="badge rounded-pill" 
+                                              th:classappend="${game.isWon} ? 'text-bg-success' : 'text-bg-danger'"
+                                              th:text="${game.isWon} ? #{victory} : #{defeat}"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${playerProgress == null}" class="text-center text-muted" th:text="#{no_history}">.</div>
+                </div>
 
-					// Gestione del click per il follow/unfollow
-					followButton.addEventListener("click", async function () {
-						followButton.disabled = true; // Disabilita temporaneamente il pulsante
+                <div id="view-achievements" class="view-section d-none">    
+                    <div class="d-sm-flex align-items-center justify-content-around mt-3 mb-5 p-4 rounded border border-secondary"
+                         style="background-color: #212529;">
+                        
+                        <div class="text-center">
+                            <h4 class="mb-0 fw-semibold lh-1" th:text="${userCurrentExperience}">0</h4>
+                            <p class="mb-0 fs-5 text-muted" th:text="#{tot_points}"></p>
+                        </div>
+                        
+                        <div class="progress_container" 
+                             th:if="${userCurrentExperience != null}"
+                             th:attr="data-progress=(${userCurrentExperience} % ${expPerLevel}) / ${expPerLevel}">
+                            <svg class="progress-svg" width="150" height="150" viewBox="0 0 120 120">
+                                <circle class="progress_background" cx="60" cy="60" r="50" style="stroke: #1a1d20;" />
+                                <circle class="progress_fill" cx="60" cy="60" r="50" />
+                            </svg>
+                            <div class="progress_value"
+                                 th:text="${(userCurrentExperience / expPerLevel) + startingLevel == maxLevel} ? 'Lv. MAX' : 'Lv. ' + ${(userCurrentExperience / expPerLevel) + startingLevel}">
+                                Lv. 1
+                            </div>
+                        </div>
 
-						try {
-							// Creazione dell'URL con i parametri in modo pulito
-							const params = new URLSearchParams({
-								followerId: followerID,
-								followingId: followingID,
-							});
+                        <div class="text-center">
+                            <h4 class="mb-0 fw-semibold lh-1" 
+                                th:text="${userCurrentExperience != null ? (expPerLevel - (userCurrentExperience % expPerLevel)) : 100}">100</h4>
+                            <p class="mb-0 fs-5 text-muted" th:text="#{xp_level}"></p>
+                        </div>
+                    </div>
 
-							const response = await fetch(
-								`/toggle_follow?${params.toString()}`,
-								{
-									method: "POST",
-								}
-							);
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+                        <h5 class="mb-0" th:text="#{achieve_obt}"></h5>
+                    </div>
 
-							if (!response.ok)
-								throw new Error("Errore durante il follow/unfollow");
+                    <div class="row row-cols-1 row-cols-md-2 g-3" th:if="${playerProgress != null}">
+                        <div class="col" th:each="ach : ${playerProgress.globalAchievements}">
+                            <div class="d-flex align-items-center p-3 rounded border border-secondary"
+                                 style="background-color: #212529;">
+                                <i class="bi bi-trophy-fill text-warning fs-2 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0 text-light" th:text="${ach}">Nome Achievement</h6>
+                                    <small class="text-success" th:text="#{unlocked}"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${playerProgress == null or playerProgress.globalAchievements == null or playerProgress.globalAchievements.isEmpty()}" class="text-center text-muted mt-5">
+                        <i class="bi bi-lock-fill fs-1 opacity-50"></i>
+                        <p class="mt-2 fw-semibold" th:text="#{no_achieve}"></p>
+                    </div>
+                </div>
 
-							const isFollowing = await response.json();
+<div id="view-social" class="view-section d-none">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-light active" id="btn-show-followers" onclick="showSocialTab('followers')" th:text="#{followerss}"></button>
+                            <button class="btn btn-outline-light" id="btn-show-following" onclick="showSocialTab('following')" th:text="#{following}"></button>
+                        </div>
+                        <a href="/SearchFriend" class="btn btn-primary"><i class="bi bi-person-plus" th:text="#{search}"></i></a>
+                    </div>
+                    
+                    <div id="followers_block" class="row g-3">
+                        <div class="col-md-6" th:each="u : ${followersList}">
+                            <div class="p-3 rounded d-flex align-items-center gap-3 border border-secondary" 
+                                 style="background-color: #2c3034 !important;" 
+                                 th:if="${u != null}">
+                                
+                                <img th:src="${u['profilePicturePath'] != null ? '/t5/images/profileImages/' + u['profilePicturePath'] : '/t5/images/profileImages/default.png'}" 
+                                     class="rounded-circle" style="width:50px; height:50px; object-fit:cover;"
+                                     alt="Avatar">
+                                
+                                <div>
+                                    <h6 class="mb-0 text-light" th:text="${u['name'] + ' ' + u['surname']}">Nome</h6>
+                                    <small class="text-muted" th:text="'@' + ${u['nickname']}">@nick</small>
+                                </div>
+                                
+                                <a th:href="@{'/friend/' + ${u['userId']}}" class="btn btn-sm btn-outline-primary ms-auto" th:text="#{view}"></a>
+                            </div>
+                        </div>
+                        <div th:if="${followersList == null or followersList.isEmpty()}" class="col-12 text-center text-muted" th:text="#{no_follower}"></div>
+                    </div>
 
-							followButton.classList.toggle("btn-info", !isFollowing);
-							followButton.classList.toggle("btn-danger", isFollowing);
-							followButton.textContent = isFollowing ? "Unfollow" : "Follow";
-						} catch (error) {
-							console.error("Errore:", error);
-						} finally {
-							followButton.disabled = false; // Riabilita il pulsante
-						}
-					});
-				});
-			</script>
-		</div>
-	</body>
+                    <div id="following_block" class="row g-3 d-none">
+                        <div class="col-md-6" th:each="u : ${followingList}">
+                            
+                            <div class="p-3 rounded d-flex align-items-center gap-3 border border-secondary"
+                                 style="background-color: #2c3034 !important;" 
+                                 th:if="${u != null}">
+                                
+                                <img th:src="${u['profilePicturePath'] != null ? '/t5/images/profileImages/' + u['profilePicturePath'] : '/t5/images/profileImages/default.png'}" 
+                                     class="rounded-circle" style="width:50px; height:50px; object-fit:cover;"
+                                     alt="Avatar">
+                                
+                                <div>
+                                    <h6 class="mb-0 text-light" th:text="${u['name'] + ' ' + u['surname']}">Nome</h6>
+                                    <small class="text-muted" th:text="'@' + ${u['nickname']}">@nick</small>
+                                </div>
+                                
+                                <a th:href="@{'/friend/' + ${u['userId']}}" class="btn btn-sm btn-outline-primary ms-auto" th:text="#{view}"></a>
+                            </div>
+                        </div>
+                        <div th:if="${followingList == null or followingList.isEmpty()}" class="col-12 text-center text-muted" th:text="#{no_following}"></div>
+                    </div>
+                </div>
+
+
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<span class="d-none" id="userProfileID" th:text="${userInfo != null ? userInfo.userProfile.id : ''}"></span>
+
+<span id="viewText" style="display: none;" th:text="#{view}"></span>
+<span id="serchNotFoundText" style="display: none;" th:text="#{search_not_found}"></span>
+
+<script>
+    // menu a tendina 
+        function changeView(viewName) {
+        // Nascondi tutte le sezioni
+        document.querySelectorAll('.view-section').forEach(el => el.classList.add('d-none'));
+        // Mostra quella selezionata
+        document.getElementById('view-' + viewName).classList.remove('d-none');
+
+        // animazione cerchio livello
+        if (viewName === 'achievements') {
+            setTimeout(() => {
+                let progressContainer = document.querySelector('.progress_container');
+                if (progressContainer) {
+
+
+                    let progressStr = progressContainer.getAttribute('data-progress');
+                    let progress = eval(progressStr); 
+                    
+                    let progressFill = document.querySelector(".progress_fill");
+                    
+                    let offset = 314 * (1 - progress);
+                    progressFill.style.strokeDashoffset = offset;
+                }
+            }, 100); // Piccolo ritardo per permettere al div di diventare visibile
+        }
+    }
+    
+
+    // gestione modale modifica profilo
+    function toggleEditMode() {
+        const overlay = document.getElementById('edit-overlay');
+        overlay.style.display = (overlay.style.display === 'none' || overlay.style.display === '') ? 'block' : 'none';
+        if(overlay.style.display === 'block') document.body.style.overflow = 'hidden'; // Blocca scroll
+        else document.body.style.overflow = 'auto'; // Riattiva scroll
+    }
+
+    // gestione selezione avatar
+    function selectAvatar(imgElement) {
+        document.querySelectorAll('.stock-avatar').forEach(el => el.classList.remove('selected'));
+        imgElement.classList.add('selected');
+        const filename = imgElement.getAttribute('data-filename');
+        document.getElementById('selectedImageInput').value = filename;
+    }
+
+    // gestione tab social
+    function showSocialTab(type) {
+        document.getElementById('btn-show-followers').classList.remove('active');
+        document.getElementById('btn-show-following').classList.remove('active');
+        document.getElementById('btn-show-' + type).classList.add('active');
+
+        if(type === 'followers') {
+            document.getElementById('followers_block').classList.remove('d-none');
+            document.getElementById('following_block').classList.add('d-none');
+        } else {
+            document.getElementById('followers_block').classList.add('d-none');
+            document.getElementById('following_block').classList.remove('d-none');
+        }
+    }
+
+    // Caricamento Ajax Social al load
+    document.addEventListener("DOMContentLoaded", function() {
+        const userId = document.getElementById('userProfileID').innerText;
+        if(!userId) return;
+
+        function loadUsers(endpoint, containerId) {
+            fetch(endpoint + "?userId=" + userId)
+                .then(res => res.json())
+                .then(users => {
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = "";
+                    if(!users || users.length === 0) {
+
+                        const searchNotFound = $("#serchNotFoundText").text();
+                        container.innerHTML = `<p class='text-muted text-center w-100'>${searchNotFound}</p>`;
+                        return;
+                    }
+                    users.forEach(u => {
+                        const viewText = $("#viewText").text();
+                        const imgPath = u.profilePicturePath ? '/t5/images/profileImages/' + u.profilePicturePath : '/t5/images/default.png';
+                        container.innerHTML += `
+                            <div class="col-md-6">
+                                <div class="bg-black p-3 rounded d-flex align-items-center gap-3 border border-secondary">
+                                    <img src="${imgPath}" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
+                                    <div>
+                                        <h6 class="mb-0 text-light">${u.name} ${u.surname}</h6>
+                                        <small class="text-muted">@${u.nickname}</small>
+                                    </div>
+                                    <a href="/friend/${u.userId}" class="btn btn-sm btn-outline-primary ms-auto">${viewText}</a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(err => console.error("Err Social:", err));
+        }
+
+// chiamate per caricare followers e following
+        loadUsers("/profile/followers", "followers_block");
+        loadUsers("/profile/following", "following_block");
+    });
+</script>
+
+</body>
 </html>

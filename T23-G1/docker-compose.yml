@@ -15,6 +15,11 @@ services:
     volumes:
       - ./mysql_init/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql_data_volume:/var/lib/mysql
+    
+    # modifica delle porte per il database
+    ports:
+      - "3306:3306"  
+    
     expose:
       - 3306
     healthcheck:
@@ -30,13 +35,16 @@ services:
   app:
     image: mick0974/a13:t23-g1
     container_name: t23-controller
-    expose:
-      - 8082
+    
+    # modifica delle porte per l'applicazione
+    ports:
+      - "8082:8082" 
+
     depends_on:
       db:
-        condition: service_healthy # parte solo se il db è attivo
+        condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}  # Usa il nome del DB definito nel .env
+      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_KEY_SECRET: ${JWT_KEY_SECRET}
