@@ -1,0 +1,33 @@
+# TestingRobotChallenge
+
+## Descrizione del task svolto e Id del Task
+-Il task assegnato, con Id R6, riguarda la progettazione e l’implementazione di una pagina dedicata al Profilo del Giocatore, con l’obiettivo di rendere più organica, accessibile e scalabile la visualizzazione delle informazioni personali e delle statistiche di gioco. Nella versione di partenza le informazioni relative al profilo del giocatore risultano distribuite in maniera frammentata all’interno della piattaforma e sono rese disponibili tramite pulsanti presenti nel menù in alto a destra della home page, senza una vista unificata e strutturata a causa dell’assenza di un’area riservata. Si prevede quindi la realizzazione di una pagina Profilo dedicata, accessibile al giocatore autenticato, che consenta di visualizzare in modo centralizzato le principali informazioni personali e di gioco. In particolare, la pagina deve includere una sezione fissa, contenente elementi identificativi del giocatore come immagine/avatar e biografia, e una sezione variabile, in cui le informazioni visualizzate possono essere selezionate dinamicamente dall’utente tramite un selettore presente nella UI, ispirato al meccanismo già adottato nella pagina degli achievement. Le informazioni che la pagina Profilo deve consentire di visualizzare includono, tra le altre, un riepilogo delle statistiche personali (partite giocate, punti esperienza, badge guadagnati), le classifiche dei giocatori, la cronologia delle partite (game history) e funzionalità sociali come la ricerca di profili di altri giocatori e la possibilità di aggiunge gli stessi alla propria lista di utenti seguiti attraverso un pulsante ‘follow’. La soluzione proposta mira a evitare l’affollamento dell’interfaccia, migliorando l’usabilità grazie alla selezione dinamica dei contenuti, e risulta facilmente estendibile per supportare in futuro la visualizzazione di ulteriori informazioni o funzionalità.
+
+## Implementazione del Task
+Il task è stato implementato rinnovando completamente la pagina del Profilo Utente, trasformandola in un punto centrale per la gestione dell'account e delle relazioni sociali. L'obiettivo è stato rendere la visualizzazione dei dati più organica: ora l'utente può consultare in un'unica schermata le proprie informazioni personali, il livello di gioco raggiunto e la rete di amicizie.
+
+A livello architetturale, l'aggiornamento ha richiesto:
+
+-Centralizzazione del recupero dati: È stata riattivata e potenziata la logica che, all'apertura del profilo, raccoglie e aggrega le informazioni provenienti da diverse fonti (anagrafica utente, statistiche di gioco e storico partite).
+
+-Miglioramento della comunicazione tra servizi: Sono stati aggiornati i collegamenti tra il Front-end (T5) e il Backend (T23). Il Front-end ora è in grado di inviare correttamente le richieste di modifica del profilo e di lettura dei dati, garantendo che ogni operazione sia sicura e riconosciuta dal sistema.
+
+-Ottimizzazione dell'esperienza utente: I file del front-end sono stati riorganizzati per rendere la pagina più reattiva. Operazioni come la ricerca di nuovi amici o la gestione del "segui/smetti di seguire" avvengono ora in modo fluido, aggiornando l'interfaccia immediatamente senza costringere l'utente a ricaricare la pagina.
+
+-Integrazione delle funzionalità Social: Sono state aggiunte le logiche necessarie per visualizzare i profili degli altri giocatori, permettendo di interagire con loro direttamente dalla dashboard di ricerca.
+
+### Modifiche ai Microservizi
+
+| Microservizio | Tipo di Modifica | Note |
+| :--- | :--- | :--- |
+| **Backend T23**<br>*(UserSocialController.java)* | **Modifica & Aggiunta** | • **searchUserProfiles:** Restituisce una `Map` (JSON) invece di `Page`.<br>• **getUserByEmail:** Riscritto per restituire `ResponseEntity` (oggetto singolo) e gestire eccezioni ID nullo.<br>• **getUserById:** *Nuovo endpoint* per recupero utente tramite ID (necessario per risultati di ricerca).<br>• **toggleFollow:** *Nuovo endpoint* per gestione Follow/Unfollow con log dettagliati.<br>• **editProfile:** *Nuovo endpoint* per modifica Bio/Nick/Avatar con gestione errori DB. |
+| **Backend T23**<br>*(UserProfileRepository.java)* | **Modifica** | • **searchByNameSurnameEmailOrNickname:** Query ottimizzata per ricerca parziale|
+| **Backend T23**<br>*(UserProfile.java)* | **Modifica** | • Rimossa inizializzazione statica "default_nickname".<br>• Implementata generazione dinamica nickname da email o timestamp per garantire unicità. |
+| **Backend T23**<br>*(docker-compose.yml)* | **Modifica** | Esposizione porta **3306** (MySQL) per debug.<br>|
+| **Frontend T5**<br>*(UserProfileController.java)* | **Modifica & Aggiunta** | • **profilePagePersonal:** Recupero ID da email JWT, integrazione Gamification (XP/Barra circolare), gestione cookie.<br>• **updateProfile:** *Nuovo metodo* per POST modifica profilo, protezione nickname<br>• **extractEmailFromJwt:** *Nuovo metodo* decodifica manuale token.<br>• **searchUserProfiles:** *Nuovo metodo* API AJAX per ricerca.<br>• **friendProfilePage:** Riscritto per caricare "myself" + "friend". |
+| **Frontend T5**<br>*(T23Service.java)* | **Modifica & Aggiunta** | • **getAuthenticated:** Gestione token nullo.<br>• **registerUserProfileActions:** Supporto 5 parametri (incluso JWT) per edit_profile.<br>• **searchUserProfiles:** *Nuovo metodo* per la ricerca.<br>• **UpdateProfile:** Riscritto con allineamento endpoint.<br>• **getFollowers/getFollowing:** Return type modificato in `Map` per flessibilità. |
+| **Frontend T5**<br>*(GuiController.java)* | **Modifica** | Pulizia codice e import.<br>|
+| **Frontend T5**<br>*(HTML Views)* | **Modifica & Aggiunta** | • **profile.html:** Refactoring visivo, ViewSelector (Tabs), import Achievements.<br>• **friend_profile.html:** *Nuovo file* per visualizzazione profili terzi con tasto Follow dinamico.<br>• **search.html:** Integrazione API `/profile/search_api`, fix paginazione.<br>• **Edit_Profile.html:** Logica JS interna e correzione endpoint.<br>• **navbar.html:** Attivazione link al profilo utente. |
+| **Frontend T5**<br>*(Risorse Statiche)* | **Modifica** | • **friend_profile.js:** Correzione endpoint, recupero ID da HTML, disabilitazione bottone anti-spam.<br>• **messages_xx.properties:** Aggiunta stringhe i18n per Profilo, Ricerca e Social.<br>• **Dockerfile:** Base image aggiornata a `eclipse-temurin:17-jdk`. |
+| **Frontend T5**<br>*(docker-compose.yml)* | **Modifica** | • Esposizione porta servizio `app` verso l'esterno.<br>• Correzione sintassi esposizione Redis. |
+| **UI Gateway**<br>*(T23_route.conf)* | **Modifica** | • Aggiunto prefisso `/profile/` alle rotte Social per allineamento con le chiamate del frontend. |
